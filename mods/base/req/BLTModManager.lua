@@ -64,12 +64,10 @@ function BLTModManager:_RunAutoCheckForUpdates()
 
 	-- Place a notification that we're checking for autoupdates
 	if BLT.Notifications then 
-		local icon, rect = tweak_data.hud_icons:get_icon_data("csb_pagers")
 		self._updates_notification = BLT.Notifications:add_notification( {
 			title = managers.localization:text("blt_checking_updates"),
 			text = managers.localization:text("blt_checking_updates_help"),
-			icon = icon,
-			icon_texture_rect = rect,
+			icon = "ui/interactions/gui_drive_repair_df",
 			color = Color.white,
 			priority = 1000,
 		} )
@@ -121,24 +119,20 @@ function BLTModManager:clbk_got_update( update, required, reason )
 		-- Add notification if we need updates
 		if table.size( BLT.Downloads:pending_downloads() ) > 0 then
 
-			local icon, rect = tweak_data.hud_icons:get_icon_data("csb_pagers")
 			self._updates_notification = BLT.Notifications:add_notification( {
 				title = managers.localization:text("blt_checking_updates_required"),
 				text = managers.localization:text("blt_checking_updates_required_help"),
-				icon = icon,
-				icon_texture_rect = rect,
+				icon = "ui/interactions/gui_drive_repair_df",
 				color = Color.white,
 				priority = 1000,
 			} )
 
 		else
 
-			local icon, rect = tweak_data.hud_icons:get_icon_data("csb_pagers")
 			self._updates_notification = BLT.Notifications:add_notification( {
 				title = managers.localization:text("blt_checking_updates_none_required"),
 				text = managers.localization:text("blt_checking_updates_none_required_help"),
-				icon = icon,
-				icon_texture_rect = rect,
+				icon = "ui/interactions/gui_drive_repair_df",
 				color = Color.white,
 				priority = 0,
 			} )

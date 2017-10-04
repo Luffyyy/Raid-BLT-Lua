@@ -38,7 +38,6 @@ function BLTNotificationsGui:close()
 end
 
 function BLTNotificationsGui:_setup()
-
 	local font = tweak_data.menu.pd2_small_font
 	local font_size = tweak_data.menu.pd2_small_font_size
 	local max_left_len = 0
@@ -49,15 +48,15 @@ function BLTNotificationsGui:_setup()
 	self._enabled = true
 
 	-- Get player profile panel
-	local profile_panel = managers.menu_component._player_profile_gui._panel
+	--local profile_panel = managers.menu_component._player_profile_gui._panel
 
 	-- Create panels
 	self._panel = self._ws:panel():panel({
-		w = profile_panel:w(),
+		w = 500,
 		h = 128
 	})
-	self._panel:set_left( profile_panel:left() )
-	self._panel:set_bottom( profile_panel:top() )
+--	self._panel:set_left( profile_panel:left() )
+	self._panel:set_bottom( self._ws:panel():h() )
 	-- BoxGuiObject:new( self._panel:panel({ layer = 100 }), { sides = { 1, 1, 1, 1 } } )
 
 	self._content_panel = self._panel:panel({
@@ -85,6 +84,7 @@ function BLTNotificationsGui:_setup()
 		h = self._content_panel:h(),
 		render_template = "VertexColorTexturedBlur3D",
 		layer = -1,
+		visible = false,
 		halign = "scale",
 		valign = "scale"
 	})
@@ -95,7 +95,6 @@ function BLTNotificationsGui:_setup()
 
 	-- Setup notification buttons
 	self._bar = self._buttons_panel:bitmap({
-		texture = "guis/textures/pd2/shared_lines",
 		halign = "grow",
 		valign = "grow",
 		wrap_mode = "wrap",
@@ -115,10 +114,8 @@ function BLTNotificationsGui:_setup()
 		layer = 100
 	})
 
-	local texture, rect = tweak_data.hud_icons:get_icon_data( "csb_throwables" )
 	self._downloads_panel:bitmap({
-		texture = texture,
-		texture_rect = rect,
+		texture = "ui/interactions/gui_drive_repair_df",
 		w = self._downloads_panel:w(),
 		h = self._downloads_panel:h(),
 		color = Color.red
@@ -147,7 +144,7 @@ function BLTNotificationsGui:_setup()
 	-- Move other panels to fit the downloads notification in nicely
 	self._panel:set_w( self._panel:w() + 24 )
 	self._panel:set_h( self._panel:h() + 24 )
-	self._panel:set_top( self._panel:top() - 24 )
+	self._panel:set_top( self._panel:top() - 90 )
 	self._content_panel:set_top( self._content_panel:top() + 24 )
 	self._buttons_panel:set_top( self._buttons_panel:top() + 24 )
 
@@ -310,7 +307,8 @@ function BLTNotificationsGui:_update_bars()
 
 		local page_button = self._buttons_panel:bitmap({
 			name = tostring(i),
-			texture = "guis/textures/pd2/ad_spot",
+			w = BAR_W,
+			h = BAR_H
 		})
 		page_button:set_center_x( ( i / ( self._notifications_count + 1 ) ) * self._buttons_panel:w() / 2 + self._buttons_panel:w() / 4 )
 		page_button:set_center_y( (self._buttons_panel:h() - page_button:h()) / 2 )
@@ -320,7 +318,6 @@ function BLTNotificationsGui:_update_bars()
 
 	-- Add the time bar
 	self._bar = self._buttons_panel:bitmap({
-		texture = "guis/textures/pd2/shared_lines",
 		halign = "grow",
 		valign = "grow",
 		wrap_mode = "wrap",
@@ -342,7 +339,28 @@ end
 --------------------------------------------------------------------------------
 
 function BLTNotificationsGui:set_bar_width( w, random )
-	NewHeistsGui.set_bar_width( self, w, random )
+	--NewHeistsGui.set_bar_width( self, w, random )
+	--Taken from pd2 decomp
+	w = w or BAR_W
+	self._bar_width = w
+
+	self._bar:set_width(w)
+
+	self._bar_x = not random and self._bar_x or math.random(1, 255)
+	self._bar_y = not random and self._bar_y or math.random(0, math.round(self._bar:texture_height() / 2 - 1)) * 2
+	local x = self._bar_x
+	local y = self._bar_y
+	local h = 6
+	local mvector_tl = Vector3()
+	local mvector_tr = Vector3()
+	local mvector_bl = Vector3()
+	local mvector_br = Vector3()
+
+	mvector3.set_static(mvector_tl, x, y, 0)
+	mvector3.set_static(mvector_tr, x + w, y, 0)
+	mvector3.set_static(mvector_bl, x, y + h, 0)
+	mvector3.set_static(mvector_br, x + w, y + h, 0)
+	self._bar:set_texture_coordinates(mvector_tl, mvector_tr, mvector_bl, mvector_br)
 end
 
 function BLTNotificationsGui:_move_to_notification( destination )
@@ -459,10 +477,6 @@ function BLTNotificationsGui:mouse_moved( o, x, y )
 		return
 	end
 
-	if alive(self._downloads_panel) and self._downloads_panel:visible() and self._downloads_panel:inside( x, y ) then
-		return true, "link"
-	end
-
 	if alive(self._content_panel) and self._content_panel:inside(x, y) then
 		self._content_outline:set_visible(true)
 		return true, "link"
@@ -479,15 +493,15 @@ function BLTNotificationsGui:mouse_moved( o, x, y )
 end
 
 function BLTNotificationsGui:mouse_pressed( button, x, y )
-
+    
 	if not self._enabled or button ~= Idstring( "0" ) then
 		return
-	end
-
-	if alive(self._downloads_panel) and self._downloads_panel:visible() and self._downloads_panel:inside( x, y ) then
-		managers.menu:open_node("blt_download_manager")
-		return true
-	end
+    end
+    
+    if alive(self._downloads_panel) and self._downloads_panel:visible() and self._downloads_panel:inside( x, y ) then 
+        managers.menu:open_node("blt_download_manager") 
+        return true 
+      end 
 
 	if alive(self._content_panel) and self._content_panel:inside(x, y) then
 		managers.menu:open_node("blt_mods")
@@ -518,6 +532,18 @@ Hooks:Add("MenuComponentManagerInitialize", "BLTNotificationsGui.MenuComponentMa
 	menu._active_components["blt_notifications"] = { create = callback(menu, menu, "create_blt_notifications_gui"), close = callback(menu, menu, "close_blt_notifications_gui") }
 end)
 
+Hooks:Add("MenuComponentManagerOnMousePressed", "BLTNotificationsGui.MenuComponentManagerOnMousePressed", function(menu, o, button, x, y)
+	if menu._blt_notifications then
+		menu._blt_notifications:mouse_pressed(button, x, y)		
+	end
+end)
+
+Hooks:Add("MenuComponentManagerOnMouseMoved", "BLTNotificationsGui.MenuComponentManagerOnMouseMoved", function(menu, o, x, y)
+	if menu._blt_notifications then
+		menu._blt_notifications:mouse_moved(o, x, y)		
+	end
+end)
+
 function MenuComponentManager:blt_notifications()
 	return self._blt_notifications
 end
@@ -527,14 +553,14 @@ function MenuComponentManager:create_blt_notifications_gui( node )
 		return
 	end
 	self._blt_notifications = self._blt_notifications or BLTNotificationsGui:new( self._ws, self._fullscreen_ws, node )
-	self:register_component( "blt_notifications", self._blt_notifications )
+	--self:register_component( "blt_notifications", self._blt_notifications )
 end
 
 function MenuComponentManager:close_blt_notifications_gui()
 	if self._blt_notifications then
 		self._blt_notifications:close()
 		self._blt_notifications = nil
-		self:unregister_component( "blt_notifications" )
+		--self:unregister_component( "blt_notifications" )
 	end
 end
 

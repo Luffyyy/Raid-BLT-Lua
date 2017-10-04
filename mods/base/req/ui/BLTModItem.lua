@@ -157,11 +157,9 @@ function BLTModItem:init( panel, index, mod )
 
 	if not mod:IsUndisablable() then
 
-		local icon, rect = tweak_data.hud_icons:get_icon_data( "csb_locks" )
 		local icon_enabled = self._panel:bitmap({
 			name = "",
-			texture = icon,
-			texture_rect = rect,
+			texture = "ui/interactions/lockpick_indicator_df",
 			color = Color.white,
 			alpha = 1,
 			layer = 10,
@@ -183,11 +181,9 @@ function BLTModItem:init( panel, index, mod )
 
 	if mod:HasUpdates() then
 
-		local icon, rect = tweak_data.hud_icons:get_icon_data( "csb_pagers" )
 		local icon_updates = self._panel:bitmap({
 			name = "",
-			texture = icon,
-			texture_rect = rect,
+			texture = "ui/interactions/gui_drive_repair_df",
 			color = Color.white,
 			alpha = mod:AreUpdatesEnabled() and 1 or 0.4,
 			layer = 10,

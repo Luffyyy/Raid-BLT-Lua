@@ -5,20 +5,16 @@ CloneClass( MenuModInfoGui )
 
 Hooks:RegisterHook( "MenuManagerInitialize" )
 Hooks:RegisterHook( "MenuManagerPostInitialize" )
-function MenuManager.init( self, ... )
+function MenuManager:init( ... )
 	self.orig.init( self, ... )
 	Hooks:Call( "MenuManagerInitialize", self )
 	Hooks:Call( "MenuManagerPostInitialize", self )
 end
 
 Hooks:RegisterHook( "MenuManagerOnOpenMenu" )
-function MenuManager.open_menu( self, menu_name, position )
-	self.orig.open_menu( self, menu_name, position )
-	Hooks:Call( "MenuManagerOnOpenMenu", self, menu_name, position )
-end
-
-function MenuManager.open_node( self, node_name, parameter_list )
-	self.orig.open_node( self, node_name, parameter_list )
+function MenuManager:open_menu( ... )
+	self.orig.open_menu( self, ... )
+	Hooks:Call( "MenuManagerOnOpenMenu", self, ...)
 end
 
 function MenuManager:show_download_progress( mod_name )
@@ -87,9 +83,9 @@ function MenuManager._base_process_menu( menu_manager, menu_names, parent_menu_n
 			local hook_id_setup = setup_hook or "MenuManagerSetupCustomMenus"
 			local hook_id_populate = populate_hook or "MenuManagerPopulateCustomMenus"
 			local hook_id_build = build_hook or "MenuManagerBuildCustomMenus"
-
-			MenuHelper:SetupMenu( nodes, parent_menu_name or "video" )
-			MenuHelper:SetupMenuButton( nodes, parent_menu_button or "options" )
+			
+			MenuHelper:SetupMenu( nodes, parent_menu_name or "raid_menu_options_video" )
+			MenuHelper:SetupMenuButton( nodes, parent_menu_button or "raid_options" )
 
 			Hooks:RegisterHook( hook_id_setup )
 			Hooks:RegisterHook( hook_id_populate )
@@ -172,21 +168,21 @@ function MenuCallbackHandler:blt_choose_language( item )
 	end
 end
 
---------------------------------------------------------------------------------
--- Menu Initiator for the Mod Options so that localization shows the selected language
-
-BLTModOptionsInitiator = BLTModOptionsInitiator or class( MenuInitiatorBase )
-function BLTModOptionsInitiator:modify_node( node )
-
-	local localization_item = node:item( "blt_localization_choose" )
-	if localization_item and BLT.Localization then
-		localization_item:set_value( tostring( BLT.Localization:get_language().language ) )
-	end
-
-	return node
-
-end
-
-function BLTModOptionsInitiator:refresh_node( node )
-	self:modify_node( node )
-end
+-------------------------------------------------------------------------------- 
+-- Menu Initiator for the Mod Options so that localization shows the selected language 
+ 
+BLTModOptionsInitiator = BLTModOptionsInitiator or class( MenuInitiatorBase ) 
+function BLTModOptionsInitiator:modify_node( node ) 
+ 
+  local localization_item = node:item( "blt_localization_choose" ) 
+  if localization_item and BLT.Localization then 
+    localization_item:set_value( tostring( BLT.Localization:get_language().language ) ) 
+  end 
+ 
+  return node 
+ 
+end 
+ 
+function BLTModOptionsInitiator:refresh_node( node ) 
+  self:modify_node( node ) 
+end 

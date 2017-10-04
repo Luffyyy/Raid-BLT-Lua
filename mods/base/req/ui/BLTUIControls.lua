@@ -194,11 +194,9 @@ function BLTDownloadControl:init( panel, parameters )
 		valign = "scale"
 	})
 
-	local icon, rect = tweak_data.hud_icons:get_icon_data( "csb_pagers" )
 	local image = self._download_panel:bitmap({
 		name = "image",
-		texture = icon,
-		texture_rect = rect,
+		texture = "ui/interactions/gui_drive_repair_df",
 		color = Color.white,
 		layer = 10,
 		x = padding,
@@ -398,7 +396,7 @@ end
 
 function BLTDownloadControl:mouse_clicked( button, x, y )
 
-	if button == Idstring( "0" ) then -- left click
+	if button == Idstring( "0" ) then -- left click 
 
 		if self._download_panel:inside( x, y ) then
 			if not BLT.Downloads:get_download( self._parameters.update ) then

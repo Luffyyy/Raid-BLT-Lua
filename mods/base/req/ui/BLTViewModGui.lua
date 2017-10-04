@@ -685,14 +685,14 @@ function MenuComponentManager:create_blt_view_mod_gui( node )
 		return
 	end
 	self._blt_view_mod_gui = self._blt_view_mod_gui or BLTViewModGui:new( self._ws, self._fullscreen_ws, node )
-	self:register_component( "blt_view_mod_gui", self._blt_view_mod_gui )
+	--self:register_component( "blt_view_mod_gui", self._blt_view_mod_gui )
 end
 
 function MenuComponentManager:close_blt_view_mod_gui()
 	if self._blt_view_mod_gui then
 		self._blt_view_mod_gui:close()
 		self._blt_view_mod_gui = nil
-		self:unregister_component( "blt_view_mod_gui" )
+		--self:unregister_component( "blt_view_mod_gui" )
 	end
 end
 

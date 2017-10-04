@@ -169,19 +169,19 @@ end
 
 function BLTDownloadManagerGui:mouse_clicked( o, button, x, y )
 
-	local result = false
-
-	for _, item in ipairs( self._buttons ) do
-		if item:inside( x, y ) then
-			if item.mouse_clicked then
-				result = item:mouse_clicked( button, x, y )
-			end
-			break
-		end
-	end
-
-	if button == Idstring( "0" ) then
-
+	local result = false 
+	
+	for _, item in ipairs( self._buttons ) do 
+	   if item:inside( x, y ) then 
+		 if item.mouse_clicked then 
+		   result = item:mouse_clicked( button, x, y ) 
+		 end 
+		 break 
+	   end 
+	end 
+	
+	if button == Idstring( "0" ) then 
+	
 		if alive(self._back_button) and self._back_button:visible() then
 			if self._back_button:inside(x, y) then
 				managers.menu:back()
@@ -200,9 +200,9 @@ function BLTDownloadManagerGui:mouse_clicked( o, button, x, y )
 		end
 
 	end
-
+	
 	return result
-
+	
 end
 
 function BLTDownloadManagerGui:mouse_moved( button, x, y )
@@ -269,13 +269,13 @@ function MenuComponentManager:create_blt_downloads_gui( node )
 		return
 	end
 	self._blt_downloads_gui = self._blt_downloads_gui or BLTDownloadManagerGui:new( self._ws, self._fullscreen_ws, node )
-	self:register_component( "blt_downloads_gui", self._blt_downloads_gui )
+	--self:register_component( "blt_downloads_gui", self._blt_downloads_gui )
 end
 
 function MenuComponentManager:close_blt_downloads_gui()
 	if self._blt_downloads_gui then
 		self._blt_downloads_gui:close()
 		self._blt_downloads_gui = nil
-		self:unregister_component( "blt_downloads_gui" )
+		--self:unregister_component( "blt_downloads_gui" )
 	end
 end

@@ -40,7 +40,7 @@ function BLTModsGui:init( ws, fullscreen_ws, node )
 end
 
 function BLTModsGui:close()
-	BLTModsGui.last_y_position = self._scroll:canvas():y() * -1
+	BLTModsGui.last_y_position = self._scroll:canvas():y() * -1 
 	self._ws:panel():remove( self._panel )
 	self._fullscreen_ws:panel():remove( self._fullscreen_panel )
 end
@@ -120,7 +120,6 @@ function BLTModsGui:_setup()
 		title_text = title_text .. " (" .. managers.experience:cash_string(downloads_count, "") .. ")"
 	end
 
-	local icon, rect = tweak_data.hud_icons:get_icon_data( "csb_pagers" )
 	local button = BLTUIButton:new( self._scroll:canvas(), {
 		x = 0,
 		y = 0,
@@ -128,9 +127,8 @@ function BLTModsGui:_setup()
 		h = 256,
 		title = title_text,
 		text = managers.localization:text("blt_download_manager_help"),
-		image = icon,
+		image = "ui/interactions/gui_drive_repair_df",
 		image_size = 108,
-		texture_rect = rect,
 		callback = callback( self, self, "clbk_open_download_manager" )
 	} )
 	table.insert( self._buttons, button )
@@ -143,9 +141,9 @@ function BLTModsGui:_setup()
 
 	-- Update scroll size
 	self._scroll:update_canvas_size()
-
-	self._scroll:scroll_to(BLTModsGui.last_y_position)
-
+	
+	self._scroll:scroll_to(BLTModsGui.last_y_position) 
+	
 end
 
 function BLTModsGui:inspecting_mod()
@@ -214,12 +212,12 @@ function BLTModsGui:mouse_pressed( button, x, y )
 		return false
 	end
 
-	local result
-	if alive(self._scroll) then
-		result = self._scroll:mouse_pressed( button, x, y )
-	end
-
-	if button == Idstring( "0" ) then
+	local result 
+	if alive(self._scroll) then 
+	  result = self._scroll:mouse_pressed( button, x, y ) 
+	end 
+   
+	if button == Idstring( "0" ) then 
 
 		if alive(self._back_button) and self._back_button:visible() then
 			if self._back_button:inside(x, y) then
@@ -296,13 +294,13 @@ function MenuComponentManager:create_blt_mods_gui( node )
 		return
 	end
 	self._blt_mods_gui = self._blt_mods_gui or BLTModsGui:new( self._ws, self._fullscreen_ws, node )
-	self:register_component( "blt_mods_gui", self._blt_mods_gui )
+	--self:register_component( "blt_mods_gui", self._blt_mods_gui )
 end
 
 function MenuComponentManager:close_blt_mods_gui()
 	if self._blt_mods_gui then
 		self._blt_mods_gui:close()
 		self._blt_mods_gui = nil
-		self:unregister_component( "blt_mods_gui" )
+		--self:unregister_component( "blt_mods_gui" )
 	end
 end
