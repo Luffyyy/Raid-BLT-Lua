@@ -38,7 +38,7 @@ function BLTUIButton:init( panel, parameters )
 	self._background = self._panel:rect({
 		color =	parameters.color or tweak_data.screen_colors.button_stage_3,
 		alpha = 0.4,
-		blend_mode = "add",
+		--blend_mode = "add",
 		layer = -1
 	})
 	BoxGuiObject:new( self._panel, { sides = { 1, 1, 1, 1 } } )
@@ -58,7 +58,7 @@ function BLTUIButton:init( panel, parameters )
 		font_size = medium_font_size,
 		font = medium_font,
 		layer = 10,
-		blend_mode = "add",
+		--blend_mode = "add",
 		color = tweak_data.screen_colors.title,
 		text = parameters.title or "",
 		align = "center",
@@ -81,7 +81,7 @@ function BLTUIButton:init( panel, parameters )
 		font_size = small_font_size,
 		font = small_font,
 		layer = 10,
-		blend_mode = "add",
+		--blend_mode = "add",
 		color = tweak_data.screen_colors.title,
 		text = parameters.text or "",
 		align = "center",
@@ -179,7 +179,7 @@ function BLTDownloadControl:init( panel, parameters )
 	self._background = self._download_panel:rect({
 		color =	parameters.color or tweak_data.screen_colors.button_stage_3,
 		alpha = 0.4,
-		blend_mode = "add",
+		--blend_mode = "add",
 		layer = -1
 	})
 	BoxGuiObject:new( self._download_panel, { sides = { 1, 1, 1, 1 } } )
@@ -215,7 +215,7 @@ function BLTDownloadControl:init( panel, parameters )
 	self._patch_background = self._patch_panel:rect({
 		color =	parameters.color or tweak_data.screen_colors.button_stage_3,
 		alpha = 0.4,
-		blend_mode = "add",
+		--blend_mode = "add",
 		layer = -1
 	})
 	BoxGuiObject:new( self._patch_panel, { sides = { 1, 1, 1, 1 } } )
@@ -224,7 +224,7 @@ function BLTDownloadControl:init( panel, parameters )
 		font_size = small_font_size,
 		font = small_font,
 		layer = 10,
-		blend_mode = "add",
+		--blend_mode = "add",
 		color = tweak_data.screen_colors.title,
 		text = managers.localization:text("blt_view_patch_notes"),
 		align = "center",
@@ -290,7 +290,7 @@ function BLTDownloadControl:init( panel, parameters )
 			font_size = small_font_size * 0.8,
 			font = small_font,
 			layer = 10,
-			blend_mode = "add",
+			--blend_mode = "add",
 			color = tweak_data.screen_colors.title,
 			text = managers.localization:text("blt_no_image"),
 			align = "center",
@@ -307,7 +307,7 @@ function BLTDownloadControl:init( panel, parameters )
 		font_size = medium_font_size,
 		font = medium_font,
 		layer = 10,
-		blend_mode = "add",
+		--blend_mode = "add",
 		color = parameters.update:IsCritical() and tweak_data.screen_colors.important_1 or tweak_data.screen_colors.title,
 		text = download_name,
 		align = "left",
@@ -318,12 +318,12 @@ function BLTDownloadControl:init( panel, parameters )
 		h = self._info_panel:h() - padding * 3,
 	})
 
-	local state = self._info_panel:text({
+	local state = self._panel:text({
 		name = "state",
 		font_size = small_font_size,
 		font = small_font,
 		layer = 10,
-		blend_mode = "add",
+		--blend_mode = "add",
 		color = tweak_data.screen_colors.title,
 		alpha = 0.8,
 		text = managers.localization:text("blt_download_ready"),
@@ -341,7 +341,7 @@ function BLTDownloadControl:init( panel, parameters )
 		font_size = large_font_size,
 		font = large_font,
 		layer = 10,
-		blend_mode = "add",
+		--blend_mode = "add",
 		color = tweak_data.screen_colors.title,
 		text = "100%",
 		align = "right",
@@ -357,7 +357,7 @@ function BLTDownloadControl:init( panel, parameters )
 	self._download_progress_bg = self._info_panel:rect({
 		color = tweak_data.screen_colors.button_stage_2,
 		alpha = 0.4,
-		blend_mode = "add",
+		--blend_mode = "add",
 		layer = -1
 	})
 	self._download_progress_bg:set_w( 0 )
@@ -395,9 +395,9 @@ function BLTDownloadControl:mouse_moved( button, x, y )
 end
 
 function BLTDownloadControl:mouse_clicked( button, x, y )
-
+	
 	if button == Idstring( "0" ) then -- left click 
-
+		
 		if self._download_panel:inside( x, y ) then
 			if not BLT.Downloads:get_download( self._parameters.update ) then
 				BLT.Downloads:start_download( self._parameters.update )
@@ -409,9 +409,9 @@ function BLTDownloadControl:mouse_clicked( button, x, y )
 			self._parameters.update:ViewPatchNotes()
 			return true
 		end
-
+	
 	end
-
+	
 end
 
 function BLTDownloadControl:update_download( download )

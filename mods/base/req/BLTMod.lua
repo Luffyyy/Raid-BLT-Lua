@@ -73,7 +73,7 @@ function BLTMod:Setup()
 
 	-- Check mod is compatible with this version of the BLT
 	local mod_version = self:GetBLTVersion()
-	if mod_version and mod_version ~= BLT:GetVersion() then
+	if mod_version ~= "unknown" and mod_version ~= BLT:GetVersion() then
 		self._outdated = true
 		table.insert( self._errors, "blt_mod_outdated" )
 	end

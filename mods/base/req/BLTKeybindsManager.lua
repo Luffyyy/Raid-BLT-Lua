@@ -231,7 +231,7 @@ function BLTKeybindsManager:update( t, dt, state )
 		if managers.hud and managers.hud:chat_focus() then
 			-- Don't run while chatting ingame
 			return
-		elseif managers.menu_component and managers.menu_component:input_focut_game_chat_gui() then -- 'focut' is not a typo on our side
+		elseif managers.menu_component and managers.menu_component:input_focus() then -- This is a quick fix, I think this is the one for Raid.
 			-- Don't run while chatting in lobby
 			return
 		elseif managers.menu then
@@ -420,7 +420,7 @@ function BLTKeybindMenuInitiator:add_back_button( node )
 	node:delete_item( "back" )
 	local params = {
 		name = "back",
-		text_id = "menu_back",
+		text_id = "footer_back",
 		visible_callback = "is_pc_controller",
 		back = true,
 		align = "right",

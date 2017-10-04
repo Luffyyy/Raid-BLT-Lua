@@ -57,28 +57,28 @@ function BLTModsGui:_setup()
 	-- Back button
 	local back_button = self._panel:text({
 		name = "back",
-		text = managers.localization:text("menu_back"),
+		text = managers.localization:to_upper_text("footer_back"),
 		align = "right",
 		vertical = "bottom",
-		font_size = tweak_data.menu.pd2_large_font_size,
+		font_size = 32,
 		font = tweak_data.menu.pd2_large_font,
-		color = tweak_data.screen_colors.button_stage_3,
+		color = tweak_data.menu.default_disabled_text_color,
 		layer = 40,
-		blend_mode = "add"
+		--blend_mode = "add"
 	})
 	make_fine_text( back_button )
-	back_button:set_right( self._panel:w() - 10 )
-	back_button:set_bottom( self._panel:h() - 10 )
+	back_button:set_bottom( self._panel:h() )
 	back_button:set_visible( managers.menu:is_pc_controller() )
 	self._back_button = back_button
 
 	local bg_back = self._fullscreen_panel:text({
 		name = "back_button",
-		text = utf8.to_upper( managers.localization:text("menu_back") ),
+		text = utf8.to_upper( managers.localization:text("footer_back") ),
 		h = 90,
 		align = "right",
 		vertical = "bottom",
-		blend_mode = "add",
+		--blend_mode = "add",
+		visible = false,
 		font_size = tweak_data.menu.pd2_massive_font_size,
 		font = tweak_data.menu.pd2_massive_font,
 		color = tweak_data.screen_colors.button_stage_3,
@@ -99,7 +99,7 @@ function BLTModsGui:_setup()
 		font = large_font,
 		h = large_font_size,
 		layer = 10,
-		blend_mode = "add",
+		--blend_mode = "add",
 		color = tweak_data.screen_colors.title,
 		text = "Installed Mods",
 		align = "left",
@@ -158,7 +158,7 @@ end
 
 function BLTModsGui:mouse_moved( button, x, y )
 
-	if managers.menu_scene and managers.menu_scene:input_focus() then
+	if managers.menu_scene and managers.menu_scene.input_focus and managers.menu_scene:input_focus() then
 		return false
 	end
 
@@ -172,7 +172,7 @@ function BLTModsGui:mouse_moved( button, x, y )
 			end
 			used, pointer = true, "link"
 		else
-			self._back_button:set_color( tweak_data.screen_colors.button_stage_3 )
+			self._back_button:set_color( tweak_data.menu.default_disabled_text_color )
 		end
 	end
 
@@ -196,7 +196,7 @@ end
 
 function BLTModsGui:mouse_clicked( o, button, x, y )
 
-	if managers.menu_scene and managers.menu_scene:input_focus() then
+	if managers.menu_scene and managers.menu_scene.input_focus and managers.menu_scene:input_focus() then
 		return false
 	end
 
@@ -208,7 +208,7 @@ end
 
 function BLTModsGui:mouse_pressed( button, x, y )
 
-	if managers.menu_scene and managers.menu_scene:input_focus() then
+	if managers.menu_scene and managers.menu_scene.input_focus and managers.menu_scene:input_focus() then
 		return false
 	end
 
@@ -256,7 +256,7 @@ end
 
 function BLTModsGui:mouse_released( button, x, y )
 
-	if managers.menu_scene and managers.menu_scene:input_focus() then
+	if managers.menu_scene and managers.menu_scene.input_focus and managers.menu_scene:input_focus() then
 		return false
 	end
 
@@ -283,6 +283,18 @@ end
 
 Hooks:Add("MenuComponentManagerInitialize", "BLTModsGui.MenuComponentManagerInitialize", function(menu)
 	menu._active_components["blt_mods"] = { create = callback(menu, menu, "create_blt_mods_gui"), close = callback(menu, menu, "close_blt_mods_gui") }
+end)
+
+Hooks:Add("MenuComponentManagerOnMousePressed", "BLTModsGui.MenuComponentManagerOnMousePressed", function(menu, o, button, x, y)
+	if menu._blt_mods_gui then
+		menu._blt_mods_gui:mouse_pressed(button, x, y)		
+	end
+end)
+
+Hooks:Add("MenuComponentManagerOnMouseMoved", "BLTModsGui.MenuComponentManagerOnMouseMoved", function(menu, o, x, y)
+	if menu._blt_mods_gui then
+		menu._blt_mods_gui:mouse_moved(o, x, y)		
+	end
 end)
 
 function MenuComponentManager:blt_mods_gui()

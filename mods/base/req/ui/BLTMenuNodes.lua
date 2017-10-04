@@ -45,7 +45,7 @@ local function add_blt_options_node( menu )
 		[4] = {
 			_meta = "item",
 			name = "back",
-			text_id = "menu_back",
+			text_id = "footer_back",
 			back = true,
 			previous_node = true,
 			visible_callback = "is_pc_controller"
@@ -81,7 +81,7 @@ local function add_blt_keybinds_node( menu )
 		[4] = {
 			_meta = "item",
 			name = "back",
-			text_id = "menu_back",
+			text_id = "footer_back",
 			back = true,
 			previous_node = true,
 			visible_callback = "is_pc_controller"

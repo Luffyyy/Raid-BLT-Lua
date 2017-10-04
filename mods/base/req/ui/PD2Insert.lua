@@ -222,7 +222,7 @@ function MenuGuiComponentGeneric:_add_back_button()
 		vertical = "bottom",
 		name = "back_button",
 		align = "right",
-		text = utf8.to_upper(managers.localization:text("menu_back")),
+		text = utf8.to_upper(managers.localization:text("footer_back")),
 		font_size = large_font_size,
 		font = large_font,
 		color = tweak_data.screen_colors.button_stage_3
@@ -240,7 +240,7 @@ function MenuGuiComponentGeneric:_add_back_button()
 			alpha = 0.4,
 			align = "right",
 			layer = 0,
-			text = utf8.to_upper(managers.localization:text("menu_back")),
+			text = utf8.to_upper(managers.localization:text("footer_back")),
 			font_size = massive_font_size,
 			font = massive_font,
 			color = tweak_data.screen_colors.button_stage_3
@@ -403,7 +403,7 @@ function MenuGuiComponentGeneric:_add_legend()
 			name = "text",
 			vertical = "bottom",
 			align = "right",
-			blend_mode = "add",
+			--blend_mode = "add",
 			halign = "right",
 			valign = "bottom",
 			font = tweak_data.menu.font_pf_fuel_pro_32,
@@ -589,7 +589,7 @@ function MenuGuiComponentGeneric:mouse_wheel_down(x, y)
 end
 
 function MenuGuiComponentGeneric:mouse_moved(button, x, y)
-	if managers.menu_scene and managers.menu_scene:input_focus() then
+	if managers.menu_scene and managers.menu_scene.input_focus and managers.menu_scene:input_focus() then
 		return false
 	end
 

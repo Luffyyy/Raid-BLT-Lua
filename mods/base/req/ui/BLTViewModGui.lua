@@ -63,28 +63,28 @@ function BLTViewModGui:_setup()
 	-- Back button
 	local back_button = self._panel:text({
 		name = "back",
-		text = managers.localization:text("menu_back"),
+		text = managers.localization:to_upper_text("footer_back"),
 		align = "right",
 		vertical = "bottom",
-		font_size = tweak_data.menu.pd2_large_font_size,
+		font_size = 32,
 		font = tweak_data.menu.pd2_large_font,
-		color = tweak_data.screen_colors.button_stage_3,
+		color = tweak_data.menu.default_disabled_text_color,
 		layer = 40,
-		blend_mode = "add"
+		--blend_mode = "add"
 	})
 	make_fine_text( back_button )
-	back_button:set_right( self._panel:w() - 10 )
-	back_button:set_bottom( self._panel:h() - 10 )
+	back_button:set_bottom( self._panel:h() )
 	back_button:set_visible( managers.menu:is_pc_controller() )
 	self._back_button = back_button
 
 	local bg_back = self._fullscreen_panel:text({
 		name = "back_button",
-		text = utf8.to_upper( managers.localization:text("menu_back") ),
+		text = utf8.to_upper( managers.localization:text("footer_back") ),
 		h = 90,
 		align = "right",
 		vertical = "bottom",
-		blend_mode = "add",
+		--blend_mode = "add",
+		visible = false,
 		font_size = tweak_data.menu.pd2_massive_font_size,
 		font = tweak_data.menu.pd2_massive_font,
 		color = tweak_data.screen_colors.button_stage_3,
@@ -119,7 +119,7 @@ function BLTViewModGui:_setup_mod_info( mod )
 		font_size = large_font_size,
 		font = large_font,
 		layer = 10,
-		blend_mode = "add",
+		--blend_mode = "add",
 		color = tweak_data.screen_colors.title,
 		text = mod:GetName(),
 		align = "left",
@@ -133,7 +133,7 @@ function BLTViewModGui:_setup_mod_info( mod )
 		font_size = medium_font_size,
 		font = medium_font,
 		layer = 10,
-		blend_mode = "add",
+		--blend_mode = "add",
 		color = tweak_data.screen_colors.title,
 		alpha = 0.6,
 		text = mod:GetVersion(),
@@ -204,7 +204,7 @@ function BLTViewModGui:_setup_mod_info( mod )
 			font_size = medium_font_size,
 			font = medium_font,
 			layer = 10,
-			blend_mode = "add",
+			--blend_mode = "add",
 			color = tweak_data.screen_colors.important_1,
 			text = error_str,
 			align = "left",
@@ -225,7 +225,7 @@ function BLTViewModGui:_setup_mod_info( mod )
 		font_size = medium_font_size,
 		font = medium_font,
 		layer = 10,
-		blend_mode = "add",
+		--blend_mode = "add",
 		color = tweak_data.screen_colors.title,
 		text = mod:GetDescription(),
 		align = "left",
@@ -247,7 +247,7 @@ function BLTViewModGui:_setup_mod_info( mod )
 		font_size = medium_font_size,
 		font = medium_font,
 		layer = 10,
-		blend_mode = "add",
+		--blend_mode = "add",
 		color = tweak_data.screen_colors.title,
 		text = managers.localization:text("blt_mod_info_author") .. ": " .. mod:GetAuthor(),
 		align = "left",
@@ -267,7 +267,7 @@ function BLTViewModGui:_setup_mod_info( mod )
 		font_size = medium_font_size,
 		font = medium_font,
 		layer = 10,
-		blend_mode = "add",
+		--blend_mode = "add",
 		color = tweak_data.screen_colors.title,
 		text = managers.localization:text("blt_mod_info_contact") .. ": " .. mod:GetContact(),
 		align = "left",
@@ -320,7 +320,7 @@ function BLTViewModGui:_setup_dev_info( mod )
 		font_size = small_font_size,
 		font = small_font,
 		layer = 10,
-		blend_mode = "add",
+		--blend_mode = "add",
 		color = tweak_data.screen_colors.title,
 		text = mod:GetDeveloperInfo(),
 		align = "left",
@@ -353,7 +353,6 @@ function BLTViewModGui:_setup_buttons( mod )
 
 	if not mod:IsUndisablable() then
 
-		local icon, rect = tweak_data.hud_icons:get_icon_data( "csb_locks" )
 		btn = BLTUIButton:new( buttons_panel, {
 			x = 0,
 			y = 0,
@@ -361,9 +360,8 @@ function BLTViewModGui:_setup_buttons( mod )
 			h = button_h,
 			title = managers.localization:text("blt_mod_state_enabled"),
 			text = managers.localization:text("blt_mod_state_enabled_desc"),
-			image = icon,
+			image = "ui/interactions/lockpick_indicator_df",
 			image_size = 96,
-			texture_rect = rect,
 			callback = callback( self, self, "clbk_toggle_enable_state" )
 		} )
 		table.insert( self._buttons, btn )
@@ -374,7 +372,6 @@ function BLTViewModGui:_setup_buttons( mod )
 
 	if self._mod:HasUpdates() then
 
-		local icon, rect = tweak_data.hud_icons:get_icon_data( "csb_pagers" )
 		btn = BLTUIButton:new( buttons_panel, {
 			x = 0,
 			y = next_row_height or 0,
@@ -382,15 +379,13 @@ function BLTViewModGui:_setup_buttons( mod )
 			h = button_h,
 			title = managers.localization:text("blt_mod_updates_enabled"),
 			text = managers.localization:text("blt_mod_updates_enabled_help"),
-			image = icon,
+			image = "ui/interactions/gui_drive_repair_df",
 			image_size = 96,
-			texture_rect = rect,
 			callback = callback( self, self, "clbk_toggle_updates_state" )
 		} )
 		table.insert( self._buttons, btn )
 		self._updates_button = btn
 
-		local icon, rect = tweak_data.hud_icons:get_icon_data( "csb_stamina" )
 		btn = BLTUIButton:new( buttons_panel, {
 			x = button_w + padding,
 			y = next_row_height or 0,
@@ -398,9 +393,8 @@ function BLTViewModGui:_setup_buttons( mod )
 			h = button_h,
 			title = managers.localization:text("blt_mod_check_for_updates"),
 			text = managers.localization:text("blt_mod_check_for_updates_desc"),
-			image = icon,
+			image = "ui/interactions/gui_brackets_df",
 			image_size = 96,
-			texture_rect = rect,
 			callback = callback( self, self, "clbk_check_for_updates" )
 		} )
 		table.insert( self._buttons, btn )
@@ -428,9 +422,11 @@ end
 function BLTViewModGui:mouse_clicked( o, button, x, y )
 
 	if button == Idstring( "0" ) then -- left click
-
+		log('xd')
 		if alive(self._back_button) and self._back_button:visible() then
+			log("aa")
 			if self._back_button:inside(x, y) then
+				log("..")
 				managers.menu:back()
 				return true
 			end
@@ -452,7 +448,7 @@ end
 
 function BLTViewModGui:mouse_moved( button, x, y )
 
-	if managers.menu_scene and managers.menu_scene:input_focus() then
+	if managers.menu_scene and managers.menu_scene.input_focus and managers.menu_scene:input_focus() then
 		return false
 	end
 
@@ -466,7 +462,7 @@ function BLTViewModGui:mouse_moved( button, x, y )
 			end
 			used, pointer = true, "link"
 		else
-			self._back_button:set_color( tweak_data.screen_colors.button_stage_3 )
+			self._back_button:set_color( tweak_data.menu.default_disabled_text_color )
 		end
 	end
 
@@ -674,6 +670,19 @@ end
 
 Hooks:Add("MenuComponentManagerInitialize", "BLTViewModGui.MenuComponentManagerInitialize", function(menu)
 	menu._active_components["blt_view_mod"] = { create = callback(menu, menu, "create_blt_view_mod_gui"), close = callback(menu, menu, "close_blt_view_mod_gui") }
+end)
+
+
+Hooks:Add("MenuComponentManagerOnMousePressed", "BLTViewModGui.MenuComponentManagerOnMousePressed", function(menu, o, button, x, y)
+	if menu._blt_view_mod_gui then
+		menu._blt_view_mod_gui:mouse_clicked(o, button, x, y)		
+	end
+end)
+
+Hooks:Add("MenuComponentManagerOnMouseMoved", "BLTViewModGui.MenuComponentManagerOnMouseMoved", function(menu, o, x, y)
+	if menu._blt_view_mod_gui then
+		menu._blt_view_mod_gui:mouse_moved(o, x, y)		
+	end
 end)
 
 function MenuComponentManager:blt_view_mod_gui()
