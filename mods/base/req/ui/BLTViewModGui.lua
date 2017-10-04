@@ -422,11 +422,8 @@ end
 function BLTViewModGui:mouse_clicked( o, button, x, y )
 
 	if button == Idstring( "0" ) then -- left click
-		log('xd')
 		if alive(self._back_button) and self._back_button:visible() then
-			log("aa")
 			if self._back_button:inside(x, y) then
-				log("..")
 				managers.menu:back()
 				return true
 			end
