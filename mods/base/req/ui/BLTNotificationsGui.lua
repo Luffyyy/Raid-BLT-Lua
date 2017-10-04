@@ -574,13 +574,12 @@ Hooks:Add("CoreMenuData.LoadDataMenu", "BLTNotificationsGui.CoreMenuData.LoadDat
 	end
 
 	for _, node in ipairs( menu ) do
-		if node.name == "main" then
-			if node.menu_components then
+		if node.menu_components then
+			if node.name == "main" then
 				node.menu_components = node.menu_components .. " blt_notifications"
-			elseif _G.CommunityChallengesGui then
-				node.menu_components = "player_profile menuscene_info new_heists game_installing debug_quicklaunch community_challenges blt_notifications"
-			else
-				node.menu_components = "player_profile menuscene_info new_heists game_installing debug_quicklaunch blt_notifications"
+			end
+			if node.name:match("blt") then
+				node.menu_components = node.menu_components .. " raid_menu_header raid_menu_footer"				
 			end
 		end
 	end

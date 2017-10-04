@@ -1,14 +1,14 @@
 
 CloneClass( ChatManager )
 
-Hooks:RegisterHook( "ChatManagerOnSendMessage" )
-function ChatManager.send_message(this, channel_id, sender, message)
-	Hooks:Call( "ChatManagerOnSendMessage", channel_id, sender, message )
-	return this.orig.send_message(this, channel_id, sender, message)
+Hooks:RegisterHook("ChatManagerOnSendMessage")
+function ChatManager:send_message(channel_id, sender, message, ...)
+	Hooks:Call("ChatManagerOnSendMessage", channel_id, sender, message)
+	return self.orig.send_message(self, channel_id, sender, message, ...)
 end
 
-Hooks:RegisterHook( "ChatManagerOnReceiveMessage" )
-function ChatManager._receive_message(this, channel_id, name, message, color, icon)
-	Hooks:Call( "ChatManagerOnReceiveMessage", channel_id, name, message, color, icon )
-	return this.orig._receive_message(this, channel_id, name, message, color, icon)
+Hooks:RegisterHook("ChatManagerOnReceiveMessage")
+function ChatManager:receive_message_by_peer(peer, some_fucking_table, message, ...)
+	Hooks:Call("ChatManagerOnReceiveMessage", 1, tostring(some_fucking_table._name), tostring(message))
+	return self.orig.receive_message_by_peer(self, peer, some_fucking_table, message, ...)
 end

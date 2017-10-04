@@ -135,17 +135,17 @@ function LuaNetworking:SendStringThroughChat(message)
 end
 
 Hooks:Add("ChatManagerOnReceiveMessage", "ChatManagerOnReceiveMessage_Network", function(channel_id, name, message, color, icon)
-
+	local LN = LuaNetworking
 	name = name:gsub( "%%", "%%%%" )
 	message = message:gsub( "%%", "%%%%" )
 	local s = string.format("[%s] %s: %s", channel_id, name, message)
 	log(s)
 
 	local senderID = nil
-	if LuaNetworking:IsMultiplayer() then
+	if LN:IsMultiplayer() then
 
 		if name == managers.network:session():local_peer():name() then
-			senderID = LuaNetworking:LocalPeerID()
+			senderID = LN:LocalPeerID()
 		end
 
 		for k, v in pairs( managers.network:session():peers() ) do
@@ -156,12 +156,15 @@ Hooks:Add("ChatManagerOnReceiveMessage", "ChatManagerOnReceiveMessage_Network", 
 
 	end
 
-	if senderID == LuaNetworking:LocalPeerID() then
+	if senderID == LN:LocalPeerID() then
 		return
 	end
 
-	if tonumber(channel_id) == LuaNetworking.HiddenChannel then
-		LuaNetworking:ProcessChatString(senderID or name, message, color, icon)
+	local splt = message:split(LuaNetworking.Split)
+	splt = splt[#splt]
+--[[tonumber(channel_id) == LuaNetworking.HiddenChannel]]
+	if splt and (splt == LN.AllPeers or splt == LN.SinglePeer or splt == LN.ExceptPeer) then --Pretty bad method but I seriously have no idea where is channel id without a decomp.
+		LN:ProcessChatString(senderID or name, message, color, icon)
 	end
 
 end)
