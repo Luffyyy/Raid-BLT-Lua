@@ -1,5 +1,5 @@
 
-BLTViewModGui = BLTViewModGui or blt_class( MenuGuiComponentGeneric )
+BLTViewModGui = BLTViewModGui or blt_class(BLTCustomMenu)
 
 local padding = 10
 
@@ -13,12 +13,6 @@ local large_font_size = tweak_data.menu.pd2_large_font_size
 local medium_font_size = tweak_data.menu.pd2_medium_font_size
 local small_font_size = tweak_data.menu.pd2_small_font_size
 
-local function make_fine_text( text )
-	local x,y,w,h = text:text_rect()
-	text:set_size( w, h )
-	text:set_position( math.round( text:x() ), math.round( text:y() ) )
-end
-
 -- attaches white corners to panel, which will align correctly when 'panel' changes size
 local function attach_corners(parent)
 	local top_left = BoxGuiObject:new( parent, { sides = { 3, 0, 3, 0 } } )
@@ -31,73 +25,13 @@ local function attach_corners(parent)
 	bottom_right:set_aligns("right", "bottom")
 end
 
-function BLTViewModGui:init( ws, fullscreen_ws, node )
-
-	self._ws = ws
-	self._fullscreen_ws = fullscreen_ws
-	self._fullscreen_panel = self._fullscreen_ws:panel():panel({})
-	self._panel = self._ws:panel():panel({})
-	self._init_layer = self._ws:panel():layer()
-
-	self._data = node:parameters().menu_component_data or {}
-	self._buttons = {}
-
-	self:_setup()
-
-end
-
-function BLTViewModGui:close()
-	self._ws:panel():remove( self._panel )
-	self._fullscreen_ws:panel():remove( self._fullscreen_panel )
+function BLTViewModGui:init(ws, fullscreen_ws, node)
+	BLTViewModGui.super.init(self, ws, fullscreen_ws, node, "blt_view_mod")
 end
 
 function BLTViewModGui:_setup()
-
-	-- Background
-	self._background = self._fullscreen_panel:rect({
-		color = Color.black,
-		alpha = 0.4,
-		layer = -1
-	})
-
-	-- Back button
-	local back_button = self._panel:text({
-		name = "back",
-		text = managers.localization:to_upper_text("footer_back"),
-		align = "right",
-		vertical = "bottom",
-		font_size = 32,
-		font = tweak_data.menu.pd2_large_font,
-		color = tweak_data.menu.default_disabled_text_color,
-		layer = 40,
-		--blend_mode = "add"
-	})
-	make_fine_text( back_button )
-	back_button:set_bottom( self._panel:h() )
-	back_button:set_visible( managers.menu:is_pc_controller() )
-	self._back_button = back_button
-
-	local bg_back = self._fullscreen_panel:text({
-		name = "back_button",
-		text = utf8.to_upper( managers.localization:text("footer_back") ),
-		h = 90,
-		align = "right",
-		vertical = "bottom",
-		--blend_mode = "add",
-		visible = false,
-		font_size = tweak_data.menu.pd2_massive_font_size,
-		font = tweak_data.menu.pd2_massive_font,
-		color = tweak_data.screen_colors.button_stage_3,
-		alpha = 0.4,
-		layer = 1
-	})
-	local x, y = managers.gui_data:safe_to_full_16_9( self._panel:child("back"):world_right(), self._panel:child("back"):world_center_y() )
-	bg_back:set_world_right( x )
-	bg_back:set_world_center_y( y )
-	bg_back:move( 13, -9 )
-
 	-- Create page info
-	self._mod = managers.menu_component:blt_mods_gui() and managers.menu_component:blt_mods_gui():inspecting_mod()
+	self._mod = managers.menu_component.blt_mods and managers.menu_component.blt_mods:inspecting_mod()
 	if self._mod then
 		self:_setup_mod_info( self._mod )
 		self:_setup_dev_info( self._mod )
@@ -125,7 +59,7 @@ function BLTViewModGui:_setup_mod_info( mod )
 		align = "left",
 		vertical = "top",
 	})
-	make_fine_text( title )
+	self:make_fine_text( title )
 	self._title = title
 
 	local version = self._panel:text({
@@ -140,7 +74,7 @@ function BLTViewModGui:_setup_mod_info( mod )
 		align = "left",
 		vertical = "top",
 	})
-	make_fine_text( version )
+	self:make_fine_text( version )
 	version:set_left( title:right() + padding )
 	version:set_bottom( title:bottom() - 4 )
 
@@ -149,24 +83,13 @@ function BLTViewModGui:_setup_mod_info( mod )
 		x = padding,
 		y = title:bottom() + padding,
 		w = self._panel:w() * 0.5 - padding * 2,
-		h = self._panel:h() - title:bottom() - padding * 2,
 	})
 	attach_corners(info_panel)
 	self._info_panel = info_panel
 
 	self._info_panel:rect({
-		color = Color.black,
-		alpha = 0.4,
+		color = tweak_data.screen_colors.button_stage_3:with_alpha(0.1),
 		layer = -1
-	})
-	self._info_panel:bitmap({
-		texture = "guis/textures/test_blur_df",
-		w = self._info_panel:w(),
-		h = self._info_panel:h(),
-		render_template = "VertexColorTexturedBlur3D",
-		layer = -1,
-		halign = "scale",
-		valign = "scale"
 	})
 
 	self._info_scroll = ScrollablePanel:new( info_panel, "info_scroll" )
@@ -204,7 +127,6 @@ function BLTViewModGui:_setup_mod_info( mod )
 			font_size = medium_font_size,
 			font = medium_font,
 			layer = 10,
-			--blend_mode = "add",
 			color = tweak_data.screen_colors.important_1,
 			text = error_str,
 			align = "left",
@@ -212,7 +134,7 @@ function BLTViewModGui:_setup_mod_info( mod )
 			wrap = true,
 			word_wrap = true,
 		})
-		make_fine_text( error_text )
+		self:make_fine_text( error_text )
 
 	end
 
@@ -225,7 +147,6 @@ function BLTViewModGui:_setup_mod_info( mod )
 		font_size = medium_font_size,
 		font = medium_font,
 		layer = 10,
-		--blend_mode = "add",
 		color = tweak_data.screen_colors.title,
 		text = mod:GetDescription(),
 		align = "left",
@@ -233,7 +154,7 @@ function BLTViewModGui:_setup_mod_info( mod )
 		wrap = true,
 		word_wrap = true,
 	})
-	make_fine_text( desc )
+	self:make_fine_text( desc )
 	if error_text then
 		desc:set_top( error_text:bottom() + padding )
 	end
@@ -247,7 +168,6 @@ function BLTViewModGui:_setup_mod_info( mod )
 		font_size = medium_font_size,
 		font = medium_font,
 		layer = 10,
-		--blend_mode = "add",
 		color = tweak_data.screen_colors.title,
 		text = managers.localization:text("blt_mod_info_author") .. ": " .. mod:GetAuthor(),
 		align = "left",
@@ -255,7 +175,7 @@ function BLTViewModGui:_setup_mod_info( mod )
 		wrap = true,
 		word_wrap = true,
 	})
-	make_fine_text( author )
+	self:make_fine_text( author )
 	author:set_top( desc:bottom() )
 
 	-- Mod contact
@@ -275,11 +195,10 @@ function BLTViewModGui:_setup_mod_info( mod )
 		wrap = true,
 		word_wrap = true,
 	})
-	make_fine_text( contact )
+	self:make_fine_text( contact )
 	contact:set_top( author:bottom() )
 
 	self._info_scroll:update_canvas_size()
-
 end
 
 function BLTViewModGui:_setup_dev_info( mod )
@@ -290,13 +209,12 @@ function BLTViewModGui:_setup_dev_info( mod )
 		w = self._panel:w() * 0.5 - padding * 2,
 		h = (self._panel:h() - self._title:bottom() + padding) * 0.5 - padding * 2,
 	})
-	dev_panel:set_bottom( self._panel:h() - padding )
+	dev_panel:set_bottom( self._panel:h() - 80 )
 	BoxGuiObject:new( dev_panel:panel({ layer = 100 }), { sides = { 1, 1, 1, 1 } } )
 	self._dev_panel = dev_panel
 
 	self._dev_panel:rect({
-		color = Color.black,
-		alpha = 0.4,
+		color = tweak_data.screen_colors.button_stage_3:with_alpha(0.1),
 		layer = -1
 	})
 	self._dev_panel:bitmap({
@@ -328,11 +246,10 @@ function BLTViewModGui:_setup_dev_info( mod )
 		wrap = true,
 		word_wrap = true,
 	})
-	make_fine_text( info )
+	self:make_fine_text( info )
 
 	self._dev_scroll:update_canvas_size()
-	self._dev_panel:set_visible( false )
-
+	self:clbk_toggle_dev_info()
 end
 
 function BLTViewModGui:_setup_buttons( mod )
@@ -358,9 +275,12 @@ function BLTViewModGui:_setup_buttons( mod )
 			y = 0,
 			w = button_w,
 			h = button_h,
+			alpha = 0.1,
+			highlight_alpha = 0.1,
 			title = managers.localization:text("blt_mod_state_enabled"),
 			text = managers.localization:text("blt_mod_state_enabled_desc"),
-			image = "ui/interactions/lockpick_indicator_df",
+			image = "ui/hud/atlas/raid_atlas",
+			image_rect = {949, 1480, 52, 52},
 			image_size = 96,
 			callback = callback( self, self, "clbk_toggle_enable_state" )
 		} )
@@ -377,9 +297,12 @@ function BLTViewModGui:_setup_buttons( mod )
 			y = next_row_height or 0,
 			w = button_w,
 			h = button_h,
+			alpha = 0.1,
+			highlight_alpha = 0.1,
 			title = managers.localization:text("blt_mod_updates_enabled"),
 			text = managers.localization:text("blt_mod_updates_enabled_help"),
-			image = "ui/interactions/gui_drive_repair_df",
+			image = "ui/hud/atlas/raid_atlas",
+			image_rect = {891, 1285, 64, 64},
 			image_size = 96,
 			callback = callback( self, self, "clbk_toggle_updates_state" )
 		} )
@@ -391,9 +314,12 @@ function BLTViewModGui:_setup_buttons( mod )
 			y = next_row_height or 0,
 			w = button_w,
 			h = button_h,
+			alpha = 0.1,
+			highlight_alpha = 0.1,
 			title = managers.localization:text("blt_mod_check_for_updates"),
 			text = managers.localization:text("blt_mod_check_for_updates_desc"),
-			image = "ui/interactions/gui_brackets_df",
+			image = "ui/atlas/raid_atlas_skills",
+			image_rect = {242, 866, 64, 64},
 			image_size = 96,
 			callback = callback( self, self, "clbk_check_for_updates" )
 		} )
@@ -409,6 +335,8 @@ function BLTViewModGui:_setup_buttons( mod )
 		y = (next_row_height or 0),
 		w = button_w,
 		h = button_h * 0.5,
+		alpha = 0.1,
+		highlight_alpha = 0.1,
 		title = managers.localization:text("blt_mod_toggle_dev"),
 		text = managers.localization:text("blt_mod_toggle_dev_desc"),
 		callback = callback( self, self, "clbk_toggle_dev_info" )
@@ -418,79 +346,40 @@ function BLTViewModGui:_setup_buttons( mod )
 end
 
 --------------------------------------------------------------------------------
-
-function BLTViewModGui:mouse_clicked( o, button, x, y )
-
-	if button == Idstring( "0" ) then -- left click
-		if alive(self._back_button) and self._back_button:visible() then
-			if self._back_button:inside(x, y) then
-				managers.menu:back()
-				return true
-			end
-		end
-
-		for _, item in ipairs( self._buttons ) do
-			if item:inside( x, y ) then
-				if item:parameters().callback then
-					item:parameters().callback()
-				end
-				managers.menu_component:post_event( "menu_enter" )
-				return true
-			end
-		end
-
-	end
-
-end
-
-function BLTViewModGui:mouse_moved( button, x, y )
-
-	if managers.menu_scene and managers.menu_scene.input_focus and managers.menu_scene:input_focus() then
-		return false
-	end
-
-	local used, pointer
-
-	if alive(self._back_button) and self._back_button:visible() then
-		if self._back_button:inside(x, y) then
-			if self._back_button:color() ~= tweak_data.screen_colors.button_stage_2 then
-				self._back_button:set_color( tweak_data.screen_colors.button_stage_2 )
-				managers.menu_component:post_event( "highlight" )
-			end
-			used, pointer = true, "link"
-		else
-			self._back_button:set_color( tweak_data.menu.default_disabled_text_color )
-		end
-	end
-
-	for _, item in ipairs( self._buttons ) do
-		if not used and item:inside( x, y ) then
-			item:set_highlight( true )
-			used, pointer = true, "link"
-		else
-			item:set_highlight( false )
-		end
-	end
-
-	return used, pointer
-
-end
-
-function BLTViewModGui:mouse_wheel_up( x, y )
+function BLTViewModGui:mouse_pressed(o, button, x, y)
+	BLTViewModGui.super.mouse_pressed(self, o, button, x, y)
+	local dir = button == Idstring("mouse wheel down") and -1 or button == Idstring("mouse wheel up") and 1
 	if alive(self._info_scroll) then
-		self._info_scroll:scroll( x, y, 1 )
+		self._info_scroll:mouse_pressed(button, x, y)
+		if dir then			
+			self._info_scroll:scroll(x, y, dir)
+		end
 	end
 	if alive(self._dev_scroll) then
-		self._dev_scroll:scroll( x, y, 1 )
+		self._dev_scroll:mouse_pressed(button, x, y)
+		if dir then				
+			self._dev_scroll:scroll(x, y, dir)
+		end
 	end
 end
 
-function BLTViewModGui:mouse_wheel_down( x, y )
+function BLTViewModGui:mouse_moved(o, x, y)
+	BLTViewModGui.super.mouse_moved(self, o, x, y)	
 	if alive(self._info_scroll) then
-		self._info_scroll:scroll( x, y, -1 )
+		self._info_scroll:mouse_moved(nil, x, y)
 	end
 	if alive(self._dev_scroll) then
-		self._dev_scroll:scroll( x, y, -1 )
+		self._dev_scroll:mouse_moved(nil, x, y)
+	end
+end
+
+function BLTViewModGui:mouse_released(o, button, x, y)
+	BLTViewModGui.super.mouse_released(self, o, button, x, y)
+	if alive(self._info_scroll) then
+		self._info_scroll:mouse_released(button, x, y)
+	end
+	if alive(self._dev_scroll) then
+		self._dev_scroll:mouse_released(button, x, y)
 	end
 end
 
@@ -593,7 +482,7 @@ function BLTViewModGui:clbk_check_for_updates_finished( cache )
 end
 
 function BLTViewModGui:clbk_goto_download_manager()
-	managers.menu:open_node( "blt_download_manager" )
+	managers.raid_menu:open_menu( "blt_download_manager" )
 end
 
 function BLTViewModGui:clbk_toggle_dev_info()
@@ -603,7 +492,7 @@ function BLTViewModGui:clbk_toggle_dev_info()
 	if show_dev then
 		self._info_panel:set_h(self._dev_panel:top() - self._title:bottom() - padding * 2)
 	else
-		self._info_panel:set_h(self._panel:h() - self._title:bottom() - padding * 2)
+		self._info_panel:set_h(self._dev_panel:bottom() - 69) -- nice
 	end
 	self._info_scroll:set_size(self._info_panel:size())
 	self._info_scroll:update_canvas_size()
@@ -665,66 +554,10 @@ end
 --------------------------------------------------------------------------------
 -- Patch MenuComponentManager to create the BLT Mods component
 
-Hooks:Add("MenuComponentManagerInitialize", "BLTViewModGui.MenuComponentManagerInitialize", function(menu)
-	menu._active_components["blt_view_mod"] = { create = callback(menu, menu, "create_blt_view_mod_gui"), close = callback(menu, menu, "close_blt_view_mod_gui") }
+Hooks:Add("MenuComponentManagerInitialize", "BLTViewModGui.MenuComponentManagerInitialize", function(self)
+	RaidMenuHelper:CreateMenu({
+		name = "blt_view_mod",
+		back_callback = "perform_blt_save",
+		class = BLTViewModGui
+	})
 end)
-
-
-Hooks:Add("MenuComponentManagerOnMousePressed", "BLTViewModGui.MenuComponentManagerOnMousePressed", function(menu, o, button, x, y)
-	if menu._blt_view_mod_gui then
-		menu._blt_view_mod_gui:mouse_clicked(o, button, x, y)		
-	end
-end)
-
-Hooks:Add("MenuComponentManagerOnMouseMoved", "BLTViewModGui.MenuComponentManagerOnMouseMoved", function(menu, o, x, y)
-	if menu._blt_view_mod_gui then
-		menu._blt_view_mod_gui:mouse_moved(o, x, y)		
-	end
-end)
-
-function MenuComponentManager:blt_view_mod_gui()
-	return self._blt_view_mod_gui
-end
-
-function MenuComponentManager:create_blt_view_mod_gui( node )
-	if not node then
-		return
-	end
-	self._blt_view_mod_gui = self._blt_view_mod_gui or BLTViewModGui:new( self._ws, self._fullscreen_ws, node )
-	--self:register_component( "blt_view_mod_gui", self._blt_view_mod_gui )
-end
-
-function MenuComponentManager:close_blt_view_mod_gui()
-	if self._blt_view_mod_gui then
-		self._blt_view_mod_gui:close()
-		self._blt_view_mod_gui = nil
-		--self:unregister_component( "blt_view_mod_gui" )
-	end
-end
-
---------------------------------------------------------------------------------
--- Create the menu node for the BLT Mods menu
-
-Hooks:Add("CoreMenuData.LoadDataMenu", "BLTViewModGui.CoreMenuData.LoadDataMenu", function( menu_id, menu )
-
-	if menu_id ~= "start_menu" then
-		return
-	end
-
-	local new_node = {
-		["_meta"] = "node",
-		["name"] = "view_blt_mod",
-		["menu_components"] = "blt_view_mod",
-		["back_callback"] = "perform_blt_save",
-		["no_item_parent"] = true,
-		["no_menu_wrapper"] = true,
-		["scene_state"] = "crew_management",
-		[1] = {
-			["_meta"] = "default_item",
-			["name"] = back
-		}
-	}
-	table.insert( menu, new_node )
-
-end)
-

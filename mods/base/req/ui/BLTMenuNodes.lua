@@ -9,11 +9,6 @@ local function add_blt_mods_node( menu )
 		name = "blt_mods",
 		back_callback = "perform_blt_save close_blt_mods",
 		menu_components = "blt_mods",
-		scene_state = "crew_management",
-		[1] = {
-			["_meta"] = "default_item",
-			["name"] = "back"
-		}
 	}
 	table.insert( menu, new_node )
 
@@ -133,67 +128,6 @@ end
 
 -- Add the menu nodes for various menus
 Hooks:Add("CoreMenuData.LoadDataMenu", "BLT.CoreMenuData.LoadDataMenu", function( menu_id, menu )
-
-	-- Create menu items
-	local menu_item_divider = {
-		_meta = "item",
-		name = "blt_divider",
-		type = "MenuItemDivider",
-		no_text = true,
-		size = 8,
-	}
-
-	local menu_item_options = {
-		_meta = "item",
-		name = "blt_options",
-		text_id = "blt_options_menu_lua_mod_options",
-		help_id = "blt_options_menu_lua_mod_options_desc",
-		next_node = "blt_options",
-	}
-
-	local menu_item_mods = {
-		_meta = "item",
-		name = "blt_mods_new",
-		text_id = "blt_options_menu_blt_mods",
-		help_id = "blt_options_menu_blt_mods_desc",
-		next_node = "blt_mods",
-	}
-
-	local menu_item_keybinds = {
-		_meta = "item",
-		name = "blt_keybinds",
-		text_id = "blt_options_menu_keybinds",
-		help_id = "blt_options_menu_keybinds_desc",
-		visible_callback = "blt_show_keybinds_item",
-		next_node = "blt_keybinds",
-	}
-
-	-- Inject menu nodes and items
-	if menu_id == "start_menu" then
-
-		add_blt_mods_node( menu )
-		local options_node = add_blt_options_node( menu )
-		Hooks:Call( "BLTOnBuildOptions", options_node ) -- All mods to hook into the options menu to add items
-		add_blt_keybinds_node( menu )
-		add_blt_downloads_node( menu )
-		inject_menu_options( menu, "options", "quickplay_settings", {
-			menu_item_divider,
-			menu_item_mods,
-			menu_item_options,
-			menu_item_keybinds
-		} )
-
-	elseif menu_id == "pause_menu" then
-
-		local options_node = add_blt_options_node( menu )
-		Hooks:Call( "BLTOnBuildOptions", options_node ) -- All mods to hook into the options menu to add items
-		add_blt_keybinds_node( menu )
-		inject_menu_options( menu, "options", "ban_list", {
-			menu_item_divider,
-			menu_item_options,
-			menu_item_keybinds
-		} )
-
-	end
+ 
 
 end)

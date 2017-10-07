@@ -37,8 +37,7 @@ function BLTUIButton:init( panel, parameters )
 	-- Background
 	self._background = self._panel:rect({
 		color =	parameters.color or tweak_data.screen_colors.button_stage_3,
-		alpha = 0.4,
-		--blend_mode = "add",
+		alpha = parameters.alpha or 0.6,
 		layer = -1
 	})
 	BoxGuiObject:new( self._panel, { sides = { 1, 1, 1, 1 } } )
@@ -58,8 +57,7 @@ function BLTUIButton:init( panel, parameters )
 		font_size = medium_font_size,
 		font = medium_font,
 		layer = 10,
-		--blend_mode = "add",
-		color = tweak_data.screen_colors.title,
+		color = self._background:color():with_alpha(parameters.highlight_alpha or 0.8):contrast(),
 		text = parameters.title or "",
 		align = "center",
 		vertical = "top",
@@ -81,8 +79,7 @@ function BLTUIButton:init( panel, parameters )
 		font_size = small_font_size,
 		font = small_font,
 		layer = 10,
-		--blend_mode = "add",
-		color = tweak_data.screen_colors.title,
+		color = title:color(),
 		text = parameters.text or "",
 		align = "center",
 		vertical = "top",
@@ -103,17 +100,14 @@ function BLTUIButton:init( panel, parameters )
 		local image = self._panel:bitmap({
 			name = "image",
 			texture = parameters.image,
-			color = Color.white,
+			texture_rect = parameters.image_rect,
+			color = parameters.color_image and title:color(),
 			layer = 10,
 			w = parameters.image_size or 64,
 			h = parameters.image_size or 64,
 		})
 		image:set_center_x( self._panel:w() * 0.5 )
 		image:set_top( padding )
-		if parameters.texture_rect then
-			image:set_texture_rect( unpack( parameters.texture_rect ) )
-		end
-
 	end
 
 end
@@ -145,7 +139,7 @@ end
 function BLTUIButton:set_highlight( enabled, no_sound )
 	if self._enabled ~= enabled then
 		self._enabled = enabled
-		self._background:set_color( enabled and tweak_data.screen_colors.button_stage_2 or (self:parameters().color or tweak_data.screen_colors.button_stage_3) )
+		self._background:set_alpha( enabled and (self._parameters.highlight_alpha or 0.8) or (self._parameters.alpha or 0.6) )
 		if enabled and not no_sound then
 			managers.menu_component:post_event( "highlight" )
 		end
@@ -177,34 +171,21 @@ function BLTDownloadControl:init( panel, parameters )
 	self._download_panel:set_right( self._panel:w() )
 
 	self._background = self._download_panel:rect({
-		color =	parameters.color or tweak_data.screen_colors.button_stage_3,
-		alpha = 0.4,
-		--blend_mode = "add",
+		color =	parameters.color or tweak_data.screen_colors.button_stage_2,
+		alpha = 0.8,
 		layer = -1
 	})
-	BoxGuiObject:new( self._download_panel, { sides = { 1, 1, 1, 1 } } )
-
-	self._download_panel:bitmap({
-		texture = "guis/textures/test_blur_df",
-		w = self._download_panel:w(),
-		h = self._download_panel:h(),
-		render_template = "VertexColorTexturedBlur3D",
-		layer = -1,
-		halign = "scale",
-		valign = "scale"
-	})
+	local text_color = self._background:color():contrast()
 
 	local image = self._download_panel:bitmap({
 		name = "image",
-		texture = "ui/interactions/gui_drive_repair_df",
-		color = Color.white,
+		texture = "ui/atlas/raid_atlas_missions",
+		rotation = 180,
+		texture_rect = {120, 244, 52, 52},
+		color = text_color,
 		layer = 10,
-		x = padding,
-		y = padding,
-		w = self._download_panel:w() - padding * 2,
-		h = self._download_panel:w() - padding * 2,
 	})
-
+	image:set_world_center(self._download_panel:world_center())
 	-- Patch notes button panel
 	self._patch_panel = self._panel:panel({
 		w = math.min( self._panel:w() * 0.25, self._panel:h() ),
@@ -213,9 +194,8 @@ function BLTDownloadControl:init( panel, parameters )
 	self._patch_panel:set_right( self._download_panel:x() - padding )
 
 	self._patch_background = self._patch_panel:rect({
-		color =	parameters.color or tweak_data.screen_colors.button_stage_3,
-		alpha = 0.4,
-		--blend_mode = "add",
+		color =	parameters.color or tweak_data.screen_colors.button_stage_2,
+		alpha = 0.8,
 		layer = -1
 	})
 	BoxGuiObject:new( self._patch_panel, { sides = { 1, 1, 1, 1 } } )
@@ -224,8 +204,7 @@ function BLTDownloadControl:init( panel, parameters )
 		font_size = small_font_size,
 		font = small_font,
 		layer = 10,
-		--blend_mode = "add",
-		color = tweak_data.screen_colors.title,
+		color = text_color,
 		text = managers.localization:text("blt_view_patch_notes"),
 		align = "center",
 		vertical = "center",
@@ -240,15 +219,14 @@ function BLTDownloadControl:init( panel, parameters )
 		w = self._panel:w() - self._download_panel:w() - self._patch_panel:w() - padding * 2,
 	})
 
-	self._info_panel:bitmap({
-		texture = "guis/textures/test_blur_df",
-		w = self._panel:w(),
-		h = self._panel:h(),
-		render_template = "VertexColorTexturedBlur3D",
+	self._info_panel:rect({
+		name = "background",
+		color = Color.white:with_alpha(0.1),
 		layer = -1,
 		halign = "scale",
 		valign = "scale"
 	})
+
 	BoxGuiObject:new( self._info_panel, { sides = { 1, 1, 1, 1 } } )
 
 	local download_name = parameters.update:GetName() or "No Name"
@@ -267,7 +245,6 @@ function BLTDownloadControl:init( panel, parameters )
 		local image = self._info_panel:bitmap({
 			name = "image",
 			texture = image_path,
-			color = Color.white,
 			layer = 10,
 			x = padding,
 			y = padding,
@@ -290,8 +267,6 @@ function BLTDownloadControl:init( panel, parameters )
 			font_size = small_font_size * 0.8,
 			font = small_font,
 			layer = 10,
-			--blend_mode = "add",
-			color = tweak_data.screen_colors.title,
 			text = managers.localization:text("blt_no_image"),
 			align = "center",
 			vertical = "center",
@@ -307,8 +282,6 @@ function BLTDownloadControl:init( panel, parameters )
 		font_size = medium_font_size,
 		font = medium_font,
 		layer = 10,
-		--blend_mode = "add",
-		color = parameters.update:IsCritical() and tweak_data.screen_colors.important_1 or tweak_data.screen_colors.title,
 		text = download_name,
 		align = "left",
 		vertical = "top",
@@ -323,8 +296,6 @@ function BLTDownloadControl:init( panel, parameters )
 		font_size = small_font_size,
 		font = small_font,
 		layer = 10,
-		--blend_mode = "add",
-		color = tweak_data.screen_colors.title,
 		alpha = 0.8,
 		text = managers.localization:text("blt_download_ready"),
 		align = "left",
@@ -341,8 +312,6 @@ function BLTDownloadControl:init( panel, parameters )
 		font_size = large_font_size,
 		font = large_font,
 		layer = 10,
-		--blend_mode = "add",
-		color = tweak_data.screen_colors.title,
 		text = "100%",
 		align = "right",
 		vertical = "center",
@@ -357,7 +326,6 @@ function BLTDownloadControl:init( panel, parameters )
 	self._download_progress_bg = self._info_panel:rect({
 		color = tweak_data.screen_colors.button_stage_2,
 		alpha = 0.4,
-		--blend_mode = "add",
 		layer = -1
 	})
 	self._download_progress_bg:set_w( 0 )
@@ -376,7 +344,7 @@ function BLTDownloadControl:mouse_moved( button, x, y )
 
 	local inside_download = self._download_panel:inside( x, y )
 	if self._highlight_download ~= inside_download then
-		self._background:set_color( inside_download and tweak_data.screen_colors.button_stage_2 or (self:parameters().color or tweak_data.screen_colors.button_stage_3) )
+		self._background:set_color( inside_download and tweak_data.screen_colors.button_stage_2 or (self:parameters().color or tweak_data.screen_colors.button_stage_2) )
 		if inside_download and not no_sound then
 			managers.menu_component:post_event( "highlight" )
 		end
@@ -385,7 +353,7 @@ function BLTDownloadControl:mouse_moved( button, x, y )
 
 	local inside_patch = self._patch_panel:inside( x, y )
 	if self._highlight_patch ~= inside_patch then
-		self._patch_background:set_color( inside_patch and tweak_data.screen_colors.button_stage_2 or (self:parameters().color or tweak_data.screen_colors.button_stage_3) )
+		self._patch_background:set_color( inside_patch and tweak_data.screen_colors.button_stage_2 or (self:parameters().color or tweak_data.screen_colors.button_stage_2) )
 		if inside_patch and not no_sound then
 			managers.menu_component:post_event( "highlight" )
 		end
@@ -470,8 +438,8 @@ end
 
 function BLTDownloadControl:_update_download( download, percent )
 	local macros = {
-		bytes = managers.experience:cash_string(download.bytes, ""),
-		total_bytes = managers.experience:cash_string(download.total_bytes, "")
+		bytes = tostring(download.bytes),
+		total_bytes = tostring(download.total_bytes)
 	}
 	self._download_state:set_text( managers.localization:text("blt_download_downloading", macros) )
 	self._download_progress:set_visible( true )

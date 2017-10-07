@@ -37,7 +37,7 @@ function BLTModDependency:DisallowsUpdate()
 end
 
 function BLTModDependency:GetInstallDirectory()
-	return "mods/"
+	return self.load_dir
 end
 
 function BLTModDependency:Retrieve( clbk )

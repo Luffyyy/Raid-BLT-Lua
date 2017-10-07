@@ -1,6 +1,6 @@
 
 -- BLT Mod
-BLTMod = blt_class()
+BLTMod = BLTMod or blt_class()
 BLTMod.enabled = true
 BLTMod._enabled = true
 BLTMod.path = ""
@@ -13,7 +13,7 @@ BLTMod.author = "Unknown"
 BLTMod.contact = "N/A"
 BLTMod.priority = 0
 
-function BLTMod:init( ident, data )
+function BLTMod:init( path, ident, data )
 
 	assert( ident, "BLTMods can not be created without a mod identifier!" )
 	assert( data, "BLTMods can not be created without json data!" )
@@ -23,7 +23,8 @@ function BLTMod:init( ident, data )
 	-- Mod information
 	self.json_data = data
 	self.id = ident
-	self.path = string.format("mods/%s/", ident)
+	self.load_dir = path
+	self.path = string.format("%s/%s/", path, ident)
 	self.name = data["name"] or "Error: No Name!"
 	self.desc = data["description"] or self.desc
 	self.version = data["version"] or self.version

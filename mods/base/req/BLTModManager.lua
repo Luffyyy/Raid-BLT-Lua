@@ -61,13 +61,21 @@ function BLTModManager:RunAutoCheckForUpdates()
 end
 
 function BLTModManager:_RunAutoCheckForUpdates()
-
+	self._updates_notification = BLT.Notifications:add_notification( {
+		title = managers.localization:text("blt_checking_updates"),
+		text = managers.localization:text("blt_checking_updates_help"),
+		icon = "ui/hud/atlas/raid_atlas",
+		icon_texture_rect = {891, 1285, 64, 64},
+		color = Color.white,
+		priority = 1000,
+	} )
 	-- Place a notification that we're checking for autoupdates
 	if BLT.Notifications then 
 		self._updates_notification = BLT.Notifications:add_notification( {
 			title = managers.localization:text("blt_checking_updates"),
 			text = managers.localization:text("blt_checking_updates_help"),
-			icon = "ui/interactions/gui_drive_repair_df",
+			icon = "ui/hud/atlas/raid_atlas",
+			icon_texture_rect = {891, 1285, 64, 64},
 			color = Color.white,
 			priority = 1000,
 		} )
@@ -122,7 +130,8 @@ function BLTModManager:clbk_got_update( update, required, reason )
 			self._updates_notification = BLT.Notifications:add_notification( {
 				title = managers.localization:text("blt_checking_updates_required"),
 				text = managers.localization:text("blt_checking_updates_required_help"),
-				icon = "ui/interactions/gui_drive_repair_df",
+				icon = "ui/hud/atlas/raid_atlas",
+				icon_texture_rect = {891, 1285, 64, 64},
 				color = Color.white,
 				priority = 1000,
 			} )
@@ -132,7 +141,8 @@ function BLTModManager:clbk_got_update( update, required, reason )
 			self._updates_notification = BLT.Notifications:add_notification( {
 				title = managers.localization:text("blt_checking_updates_none_required"),
 				text = managers.localization:text("blt_checking_updates_none_required_help"),
-				icon = "ui/interactions/gui_drive_repair_df",
+				icon = "ui/hud/atlas/raid_atlas",
+				icon_texture_rect = {891, 1285, 64, 64},
 				color = Color.white,
 				priority = 0,
 			} )
@@ -268,17 +278,18 @@ end
 --------------------------------------------------------------------------------
 
 BLTModManager.Constants = BLTModManager.Constants or {
-	["mods_directory"] = "mods/",
-	["lua_base_directory"] = "base/",
-	["downloads_directory"] = "downloads/",
-	["logs_directory"] = "logs/",
-	["saves_directory"] = "saves/",
+	mods_directory = "mods/",
+	mod_overrides_directory = "assets/mod_overrides/",
+	lua_base_directory = "base/",
+	downloads_directory = "downloads/",
+	logs_directory = "logs/",
+	saves_directory = "saves/",
 }
 BLTModManager.Constants.ExcludedModDirectories = {
-	["logs"] = true,
-	["saves"] = true,
-	["downloads"] = true,
-	["_temp"] = true,
+	logs = true,
+	saves = true,
+	downloads = true,
+	_temp = true,
 }
 BLTModManager.Constants.required_script_global = "RequiredScript"
 BLTModManager.Constants.mod_path_global = "ModPath"

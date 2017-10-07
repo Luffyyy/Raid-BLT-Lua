@@ -365,3 +365,54 @@ function string.blt_split(str, delim, maxNb)
 	return result
 
 end
+
+--Ported from BeardLib, really useful at some cases.
+Color = Color or {}
+function Color:from_hex(hex)
+    if not hex or type(hex) ~= "string" then
+        log(debug.traceback())
+        return Color()
+    end
+    if hex:match("#") then
+        hex = hex:sub(2)
+    end
+    local col = {}
+    for i=1,8,2 do
+        local num = tonumber(hex:sub(i, i+1), 16)
+        if num then
+            table.insert(col, num / 255)
+        end
+    end
+    return Color(unpack(col))
+end
+
+function Color:to_hex()
+    local s = "%x"
+    local result = ""
+    for _, v in pairs({self.a < 1 and self.a or nil,self.r,self.g,self.b}) do
+        local hex = s:format(255*v)
+        if hex:len() == 0 then hex = "00" end
+        if hex:len() == 1 then hex = "0"..hex end
+        result = result .. hex
+    end
+    return result
+end
+
+function Color:contrast(alpha, white, black)
+	alpha = alpha or self.a
+    local col = {r = self.r * alpha, g = self.g * alpha, b = self.b * alpha}
+
+    for k, c in pairs(col) do
+        if c <= 0.03928 then 
+            col[k] = c/12.92 
+        else 
+            col[k] = ((c+0.055)/1.055) ^ 2.4 
+        end
+    end
+    local L = 0.2126 * col.r + 0.7152 * col.g + 0.0722 * col.b
+    local color = white or Color.white
+    if L > 0.179 then
+        color = black or Color.black 
+    end
+    return color
+end

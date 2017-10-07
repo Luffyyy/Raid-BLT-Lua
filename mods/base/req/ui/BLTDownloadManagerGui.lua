@@ -1,43 +1,19 @@
 
-BLTDownloadManagerGui = BLTDownloadManagerGui or blt_class( MenuGuiComponentGeneric )
+BLTDownloadManagerGui = BLTDownloadManagerGui or blt_class(BLTCustomMenu)
 
 local padding = 10
-
 local massive_font = tweak_data.menu.pd2_massive_font
 local large_font = tweak_data.menu.pd2_large_font
-local medium_font = tweak_data.menu.pd2_medium_font
-local small_font = tweak_data.menu.pd2_small_font
-
 local massive_font_size = tweak_data.menu.pd2_massive_font_size
 local large_font_size = tweak_data.menu.pd2_large_font_size
-local medium_font_size = tweak_data.menu.pd2_medium_font_size
-local small_font_size = tweak_data.menu.pd2_small_font_size
 
-local function make_fine_text( text )
-	local x,y,w,h = text:text_rect()
-	text:set_size( w, h )
-	text:set_position( math.round( text:x() ), math.round( text:y() ) )
-end
-
-function BLTDownloadManagerGui:init( ws, fullscreen_ws, node )
-
-	self._ws = ws
-	self._fullscreen_ws = fullscreen_ws
-	self._fullscreen_panel = self._fullscreen_ws:panel():panel({})
-	self._panel = self._ws:panel():panel({})
-	self._init_layer = self._ws:panel():layer()
-
-	self._data = node:parameters().menu_component_data or {}
-	self._buttons = {}
+function BLTDownloadManagerGui:init(ws, fullscreen_ws, node)
 	self._downloads_map = {}
-
-	self:_setup()
-
+	BLTDownloadManagerGui.super.init(self, ws, fullscreen_ws, node, "blt_download_manager")
 end
 
 function BLTDownloadManagerGui:close()
-	self._ws:panel():remove( self._panel )
-	self._fullscreen_ws:panel():remove( self._fullscreen_panel )
+	BLTDownloadManagerGui.super.close(self)
 	BLT.Downloads:flush_complete_downloads()
 end
 
@@ -50,42 +26,6 @@ function BLTDownloadManagerGui:_setup()
 		layer = -1
 	})
 
-	-- Back button
-	local back_button = self._panel:text({
-		name = "back",
-		text = managers.localization:to_upper_text("footer_back"),
-		align = "right",
-		vertical = "bottom",
-		font_size = 32,
-		font = tweak_data.menu.pd2_large_font,
-		color = tweak_data.menu.default_disabled_text_color,
-		layer = 40,
-		--blend_mode = "add"
-	})
-	make_fine_text( back_button )
-	back_button:set_bottom( self._panel:h())
-	back_button:set_visible( managers.menu:is_pc_controller() )
-	self._back_button = back_button
-
-	local bg_back = self._fullscreen_panel:text({
-		name = "back_button",
-		text = utf8.to_upper( managers.localization:text("footer_back") ),
-		h = 90,
-		align = "right",
-		vertical = "bottom",
-		--blend_mode = "add",
-		visible = false,
-		font_size = tweak_data.menu.pd2_massive_font_size,
-		font = tweak_data.menu.pd2_massive_font,
-		color = tweak_data.screen_colors.button_stage_3,
-		alpha = 0.4,
-		layer = 1
-	})
-	local x, y = managers.gui_data:safe_to_full_16_9( self._panel:child("back"):world_right(), self._panel:child("back"):world_center_y() )
-	bg_back:set_world_right( x )
-	bg_back:set_world_center_y( y )
-	bg_back:move( 13, -9 )
-
 	-- Title
 	local title = self._panel:text({
 		name = "title",
@@ -93,9 +33,9 @@ function BLTDownloadManagerGui:_setup()
 		y = padding,
 		font_size = large_font_size,
 		font = large_font,
+		visible = false,
 		h = large_font_size,
 		layer = 10,
-		--blend_mode = "add",
 		color = tweak_data.screen_colors.title,
 		text = managers.localization:text("blt_download_manager"),
 		align = "left",
@@ -104,11 +44,11 @@ function BLTDownloadManagerGui:_setup()
 
 	-- Download scroll panel
 	local scroll_panel = self._panel:panel({
-		h = self._panel:h() - large_font_size - back_button:h() - padding * 2,
+		h = self._panel:h() - large_font_size - padding * 2,
 		y = large_font_size + padding,
 	})
-	BoxGuiObject:new( scroll_panel:panel({layer=100}), { sides = { 1, 1, 1, 1 } })
-	BoxGuiObject:new( scroll_panel:panel({layer=100}), { sides = { 1, 1, 2, 2 } })
+	BoxGuiObject:new(scroll_panel:panel({layer=100}), { sides = { 1, 1, 1, 1 } })
+	BoxGuiObject:new(scroll_panel:panel({layer=100}), { sides = { 1, 1, 2, 2 } })
 
 	self._scroll = ScrollablePanel:new( scroll_panel, "downloads_scroll", {} )
 
@@ -155,8 +95,7 @@ end
 
 --------------------------------------------------------------------------------
 
-function BLTDownloadManagerGui:update( t, dt )
-
+function BLTDownloadManagerGui:update(t, dt)
 	for _, download in ipairs( BLT.Downloads:downloads() ) do
 		local id = download.update:GetId()
 		local button = self._downloads_map[ id ]
@@ -164,130 +103,14 @@ function BLTDownloadManagerGui:update( t, dt )
 			button:update_download( download )
 		end
 	end
-
 end
 
-function BLTDownloadManagerGui:mouse_clicked( o, button, x, y )
-
-	local result = false 
-	
-	for _, item in ipairs( self._buttons ) do 
-	   if item:inside( x, y ) then 
-		 if item.mouse_clicked then 
-		   result = item:mouse_clicked( button, x, y ) 
-		 end 
-		 break 
-	   end 
-	end 
-	
-	if button == Idstring( "0" ) then 
-	
-		if alive(self._back_button) and self._back_button:visible() then
-			if self._back_button:inside(x, y) then
-				managers.menu:back()
-				return true
-			end
-		end
-
-		for _, item in ipairs( self._buttons ) do
-			if item:inside( x, y ) then
-				if item:parameters().callback then
-					item:parameters().callback()
-				end
-				managers.menu_component:post_event( "menu_enter" )
-				return true
-			end
-		end
-
-	end
-	
-	return result
-	
-end
-
-function BLTDownloadManagerGui:mouse_moved( button, x, y )
-
-	if managers.menu_scene and managers.menu_scene.input_focus and managers.menu_scene:input_focus() then
-		return false
-	end
-
-	local used, pointer
-
-	if alive(self._back_button) and self._back_button:visible() then
-		if self._back_button:inside(x, y) then
-			if self._back_button:color() ~= tweak_data.screen_colors.button_stage_2 then
-				self._back_button:set_color( tweak_data.screen_colors.button_stage_2 )
-				managers.menu_component:post_event( "highlight" )
-			end
-			used, pointer = true, "link"
-		else
-			self._back_button:set_color( tweak_data.menu.default_disabled_text_color )
-		end
-	end
-
-	for _, item in ipairs( self._buttons ) do
-		if item.mouse_moved then
-			item:mouse_moved( button, x, y )
-		end
-		if not used and item:inside( x, y ) then
-			item:set_highlight( true )
-			used, pointer = true, "link"
-		else
-			item:set_highlight( false )
-		end
-	end
-
-	return used, pointer
-
-end
-
-function BLTDownloadManagerGui:mouse_wheel_up( x, y )
-	if alive(self._scroll) then
-		self._scroll:scroll( x, y, 1 )
-	end
-end
-
-function BLTDownloadManagerGui:mouse_wheel_down( x, y )
-	if alive(self._scroll) then
-		self._scroll:scroll( x, y, -1 )
-	end
-end
-
---------------------------------------------------------------------------------
+-------------------------------------------------------------------------------
 -- Patch MenuComponentManager to create the BLT Download Manager component
-
-Hooks:Add("MenuComponentManagerInitialize", "BLTDownloadManagerGui.MenuComponentManagerInitialize", function(menu)
-	menu._active_components["blt_download_manager"] = { create = callback(menu, menu, "create_blt_downloads_gui"), close = callback(menu, menu, "close_blt_downloads_gui") }
+Hooks:Add("MenuComponentManagerInitialize", "BLTDownloadManagerGui.MenuComponentManagerInitialize", function(self)
+	RaidMenuHelper:CreateMenu({
+		name = "blt_download_manager",
+		back_callback = "perform_blt_save",
+		class = BLTDownloadManagerGui
+	})
 end)
-
-Hooks:Add("MenuComponentManagerOnMousePressed", "BLTDownloadManagerGui.MenuComponentManagerOnMousePressed", function(menu, o, button, x, y)
-	if menu._blt_downloads_gui then
-		menu._blt_downloads_gui:mouse_clicked(o, button, x, y)		
-	end
-end)
-
-Hooks:Add("MenuComponentManagerOnMouseMoved", "BLTDownloadManagerGui.MenuComponentManagerOnMouseMoved", function(menu, o, x, y)
-	if menu._blt_downloads_gui then
-		menu._blt_downloads_gui:mouse_moved(o, x, y)		
-	end
-end)
-
-function MenuComponentManager:blt_downloads_gui()
-	return self._blt_downloads_gui
-end
-
-function MenuComponentManager:create_blt_downloads_gui( node )
-	if not node then
-		return
-	end
-	self._blt_downloads_gui = self._blt_downloads_gui or BLTDownloadManagerGui:new( self._ws, self._fullscreen_ws, node )
-	--self:register_component( "blt_downloads_gui", self._blt_downloads_gui )
-end
-
-function MenuComponentManager:close_blt_downloads_gui()
-	if self._blt_downloads_gui then
-		self._blt_downloads_gui:close()
-		self._blt_downloads_gui = nil
-		--self:unregister_component( "blt_downloads_gui" )
-	end
-end

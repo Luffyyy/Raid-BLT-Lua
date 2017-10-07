@@ -17,7 +17,7 @@ function BLTUpdate:init( parent_mod, data )
 	self.parent_mod = parent_mod
 	self.id = data["identifier"]
 	self.name = data["display_name"] or parent_mod:GetName()
-	self.dir = data["install_dir"] or "mods/"
+	self.dir = data["install_dir"] or self.load_dir or "mods/"
 	self.folder = data["install_folder"] or parent_mod:GetId()
 	self.disallow_update = data["disallow_update"] or false
 	self.hash_file = data["hash_file"] or false

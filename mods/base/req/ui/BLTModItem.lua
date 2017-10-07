@@ -159,7 +159,8 @@ function BLTModItem:init( panel, index, mod )
 
 		local icon_enabled = self._panel:bitmap({
 			name = "",
-			texture = "ui/interactions/lockpick_indicator_df",
+			texture = "ui/hud/atlas/raid_atlas",
+			texture_rect = {949, 1480, 52, 52},
 			color = Color.white,
 			alpha = 1,
 			layer = 10,
@@ -183,8 +184,8 @@ function BLTModItem:init( panel, index, mod )
 
 		local icon_updates = self._panel:bitmap({
 			name = "",
-			texture = "ui/interactions/gui_drive_repair_df",
-			color = Color.white,
+			texture = "ui/hud/atlas/raid_atlas",
+			texture_rect = {891, 1285, 64, 64},
 			alpha = mod:AreUpdatesEnabled() and 1 or 0.4,
 			layer = 10,
 			w = icon_size,

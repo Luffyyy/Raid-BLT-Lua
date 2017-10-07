@@ -82,7 +82,8 @@ function BLT:Setup()
 	self.PersistScripts = BLTPersistScripts:new()
 	self.Localization = BLTLocalization:new()
 	self.Notifications = BLTNotificationsManager:new()
-
+	self.Menus = {}
+	
 	-- Initialization functions
 	self.Logs:CleanLogs()
 	self.Mods:SetModsList( self:ProcessModsList( self:FindMods() ) )
@@ -152,12 +153,16 @@ function BLT:OverrideRequire()
 end
 
 function BLT:FindMods()
-
 	log("[BLT] Loading mods for state: " .. tostring(_G))
-
-	-- Get all folders in mods directory
 	local mods_list = {}
-	local folders = file.GetDirectories( BLTModManager.Constants.mods_directory )
+	self:LoadMods(BLTModManager.Constants.mods_directory, mods_list)
+	self:LoadMods(BLTModManager.Constants.mod_overrides_directory, mods_list)
+	return mods_list
+end
+
+function BLT:LoadMods(path, mods_list)
+	-- Get all folders in mods directory
+	local folders = file.GetDirectories(path)
 
 	-- If we didn't get any folders then return an empty mods list
 	if not folders then
@@ -171,7 +176,7 @@ function BLT:FindMods()
 
 			log("[BLT] Loading mod: " .. tostring(directory))
 
-			local mod_path = "mods/" .. directory .. "/"
+			local mod_path = path.."/" .. directory .. "/"
 			local mod_defintion = mod_path .. "mod.txt"
 
 			-- Attempt to read the mod defintion file
@@ -190,7 +195,7 @@ function BLT:FindMods()
 
 				-- Create a BLT mod from the loaded data
 				if json_success and mod_content then
-					local new_mod = BLTMod:new( directory, mod_content )
+					local new_mod = BLTMod:new( path, directory, mod_content )
 					table.insert( mods_list, new_mod )
 				else
 					log("[BLT] An error occured while loading mod.txt from: " .. tostring(mod_path))
@@ -203,9 +208,7 @@ function BLT:FindMods()
 		end
 
 	end
-
-	return mods_list
-
+	
 end
 
 function BLT:ProcessModsList( mods_list )
