@@ -6,6 +6,7 @@ function BLTMenu:init(ws, fullscreen_ws, node, name)
     self._fullscreen_ws = fullscreen_ws
     self._fullscreen_panel = self._fullscreen_ws:panel():panel({})
     self._panel = self._ws:panel():panel({})
+    self._controls = {}
     --do we need a name..? hard without a decomp :/
     BLTMenu.super.init(self, ws, fullscreen_ws, node, name or "")
     if self.InitMenuData then
@@ -14,7 +15,7 @@ function BLTMenu:init(ws, fullscreen_ws, node, name)
     if self.Init then
         self:Init(self._root_panel)
     end
-    self:Align(self._root_panel)
+    self:Align()
 end
 
 function BLTMenu:close()
@@ -24,28 +25,39 @@ function BLTMenu:close()
     self:Close()
 end
 
-function BLTMenu:_layout(root)
-    self:Align(root)
+function BLTMenu:_layout()
+    self:Align()
 end
 
-function BLTMenu:Align(root)
+function BLTMenu:Align(controls, root)
+    controls = controls or self._controls    
     root = root or self._root_panel
+    
+    if not controls or not root then
+        return
+    end
+
     local prev_item
     local last_before_reset
-    for _, item in pairs(root:get_controls()) do
-        if self:IsItem(item) and item:visible() then
-            if item and prev_item and (prev_item:bottom() + item:h() + 64) > root:h() then
-                if self:AlignItemResetY(item, prev_item) then
-                    last_before_reset = prev_item
-                    prev_item = nil -- reset y pos
-                end
-			end
+    local legend = managers.raid_menu:current_legend_control()
+    local back_button
+    if legend then
+        back_button = legend._object._engine_panel
+    end
+    for _, item in pairs(controls) do
+        if item:visible() and not item._params.ignore_align then
             if prev_item then
                 self:AlignItem(item, prev_item, last_before_reset)
             else
                 self:AlignItemFirst(item)
 				item:set_y(0)
-			end
+            end
+            if item:bottom() > (root:h() - 32) then
+                if self:AlignItemResetY(item, prev_item) then
+                    last_before_reset = prev_item
+                    prev_item = nil -- reset y pos
+                end
+            end
             prev_item = item
 		end
 	end
@@ -56,10 +68,11 @@ function BLTMenu:IsItem(item)
 end
 
 function BLTMenu:AlignItemFirst(item)
-    item:set_y(0)
+    item:set_y(item._params.y_offset)
 end
 
 function BLTMenu:AlignItemResetY(item, prev_item)
+    self:AlignItemFirst(item)
     item:set_x(prev_item:right() + (item._params.x_offset or self.default_x_offset))
     return true
 end
@@ -84,13 +97,11 @@ function BLTMenu:BasicItemData(params)
     end
 
     params.ignore_align = not not params.ignore_align
-    params.value = value
-    params.x = params.x
-    params.y = params.y
     params.w = params.w or 512
     params.h = params.h or 32
     params.x_offset = params.x_offset or self.default_x_offset or 6
     params.y_offset = params.y_offset or self.default_y_offset or 6
+    params.index = params.index or #self._controls + 1
     
     --params.color,
     --params.alpha,
@@ -99,36 +110,39 @@ function BLTMenu:BasicItemData(params)
     return params
 end
 
-function BLTMenu:ReinsertItem(item)
-    local params = item._params
-    local ctrls = self._root_panel:get_controls()
-    local should_reinsert = params.index ~= nil or params._type ~= "raid_gui_panel" 
-    if should_reinsert then
-        table.delete(ctrls, item)
-    end
-    if params.index then
-        table.insert(ctrls, params.index, item)
-    elseif should_reinsert then
-        table.insert(ctrls, item)
+function BLTMenu:SortItems()
+    if self._controls then
+        table.sort(self._controls, function(a,b)
+            return a._params.index < b._params.index
+        end)
     end
 end
-
-function BLTMenu:CreateSimple(typ, params, textisdesc)
+    
+function BLTMenu:CreateSimple(typ, params, create_data)
+    create_data = create_data or {}
     local parent = params.parent or self._root_panel
-    local data = BLTMenu:BasicItemData(params)
+    local data = BLTMenu.BasicItemData(self, params)
     if parent then
-        local button = parent[typ](parent, table.merge({
-            on_click_callback = params.callback and function(a, item, value)
+        local item = parent[typ](parent, table.merge({
+            [create_data.clbk_key or "on_click_callback"] = params.callback and (create_data.default_clbk or function(a, item, value)
                 params.callback(value, item)
-            end,
-            text = not textisdesc and params.text or nil,
-            description = textisdesc and params.text or nil,
+            end),
+            [create_data.text_key or "text"] = create_data.text_key ~= false and params.text or nil,
         }, data))
-		if params.enabled ~= nil and button.set_enabled then
-			button:set_enabled(params.enabled)
+		if params.enabled ~= nil and item.set_enabled then
+			item:set_enabled(params.enabled)
         end
-        BLTMenu:ReinsertItem(button)
-        return button
+        if self._controls then
+            local insert = item._object and item._object._params and item._object or item
+            insert._params.index = params.index
+            insert._params.ignore_align = params.ignore_align
+            table.insert(self._controls, insert)
+        end
+        if self.SortItems then
+            self:SortItems()
+            self:Align()
+        end
+        return item
     end
 end
 
@@ -158,7 +172,6 @@ function BLTMenu:CreateSimpleLabel(typ, params)
     params.y_offset = params.y_offset or self.default_label_y_offset or 1
     local label = BLTMenu.CreateSimple(self, typ, params)
     label._params.align_item = true
-    BLTMenu:ReinsertItem(label)
     return label
 end
 
@@ -175,86 +188,51 @@ function BLTMenu:SubTitle(params)
 end
 
 function BLTMenu:Toggle(params)
-    return BLTMenu.CreateSimple(self, "toggle_button", params, true)
+    return BLTMenu.CreateSimple(self, "toggle_button", params, {text_key = "description"})
 end
 
 function BLTMenu:Switch(params)
-    return BLTMenu.CreateSimple(self, "switch_button", params, true)
+    return BLTMenu.CreateSimple(self, "switch_button", params, {text_key = "description"})
 end
 
 function BLTMenu:MultiChoice(params)
-    local parent = params.parent or self._root_panel
-    local data = BLTMenu:BasicItemData(params)
-    if parent then
-        local multichoice
-        multichoice = parent:stepper(table.merge({
-            on_menu_move = {},
-            data_source_callback = params.items_func or function() return params.items or {} end,
-            on_item_selected_callback = function(value)
-                params.callback(value, multichoice)
-            end,
-            description = params.text,
-        }, data))
-		if params.enabled ~= nil then
-			multichoice:set_enabled(params.enabled)
-		end
-		if params.value ~= nil then
-			multichoice:select_item_by_value(params.value)
-        end
-        BLTMenu:ReinsertItem(multichoice)
-        return multichoice
+    params.data_source_callback = params.items_func or function() return params.items or {} end
+    local item
+    item = BLTMenu.CreateSimple(self, "stepper", params, {text_key = "description", clbk_key = "on_item_selected_callback", default_clbk = function(value)
+        params.callback(value, item)
+    end})
+    if params.value ~= nil then
+        item:select_item_by_value(params.value)
     end
+    return item
 end
 
 function BLTMenu:Slider(params)
-    local parent = params.parent or self._root_panel
-    local data = BLTMenu:BasicItemData(params)
-    if parent then
-        local slider
-        local max = params.max or 100
-        local min = params.min or 0
-        slider = parent:slider(table.merge({
-            max_display_value = max,
-            min_display_value = min,
-            value = params.value and ((params.value - min) / (max - min)) * 100, --weirdly doesn't return the correct value in some cases
-            on_value_change_callback = params.callback and function(value)
-                if value then
-                    params.callback(tonumber(slider._value_label:text()), slider)
-                end
-            end,
-            description = params.text and (params.localize and managers.localization:to_upper_text(params.text) or string.upper(params.text)),
-        }, data))
-        if params.enabled ~= nil then
-			slider:set_enabled(params.enabled)
-        end
-        BLTMenu:ReinsertItem(slider)
-        return slider
-    end
+    local item
+    local max = params.max or 100
+    local min = params.min or 0
+    params.max_display_value = max
+    params.min_display_value = min
+
+    item = BLTMenu.CreateSimple(self, "slider", params, {text_key = "description", clbk_key = "on_value_change_callback", default_clbk = function(value)
+        params.callback(tonumber(item._value_label:text()), item)
+    end})
+    return item
 end
 
 function BLTMenu:Tabs(params)
-    local parent = params.parent or self._root_panel
-    local data = BLTMenu:BasicItemData(params)
-	if parent then
-		local tabs
-        tabs = parent:tabs(table.merge({
-			on_click_callback = function(tab_selected)
-				if params.callback then
-					params.callback(tab_selected, tabs)
-				end
-			end,
-			dont_trigger_special_buttons = true, --no idea what this does
-			tabs_params = params.tabs or {{text = "NO TABS"}},
-			initial_tab_idx = params.selected_tab,
-			tab_width = params.tab_width or 160,
-			tab_height = params.tab_height,			
-        }, data))
-        if params.enabled ~= nil then
-			tabs:set_enabled(params.enabled)
-        end
-        BLTMenu:ReinsertItem(tabs)
-        return tabs
-    end
+    local item
+    table.merge(params, {
+        dont_trigger_special_buttons = true, --no idea what this does
+        tabs_params = params.tabs or {{text = "NO TABS"}},
+        initial_tab_idx = params.selected_tab,
+        tab_width = params.tab_width or 160,
+        tab_height = params.tab_height,		        
+    })
+    item = BLTMenu.CreateSimple(self, "tabs", params, {text_key = false, default_clbk = function(tab_selected)
+        params.callback(tab_selected, item)
+    end})
+    return item
 end
 
 --Basically all the shit that was in mods_menu, view_mod and download_manager but instead of fucking repeating it.
