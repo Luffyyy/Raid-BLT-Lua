@@ -29,7 +29,9 @@ function Data:_load_data(root, menu_id)
 end
 
 function Data:load_data(file_path, menu_id)
-	self:_load_data(PackageManager:script_data( Idstring( "menu" ), file_path:id()), menu_id)
+	if PackageManager:has(Idstring("menu"), file_path:id()) then
+		self:_load_data(PackageManager:script_data( Idstring( "menu" ), file_path:id()), menu_id)
+	end
 end
 
 function Data:_create_node( file_path, menu_id, c )

@@ -136,14 +136,14 @@ end
 --------------------------------------------------------------------------------
 -- Save/Load
 
-Hooks:Add("BLTOnLoadData", "BLTOnLoadData.BLTLocalization", function( cache )
+Hooks:Add("BLTOnLoadData", "BLTOnLoadData.BLTLocalization", function(cache)
 	local lang_code = cache["language"]
 	if lang_code then
 		BLT.Localization:set_language( lang_code )
 	end
 end)
 
-Hooks:Add("BLTOnSaveData", "BLTOnSaveData.BLTLocalization", function( cache )
+Hooks:Add("BLTOnSaveData", "BLTOnSaveData.BLTLocalization", function(cache)
 	local lang = BLT.Localization:get_language()
 	if lang then
 		cache["language"] = lang.language
@@ -153,39 +153,7 @@ end)
 --------------------------------------------------------------------------------
 -- Load languages once the game's localization manager has been created
 
-Hooks:Add("LocalizationManagerPostInit", "BLTLocalization.LocalizationManagerPostInit", function( loc_manager )
-
+Hooks:Add("LocalizationManagerPostInit", "BLTLocalization.LocalizationManagerPostInit", function(self)
 	BLT.Localization:load_languages()
-	BLT.Localization:load_localization( loc_manager )
-
+	BLT.Localization:load_localization(self)
 end)
-
---------------------------------------------------------------------------------
--- Add the language selector to the mod options menu
-
-Hooks:Add("BLTOnBuildOptions", "BLTLocalization.BLTOnBuildOptions", function( node )
-
-	-- Create multiple choice item
-	local item = {
-		_meta = "item",
-		type = "MenuItemMultiChoice",
-		name = "blt_localization_choose",
-		text_id = "blt_language_select",
-		help_id = "blt_language_select_desc",
-		callback = "blt_choose_language",
-	}
-
-	-- Add languages as options
-	for _, lang in ipairs( BLT.Localization:languages() ) do
-		local option = {
-			_meta = "option",
-			text_id = "blt_language_" .. tostring(lang.language),
-			value = tostring(lang.language)
-		}
-		table.insert( item, option )
-	end
-
-	table.insert( node, item )
-
-end)
-

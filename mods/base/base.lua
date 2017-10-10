@@ -173,16 +173,14 @@ function BLT:LoadMods(path, mods_list)
 
 		-- Check if this directory is excluded from being checked for mods (logs, saves, etc.)
 		if not self.Mods:IsExcludedDirectory( directory ) then
-
-			log("[BLT] Loading mod: " .. tostring(directory))
-
-			local mod_path = path.."/" .. directory .. "/"
+			local mod_path = path .. directory .. "/"
 			local mod_defintion = mod_path .. "mod.txt"
 
 			-- Attempt to read the mod defintion file
 			local file = io.open(mod_defintion)
 			if file then
-
+				log("[BLT] Loading mod: " .. tostring(directory))
+				
 				-- Read the file contents
 				local file_contents = file:read("*all")
 				file:close()
@@ -201,7 +199,7 @@ function BLT:LoadMods(path, mods_list)
 					log("[BLT] An error occured while loading mod.txt from: " .. tostring(mod_path))
 				end
 
-			else
+			elseif path == BLTModManager.Constants.mods_directory then --mod overrides is an optional directory.
 				log("[BLT] Could not read or find mod.txt in " .. tostring(directory))
 			end
 

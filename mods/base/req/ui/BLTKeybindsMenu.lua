@@ -1,8 +1,12 @@
 BLTKeybindsMenu = BLTKeybindsMenu or class(BLTMenu)
 function BLTKeybindsMenu:Init(root)
-    local btn = self:Button({
-        name = "test",
-        text = "WIP :("
+    self:Title({text = "menu_header_options_main_screen_name"})
+    self:SubTitle({text = "blt_options_menu_keybinds"})
+
+    self:Label({
+        text = "Temporarily unavailable!",
+        y_offset = 32,
+        localize = false
     })
 end  
 

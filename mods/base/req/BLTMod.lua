@@ -24,7 +24,7 @@ function BLTMod:init( path, ident, data )
 	self.json_data = data
 	self.id = ident
 	self.load_dir = path
-	self.path = string.format("%s/%s/", path, ident)
+	self.path = string.format("%s%s/", path, ident)
 	self.name = data["name"] or "Error: No Name!"
 	self.desc = data["description"] or self.desc
 	self.version = data["version"] or self.version

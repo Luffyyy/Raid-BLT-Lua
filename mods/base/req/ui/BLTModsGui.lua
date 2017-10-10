@@ -20,14 +20,6 @@ function BLTModsGui:close()
 end
 
 function BLTModsGui:_setup()
-
-	-- Background
-	self._background = self._fullscreen_panel:rect({
-		color = Color.black,
-		alpha = 0.4,
-		layer = -1
-	})
-
 	-- Title
 	local title = self._panel:text({
 		name = "title",

@@ -25,7 +25,21 @@ function MenuComponentManager:set_active_components(components, node)
 				comp.create = function(this, ...)
 					local r = comp.orig_create(this, ...)
 					for _, inject in pairs(BLT.Menus[name]) do
-						RaidMenuHelper:InjectIntoAList(r, inject.point, inject.buttons, inject.list_name)
+						if inject.is_list then
+							RaidMenuHelper:InjectIntoAList(r, inject.point, inject.buttons, inject.list_name)
+						else
+							for _, btn in pairs(inject.buttons) do
+								BLTMenu.Button(r, {
+									name = btn.name,
+									text = btn.text,
+									localize = btn.localize,
+									callback = btn.callback
+								})
+								if r._layout then
+									r:_layout()
+								end
+							end
+						end
 					end
 					return r
 				end
