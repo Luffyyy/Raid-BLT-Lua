@@ -103,18 +103,15 @@ function BLTMenu:BasicItemData(params)
     else
         params.text = ""
     end
-
+    params.is_blt = true
     params.ignore_align = not not params.ignore_align
     params.w = params.w or 512
     params.h = params.h or 32
     params.x_offset = params.x_offset or self.default_x_offset or 6
     params.y_offset = params.y_offset or self.default_y_offset or 6
     params.index = params.index or #self._controls + 1
-    
-    --params.color,
-    --params.alpha,
-    --params.visible,
-    --params.background_color,
+    params.ws = params.ws or self._ws
+
     return params
 end
 
@@ -140,7 +137,7 @@ function BLTMenu:CreateSimple(typ, params, create_data)
 		if params.enabled ~= nil and item.set_enabled then
 			item:set_enabled(params.enabled)
         end
-        if self._controls then
+        if self._controls and item then
             local insert = item._object and item._object._params and item._object or item
             insert._params.index = params.index
             insert._params.ignore_align = params.ignore_align
@@ -299,6 +296,32 @@ function BLTMenu:ColorSlider(params)
 	end
 	return panel
 end
+
+function BLTMenu:KeyBind(params)
+    local id = params.keybind_id or ""
+    --doing this because for some reason lgl thought it's a good idea to put the text of the item inside keybind_params
+    --like why aren't all items just use a parameter like 'text' sigh
+    if params.localize == nil then
+        params.localize = true
+    end
+    params.text = params.text or ""
+    if not params.localize then
+        params.text = string.upper(params.text)
+    else
+        params.text = ""
+    end
+    params.keybind_w = params.keybind_w or 120
+    params.keybind_params = {
+        binding = BLT.Keybinds:get_keybind(id):Key() or '',
+        connection_name = id,
+        text_id = params.text,
+        localize = params.localize,
+        name = id,
+        button = id
+    }
+    BLTMenu.CreateSimple(self, "keybind", params)
+end
+
 
 --Basically all the shit that was in mods_menu, view_mod and download_manager but instead of fucking repeating it.
 BLTCustomMenu = BLTCustomMenu or blt_class(RaidGuiBase)

@@ -2,13 +2,25 @@ BLTKeybindsMenu = BLTKeybindsMenu or class(BLTMenu)
 function BLTKeybindsMenu:Init(root)
     self:Title({text = "menu_header_options_main_screen_name"})
     self:SubTitle({text = "blt_options_menu_keybinds"})
+	local last_mod
+	for i, bind in ipairs(BLT.Keybinds:keybinds()) do
+		if bind:IsActive() and bind:ShowInMenu() then
+			-- Seperate keybinds by mod
+			if last_mod ~= bind:ParentMod() then
+                self:Label({text = bind:ParentMod():GetName(), localize = false})
+			end
+            self:KeyBind({
+				name = bind:Id(),
+				text = bind:Name(),
+                keybind_id = bind:Id(),
+                x_offset = 10,
+                localize = false,
+            })
 
-    self:Label({
-        text = "Temporarily unavailable!",
-        y_offset = 32,
-        localize = false
-    })
-end  
+            last_mod = bind:ParentMod()            
+		end
+	end
+end
 
 Hooks:Add("MenuComponentManagerInitialize", "BLTKeybindsMenu.MenuComponentManagerInitialize", function(self)
     RaidMenuHelper:CreateMenu({

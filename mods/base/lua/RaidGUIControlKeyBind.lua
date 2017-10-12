@@ -1,9 +1,16 @@
-
-CloneClass( MenuNodeGui )
+CloneClass(RaidGuiControlKeyBind)
 
 Hooks:RegisterHook("CustomizeControllerOnKeySet")
-function MenuNodeGui._key_press(self, o, key, input_id, item, no_add)
+function RaidGuiControlKeyBind:activate_customize_controller(...)
+	self._skip_first_activate_key = true
+	return RaidGuiControlKeyBind.orig.activate_customize_controller(self, ...)
+end
 
+function RaidGuiControlKeyBind:_key_press(text, key, input_id, ...)
+	if not self._params.is_blt then -- use normal for non blt keybinds.
+		RaidGuiControlKeyBind.orig._key_press(self, text, key, input_id, ...)
+	end
+	
 	if managers.system_menu:is_active() then
 		return
 	end
@@ -19,9 +26,8 @@ function MenuNodeGui._key_press(self, o, key, input_id, item, no_add)
 		end
 	end
 
-	local row_item = self:row_item(item)
 	if key == Idstring("esc") then
-		self:_end_customize_controller(o, item)
+		self:_end_customize_controller(text, true)
 		return
 	end
 
@@ -62,13 +68,13 @@ function MenuNodeGui._key_press(self, o, key, input_id, item, no_add)
 		for _, btn in ipairs(forbidden_btns) do
 			if Idstring(btn) == key then
 				managers.menu:show_key_binding_forbidden({KEY = key_name})
-				self:_end_customize_controller(o, item)
+				self:_end_customize_controller(text, true)
 				return
 			end
 		end
 	end
 
-	local button_data = MenuCustomizeControllerCreator.CONTROLS_INFO[item:parameters().button]
+	local button_data = MenuCustomizeControllerCreator.CONTROLS_INFO[self._keybind_params.button]
 	if not button_data then
 		button_data = {
 			text_id = "",
@@ -81,23 +87,23 @@ function MenuNodeGui._key_press(self, o, key, input_id, item, no_add)
 		local connection = connections[name]
 		if connection._btn_connections then
 			for name, btn_connection in pairs(connection._btn_connections) do
-				if btn_connection.name == key_name and item:parameters().binding ~= btn_connection.name then
+				if btn_connection.name == key_name and self._keybind_params.binding ~= btn_connection.name then
 					managers.menu:show_key_binding_collision({
 						KEY = key_name,
 						MAPPED = managers.localization:text(MenuCustomizeControllerCreator.CONTROLS_INFO[name].text_id)
 					})
-					self:_end_customize_controller(o, item)
+					self:_end_customize_controller(text)
 					return
 				end
 			end
 		else
 			for _, b_name in ipairs(connection:get_input_name_list()) do
-				if tostring(b_name) == key_name and item:parameters().binding ~= b_name then
+				if tostring(b_name) == key_name and self._keybind_params.binding ~= b_name then
 					managers.menu:show_key_binding_collision({
 						KEY = key_name,
 						MAPPED = managers.localization:text(MenuCustomizeControllerCreator.CONTROLS_INFO[name].text_id)
 					})
-					self:_end_customize_controller(o, item)
+					self:_end_customize_controller(text)
 					return
 				end
 			end
@@ -105,45 +111,47 @@ function MenuNodeGui._key_press(self, o, key, input_id, item, no_add)
 	end
 
 	local connection = nil
-	if item:parameters().axis then
+	if self._keybind_params.axis then
 		
-		connections[item:parameters().axis]._btn_connections[item:parameters().button].name = key_name
-		managers.controller:set_user_mod(item:parameters().connection_name, {
-			axis = item:parameters().axis,
-			button = item:parameters().button,
+		connections[self._keybind_params.axis]._btn_connections[self._keybind_params.button].name = key_name
+		managers.controller:set_user_mod(self._keybind_params.connection_name, {
+			axis = self._keybind_params.axis,
+			button = self._keybind_params.button,
 			connection = key_name
 		})
-		item:parameters().binding = key_name
-		connection = connections[item:parameters().axis]
+		self._keybind_params.binding = key_name
+		connection = connections[self._keybind_params.axis]
 
 	else
 
-		if connections[item:parameters().button] == nil then
+		if connections[self._keybind_params.button] == nil then
 			for k, v in pairs( connections ) do
-				connections[item:parameters().button] = clone(v)
+				connections[self._keybind_params.button] = clone(v)
 				break
 			end
-			connections[item:parameters().button]._name = item:parameters().connection_name
+			connections[self._keybind_params.button]._name = self._keybind_params.connection_name
 		end
 
-		connections[item:parameters().button]:set_controller_id(input_id)
-		connections[item:parameters().button]:set_input_name_list({key_name})
-		managers.controller:set_user_mod(item:parameters().connection_name, {
-			button = item:parameters().button,
+		connections[self._keybind_params.button]:set_controller_id(input_id)
+		connections[self._keybind_params.button]:set_input_name_list({key_name})
+		managers.controller:set_user_mod(self._keybind_params.connection_name, {
+			button = self._keybind_params.button,
 			connection = key_name,
 			controller_id = input_id
 		})
-		item:parameters().binding = key_name
-		connection = connections[item:parameters().button]
+		self._keybind_params.binding = key_name
+		connection = connections[self._keybind_params.button]
 
 	end
 
 	if connection then
-		local key_button = item:parameters().binding
-		Hooks:Call( "CustomizeControllerOnKeySet", item:parameters().connection_name, key_button )
+		local key_button = self._keybind_params.binding
+		Hooks:Call( "CustomizeControllerOnKeySet", self._keybind_params.connection_name, key_button )
+		if self._keybind_params.callback then
+			self._keybind_params.callback(key_button, self)
+		end
 	end
 
 	managers.controller:rebind_connections()
-	self:_end_customize_controller(o, item)
-
+	self:_end_customize_controller(text)
 end

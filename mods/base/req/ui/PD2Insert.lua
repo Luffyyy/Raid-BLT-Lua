@@ -35,6 +35,7 @@ function ScrollablePanel:init(parent_panel, name, data)
 	self._x_padding = data.x_padding ~= nil and data.x_padding or data.padding ~= nil and data.padding or PANEL_PADDING
 	self._y_padding = data.y_padding ~= nil and data.y_padding or data.padding ~= nil and data.padding or PANEL_PADDING
 	self._force_scroll_indicators = data.force_scroll_indicators
+	self._color = data.color or tweak_data.gui.colors.raid_red
 	local layer = data.layer ~= nil and data.layer or 50
 	data.name = data.name or name and name .. "Base"
 	self._panel = parent_panel:panel(data)
@@ -90,7 +91,7 @@ function ScrollablePanel:init(parent_panel, name, data)
 		w = 16,
 		h = 16,
 		layer = layer,
-		color = tweak_data.gui.colors.raid_red
+		color = self._color
 	})
 
 	scroll_up_indicator_arrow:set_top(self:y_padding() + 6)
@@ -107,7 +108,7 @@ function ScrollablePanel:init(parent_panel, name, data)
 		w = 16,
 		h = 16,
 		layer = layer,
-		color = tweak_data.gui.colors.raid_red
+		color = self._color
 	})
 
 	scroll_down_indicator_arrow:set_bottom((self:panel():h() - self:y_padding()) - 6)
@@ -128,7 +129,7 @@ function ScrollablePanel:init(parent_panel, name, data)
 	})
 	self._scroll_bar:rect({
 		name = "scroll",
-		color = tweak_data.gui.colors.raid_red,
+		color = self._color,
 		x = 3,
 		w = 2,
 		halign = "scale",
