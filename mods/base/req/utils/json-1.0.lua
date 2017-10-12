@@ -24,6 +24,10 @@
 --          json.encode() performance improvement (more than 50%) through table.concat rather than ..
 --          Introduced decode ability to ignore /**/ comments in the JSON string.
 --   0.9.10 Fix to array encoding / decoding to correctly manage nil/null values in arrays.
+--
+-- MODIFIED BY:
+-- Luffy, Added code to ignore last comma in an object and some code from BeardLib's
+-- json script(modified by Simon W) to support objects like: color, vector3, rotation and callback.
 -----------------------------------------------------------------------------
 
 -----------------------------------------------------------------------------
@@ -54,6 +58,13 @@ local encodeString
 local isArray
 local isEncodable
 
+local function begins(s, beginning)
+  if s and beginning then
+		return s:sub(1, #beginning) == beginning
+	end
+
+	return false
+end
 -----------------------------------------------------------------------------
 -- PUBLIC FUNCTIONS
 -----------------------------------------------------------------------------
@@ -66,13 +77,13 @@ function json.encode (v)
     return "null"
   end
   
-  local vtype = type(v)
+  local vtype = CoreClass.type_name(v)
 
-  -- Handle strings
-  if vtype=='string' then    
+  -- Handle strings 
+  if vtype=='string' or vtype=='Vector3' or vtype=='Rotation' or vtype=='Color' or vtype=='callback' then
     return '"' .. json_private.encodeString(v) .. '"'	    -- Need to handle encoding in string
   end
-  
+
   -- Handle booleans
   if vtype=='number' or vtype=='boolean' then
     return tostring(v)
@@ -133,9 +144,20 @@ function json.decode(s, startPos)
   if string.find("+-0123456789.e", curChar, 1, true) then
     return decode_scanNumber(s,startPos)
   end
+
   -- String
   if curChar==[["]] or curChar==[[']] then
-    return decode_scanString(s,startPos)
+    local res, start_pos = decode_scanString(s,startPos)
+    --might not be the best way of doing this
+    if begins(res, "Color(") or begins(res, "callback(") or begins(res, "Vector3(") or begins(res, "Rotation(") then
+      local f = loadstring("return " ..res)
+      if f then
+        res = f()
+      else
+        log("[ERROR] Attempted to loadstring " .. tostring(res) .. " but failed.")
+      end
+    end
+    return res, start_pos
   end
   if string.sub(s,startPos,startPos+1)=='/*' then
     return decode(s, decode_scanComment(s,startPos))
@@ -209,7 +231,7 @@ function decode_scanConstant(s, startPos)
       return consts[k], startPos + string.len(k)
     end
   end
-  assert(nil, 'Failed to scan constant from string ' .. s .. ' at starting position ' .. startPos)
+--  assert(nil, 'Failed to scan constant from string ' .. s .. ' at starting position ' .. startPos)
 end
 
 --- Scans a number from the JSON encoded string.
@@ -259,7 +281,13 @@ function decode_scanObject(s,startPos)
     end
     assert(startPos<=stringLen, 'JSON string ended unexpectedly scanning object.')
     -- Scan the key
-    key, startPos = json.decode(s,startPos)
+    local k, newstartPos = json.decode(s,startPos)
+    if(newstartPos) then
+      startPos = newstartPos
+      key = k
+    elseif curChar==',' then
+      return object,startPos+1 
+    end
     assert(startPos<=stringLen, 'JSON string ended unexpectedly searching for value of key ' .. key)
     startPos = decode_scanWhitespace(s,startPos)
     assert(startPos<=stringLen, 'JSON string ended unexpectedly searching for value of key ' .. key)
@@ -374,8 +402,11 @@ local escapeList = {
 }
 
 function json_private.encodeString(s)
- local s = tostring(s)
- return s:gsub(".", function(c) return escapeList[c] end) -- SoniEx2: 5.0 compat
+  if CoreClass.type_name(s) == "Color" then
+		return string.format("Color(%s, %s, %s, %s)", s.a, s.r, s.g, s.b)
+	end
+  local s = tostring(s)  
+  return s:gsub(".", function(c) return escapeList[c] end) -- SoniEx2: 5.0 compat
 end
 
 -- Determines whether the given Lua type is an array or a table / dictionary.
@@ -411,8 +442,8 @@ end
 -- @param o The object to examine.
 -- @return boolean True if the object should be JSON encoded, false if it should be ignored.
 function isEncodable(o)
-  local t = type(o)
-  return (t=='string' or t=='boolean' or t=='number' or t=='nil' or t=='table') or (t=='function' and o==null) 
+	local t = CoreClass.type_name(o)
+	return (t=='string' or t=='boolean' or t=='number' or t=='nil' or t=='table' or t=='Vector3' or t=='Rotation' or t=='Color' or t=='callback') or (t=='function' and o==null) 
 end
 
 return json

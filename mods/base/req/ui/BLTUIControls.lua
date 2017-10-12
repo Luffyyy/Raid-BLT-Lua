@@ -27,6 +27,7 @@ function BLTUIButton:init( panel, parameters )
 
 	-- Main panel
 	self._panel = panel:panel({
+		name = "panel",
 		x = parameters.x or 0,
 		y = parameters.y or 0,
 		w = parameters.w or 128,
@@ -35,21 +36,12 @@ function BLTUIButton:init( panel, parameters )
 	})
 
 	-- Background
+	local bg_color = tweak_data.gui.colors.raid_list_background
+	bg_color = (parameters.color or bg_color):with_alpha(bg_color.alpha)
 	self._background = self._panel:rect({
-		color =	parameters.color or tweak_data.screen_colors.button_stage_3,
-		alpha = parameters.alpha or 0.6,
+		name = "bg",
+		color =	bg_color,
 		layer = -1
-	})
-	BoxGuiObject:new( self._panel, { sides = { 1, 1, 1, 1 } } )
-	
-	self._panel:bitmap({
-		texture = "guis/textures/test_blur_df",
-		w = self._panel:w(),
-		h = self._panel:h(),
-		render_template = "VertexColorTexturedBlur3D",
-		layer = -1,
-		halign = "scale",
-		valign = "scale"
 	})
 
 	local title = self._panel:text({
@@ -57,7 +49,7 @@ function BLTUIButton:init( panel, parameters )
 		font_size = medium_font_size,
 		font = medium_font,
 		layer = 10,
-		color = self._background:color():with_alpha(parameters.highlight_alpha or 0.8):contrast(),
+		color = tweak_data.gui.colors.raid_white,
 		text = parameters.title or "",
 		align = "center",
 		vertical = "top",
@@ -139,7 +131,8 @@ end
 function BLTUIButton:set_highlight( enabled, no_sound )
 	if self._enabled ~= enabled then
 		self._enabled = enabled
-		self._background:set_alpha( enabled and (self._parameters.highlight_alpha or 0.8) or (self._parameters.alpha or 0.6) )
+		local alpha = tweak_data.gui.colors.raid_list_background.alpha
+		self._background:set_color( self._background:color():with_alpha(enabled and (alpha + 0.2) or alpha))
 		if enabled and not no_sound then
 			managers.menu_component:post_event( "highlight" )
 		end
@@ -171,7 +164,7 @@ function BLTDownloadControl:init( panel, parameters )
 	self._download_panel:set_right( self._panel:w() )
 
 	self._background = self._download_panel:rect({
-		color =	parameters.color or tweak_data.screen_colors.button_stage_2,
+		color =	parameters.color or tweak_data.gui.colors.raid_red,
 		alpha = 0.8,
 		layer = -1
 	})
@@ -194,7 +187,7 @@ function BLTDownloadControl:init( panel, parameters )
 	self._patch_panel:set_right( self._download_panel:x() - padding )
 
 	self._patch_background = self._patch_panel:rect({
-		color =	parameters.color or tweak_data.screen_colors.button_stage_2,
+		color =	parameters.color or tweak_data.gui.colors.raid_red,
 		alpha = 0.8,
 		layer = -1
 	})
@@ -324,7 +317,7 @@ function BLTDownloadControl:init( panel, parameters )
 	self._download_progress = download_progress
 
 	self._download_progress_bg = self._info_panel:rect({
-		color = tweak_data.screen_colors.button_stage_2,
+		color = tweak_data.gui.colors.raid_red,
 		alpha = 0.4,
 		layer = -1
 	})
@@ -344,7 +337,7 @@ function BLTDownloadControl:mouse_moved( button, x, y )
 
 	local inside_download = self._download_panel:inside( x, y )
 	if self._highlight_download ~= inside_download then
-		self._background:set_color( inside_download and tweak_data.screen_colors.button_stage_2 or (self:parameters().color or tweak_data.screen_colors.button_stage_2) )
+		self._background:set_color( inside_download and tweak_data.gui.colors.raid_red or (self:parameters().color or tweak_data.gui.colors.raid_red) )
 		if inside_download and not no_sound then
 			managers.menu_component:post_event( "highlight" )
 		end
@@ -353,7 +346,7 @@ function BLTDownloadControl:mouse_moved( button, x, y )
 
 	local inside_patch = self._patch_panel:inside( x, y )
 	if self._highlight_patch ~= inside_patch then
-		self._patch_background:set_color( inside_patch and tweak_data.screen_colors.button_stage_2 or (self:parameters().color or tweak_data.screen_colors.button_stage_2) )
+		self._patch_background:set_color( inside_patch and tweak_data.gui.colors.raid_red or (self:parameters().color or tweak_data.gui.colors.raid_red) )
 		if inside_patch and not no_sound then
 			managers.menu_component:post_event( "highlight" )
 		end

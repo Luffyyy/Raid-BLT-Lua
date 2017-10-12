@@ -90,7 +90,7 @@ function ScrollablePanel:init(parent_panel, name, data)
 		w = 16,
 		h = 16,
 		layer = layer,
-		color = tweak_data.screen_colors.button_stage_2
+		color = tweak_data.gui.colors.raid_red
 	})
 
 	scroll_up_indicator_arrow:set_top(self:y_padding() + 6)
@@ -107,7 +107,7 @@ function ScrollablePanel:init(parent_panel, name, data)
 		w = 16,
 		h = 16,
 		layer = layer,
-		color = tweak_data.screen_colors.button_stage_2
+		color = tweak_data.gui.colors.raid_red
 	})
 
 	scroll_down_indicator_arrow:set_bottom((self:panel():h() - self:y_padding()) - 6)
@@ -128,7 +128,7 @@ function ScrollablePanel:init(parent_panel, name, data)
 	})
 	self._scroll_bar:rect({
 		name = "scroll",
-		color = tweak_data.screen_colors.button_stage_2,
+		color = tweak_data.gui.colors.raid_red,
 		x = 3,
 		w = 2,
 		halign = "scale",

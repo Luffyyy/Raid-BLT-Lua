@@ -56,7 +56,7 @@ function BLTNotificationsGui:_setup()
 
 	self._panel:rect({
 		name = "background",
-		color = tweak_data.screen_colors.button_stage_3:with_alpha(0.1),
+		color = tweak_data.gui.colors.raid_list_background,
 		layer = -1,
 		halign = "scale",
 		valign = "scale"
@@ -67,18 +67,7 @@ function BLTNotificationsGui:_setup()
 		w = 3,
 		halign = "scale",
 		valign = "scale",
-		color = tweak_data.screen_colors.button_stage_2
-	})
-
-	local blur = self._content_panel:bitmap({
-		texture = "guis/textures/test_blur_df",
-		w = self._content_panel:w(),
-		h = self._content_panel:h(),
-		render_template = "VertexColorTexturedBlur3D",
-		layer = -1,
-		visible = false,
-		halign = "scale",
-		valign = "scale"
+		color = tweak_data.gui.colors.raid_red
 	})
 
 	-- Outline
@@ -110,7 +99,7 @@ function BLTNotificationsGui:_setup()
 		font_size = tweak_data.menu.pd2_medium_font_size,
 		font = tweak_data.menu.pd2_medium_font,
 		layer = 10,
-		color = tweak_data.screen_colors.title,
+		color = tweak_data.gui.colors.raid_white,
 		text = "2",
 		align = "center",
 	})
@@ -119,7 +108,7 @@ function BLTNotificationsGui:_setup()
 	local line = self._downloads_panel:bitmap({
 		name = "downloads_line",
 		h = 3,
-		color = tweak_data.screen_colors.button_stage_2
+		color = tweak_data.gui.colors.raid_red
 	})
 	line:set_bottom(self._downloads_panel:h())
 
@@ -189,7 +178,7 @@ function BLTNotificationsGui:add_notification( parameters )
 		icon = new_notif:bitmap({
 			texture = parameters.icon,
 			texture_rect = parameters.icon_texture_rect,
-			color = parameters.color or Color.white,
+			color = parameters.color or tweak_data.gui.colors.raid_white,
 			alpha = parameters.alpha or 1,
 			x = padding,
 			y = padding,
@@ -204,6 +193,7 @@ function BLTNotificationsGui:add_notification( parameters )
 		text = parameters.title or "No Title",
 		font = tweak_data.menu.pd2_large_font,
 		font_size = tweak_data.menu.pd2_large_font_size * 0.5,
+		color = tweak_data.gui.colors.raid_white,
 		x = _x,
 		y = padding,
 	})
@@ -217,25 +207,22 @@ function BLTNotificationsGui:add_notification( parameters )
 		w = new_notif:w() - _x,
 		y = title:bottom(),
 		h = new_notif:h() - title:bottom(),
-		color = tweak_data.screen_colors.text,
+		color = tweak_data.gui.colors.raid_white,
 		alpha = 0.8,
 		wrap = true,
 		word_wrap = true,
 	})
 
-	-- Create notification data
-	local data = {
-		id = self:_get_uid(),
+	local id = self:_get_uid()
+	table.insert(self._notifications, {
+		id = id,
 		priority = parameters.priority or 0,
 		parameters = parameters,
 		panel = new_notif,
 		title = title,
 		text = text,
 		icon = icon,
-	}
-
-	-- Update notifications data
-	table.insert( self._notifications, data )
+	})
 	table.sort( self._notifications, function(a, b)
 		return a.priority > b.priority
 	end )
@@ -249,8 +236,7 @@ function BLTNotificationsGui:add_notification( parameters )
 
 	self:_update_bars()
 
-	return data.id
-
+	return id
 end
 
 function BLTNotificationsGui:remove_notification( uid )
@@ -282,7 +268,7 @@ function BLTNotificationsGui:_update_bars()
 	for i = 1, self._notifications_count do
 		local page_button = self._buttons_panel:bitmap({
 			name = tostring(i),
-			color = tweak_data.screen_colors.button_stage_2:with_alpha(0.2),
+			color = tweak_data.gui.colors.raid_list_background,
 			x = last and last:right() + 4 or (self._buttons_panel:w() / 2) - ((self._notifications_count / 2) * BAR_W),
 			w = BAR_W,
 			h = BAR_H
@@ -301,7 +287,7 @@ function BLTNotificationsGui:_update_bars()
 		halign = "grow",
 		valign = "grow",
 		wrap_mode = "wrap",
-		color = tweak_data.screen_colors.button_stage_2,
+		color = tweak_data.gui.colors.raid_red,
 		x = BAR_X,
 		y = BAR_Y,
 		w = BAR_W,

@@ -53,8 +53,7 @@ function BLTViewModGui:_setup_mod_info( mod )
 		font_size = large_font_size,
 		font = large_font,
 		layer = 10,
-		--blend_mode = "add",
-		color = tweak_data.screen_colors.title,
+		color = tweak_data.gui.colors.raid_white,
 		text = mod:GetName(),
 		align = "left",
 		vertical = "top",
@@ -67,8 +66,7 @@ function BLTViewModGui:_setup_mod_info( mod )
 		font_size = medium_font_size,
 		font = medium_font,
 		layer = 10,
-		--blend_mode = "add",
-		color = tweak_data.screen_colors.title,
+		color = tweak_data.gui.colors.raid_white,
 		alpha = 0.6,
 		text = mod:GetVersion(),
 		align = "left",
@@ -88,7 +86,8 @@ function BLTViewModGui:_setup_mod_info( mod )
 	self._info_panel = info_panel
 
 	self._info_panel:rect({
-		color = tweak_data.screen_colors.button_stage_3:with_alpha(0.1),
+		name = "bg",
+		color = tweak_data.gui.colors.raid_list_background,
 		layer = -1
 	})
 
@@ -147,7 +146,7 @@ function BLTViewModGui:_setup_mod_info( mod )
 		font_size = medium_font_size,
 		font = medium_font,
 		layer = 10,
-		color = tweak_data.screen_colors.title,
+		color = tweak_data.gui.colors.raid_white,
 		text = mod:GetDescription(),
 		align = "left",
 		vertical = "top",
@@ -168,7 +167,7 @@ function BLTViewModGui:_setup_mod_info( mod )
 		font_size = medium_font_size,
 		font = medium_font,
 		layer = 10,
-		color = tweak_data.screen_colors.title,
+		color = tweak_data.gui.colors.raid_white,
 		text = managers.localization:text("blt_mod_info_author") .. ": " .. mod:GetAuthor(),
 		align = "left",
 		vertical = "top",
@@ -188,7 +187,7 @@ function BLTViewModGui:_setup_mod_info( mod )
 		font = medium_font,
 		layer = 10,
 		--blend_mode = "add",
-		color = tweak_data.screen_colors.title,
+		color = tweak_data.gui.colors.raid_white,
 		text = managers.localization:text("blt_mod_info_contact") .. ": " .. mod:GetContact(),
 		align = "left",
 		vertical = "top",
@@ -214,17 +213,9 @@ function BLTViewModGui:_setup_dev_info( mod )
 	self._dev_panel = dev_panel
 
 	self._dev_panel:rect({
-		color = tweak_data.screen_colors.button_stage_3:with_alpha(0.1),
+		name = "bg",
+		color = tweak_data.gui.colors.raid_list_background,
 		layer = -1
-	})
-	self._dev_panel:bitmap({
-		texture = "guis/textures/test_blur_df",
-		w = self._dev_panel:w(),
-		h = self._dev_panel:h(),
-		render_template = "VertexColorTexturedBlur3D",
-		layer = -1,
-		halign = "scale",
-		valign = "scale"
 	})
 
 	self._dev_scroll = ScrollablePanel:new( dev_panel, "dev_scroll" )
@@ -239,7 +230,7 @@ function BLTViewModGui:_setup_dev_info( mod )
 		font = small_font,
 		layer = 10,
 		--blend_mode = "add",
-		color = tweak_data.screen_colors.title,
+		color = tweak_data.gui.colors.raid_white,
 		text = mod:GetDeveloperInfo(),
 		align = "left",
 		vertical = "top",
@@ -275,8 +266,7 @@ function BLTViewModGui:_setup_buttons( mod )
 			y = 0,
 			w = button_w,
 			h = button_h,
-			alpha = 0.1,
-			highlight_alpha = 0.1,
+			color_image = true,
 			title = managers.localization:text("blt_mod_state_enabled"),
 			text = managers.localization:text("blt_mod_state_enabled_desc"),
 			image = "ui/hud/atlas/raid_atlas",
@@ -297,8 +287,7 @@ function BLTViewModGui:_setup_buttons( mod )
 			y = next_row_height or 0,
 			w = button_w,
 			h = button_h,
-			alpha = 0.1,
-			highlight_alpha = 0.1,
+			color_image = true,
 			title = managers.localization:text("blt_mod_updates_enabled"),
 			text = managers.localization:text("blt_mod_updates_enabled_help"),
 			image = "ui/hud/atlas/raid_atlas",
@@ -314,8 +303,7 @@ function BLTViewModGui:_setup_buttons( mod )
 			y = next_row_height or 0,
 			w = button_w,
 			h = button_h,
-			alpha = 0.1,
-			highlight_alpha = 0.1,
+			color_image = true,
 			title = managers.localization:text("blt_mod_check_for_updates"),
 			text = managers.localization:text("blt_mod_check_for_updates_desc"),
 			image = "ui/atlas/raid_atlas_skills",
@@ -335,8 +323,6 @@ function BLTViewModGui:_setup_buttons( mod )
 		y = (next_row_height or 0),
 		w = button_w,
 		h = button_h * 0.5,
-		alpha = 0.1,
-		highlight_alpha = 0.1,
 		title = managers.localization:text("blt_mod_toggle_dev"),
 		text = managers.localization:text("blt_mod_toggle_dev_desc"),
 		callback = callback( self, self, "clbk_toggle_dev_info" )

@@ -255,7 +255,7 @@ end
 
 function BLTMod:GetColor()
 	if not self.color then
-		return tweak_data.screen_colors.button_stage_3
+		return tweak_data.gui.colors.raid_list_background
 	end
 	if type(self.color) == "table" then
 		self.color = Color(unpack(self.color))

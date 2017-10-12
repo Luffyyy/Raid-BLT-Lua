@@ -36,7 +36,7 @@ function BLTDownloadManagerGui:_setup()
 		visible = false,
 		h = large_font_size,
 		layer = 10,
-		color = tweak_data.screen_colors.title,
+		color = tweak_data.gui.colors.raid_white,
 		text = managers.localization:text("blt_download_manager"),
 		align = "left",
 		vertical = "top",

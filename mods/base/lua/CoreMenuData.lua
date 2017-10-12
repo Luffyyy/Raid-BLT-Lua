@@ -2,7 +2,6 @@
 core:module("CoreMenuData")
 
 Hooks:Register("CoreMenuData.LoadData")
-
 function Data:_load_data(root, menu_id)
 	-- Find the child menu with id = menu_id
 	local menu

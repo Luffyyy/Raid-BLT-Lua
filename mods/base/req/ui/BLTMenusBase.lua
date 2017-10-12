@@ -25,6 +25,14 @@ function BLTMenu:close()
     self:Close()
 end
 
+function BLTMenu:HideBackground()
+    managers.raid_menu:hide_background()    
+end
+
+function BLTMenu:ShowBackground()
+    managers.raid_menu:show_background()    
+end
+
 function BLTMenu:_layout()
     self:Align()
 end
@@ -50,9 +58,8 @@ function BLTMenu:Align(controls, root)
                 self:AlignItem(item, prev_item, last_before_reset)
             else
                 self:AlignItemFirst(item)
-				item:set_y(0)
             end
-            if item:bottom() > (root:h() - 32) then
+            if prev_item and item:bottom() > (root:h() - (root.is_root_panel and 32 or 0)) then
                 if self:AlignItemResetY(item, prev_item) then
                     last_before_reset = prev_item
                     prev_item = nil -- reset y pos
@@ -68,7 +75,8 @@ function BLTMenu:IsItem(item)
 end
 
 function BLTMenu:AlignItemFirst(item)
-    item:set_y(item._params.y_offset)
+    item:set_x(item._params.x_offset or self.default_x_offset)
+    item:set_y(item._params.y_offset or self.default_y_offset)
 end
 
 function BLTMenu:AlignItemResetY(item, prev_item)
@@ -136,7 +144,11 @@ function BLTMenu:CreateSimple(typ, params, create_data)
             local insert = item._object and item._object._params and item._object or item
             insert._params.index = params.index
             insert._params.ignore_align = params.ignore_align
-            table.insert(self._controls, insert)
+            insert._params.x_offset = insert._params.x_offset or params.x_offset
+            insert._params.y_offset = insert._params.y_offset or params.y_offset
+            if not params.parent then
+                table.insert(self._controls, insert)
+            end
         end
         if self.SortItems then
             self:SortItems()
@@ -212,9 +224,13 @@ function BLTMenu:Slider(params)
     local max = params.max or 100
     local min = params.min or 0
     params.max_display_value = max
-    params.min_display_value = min
-
-    item = BLTMenu.CreateSimple(self, "slider", params, {text_key = "description", clbk_key = "on_value_change_callback", default_clbk = function(value)
+	params.min_display_value = min
+    params.value_format = params.value_format or "%.2f"
+    if params.value then
+    	params.value = (params.value - min) / (max - min) * 100
+    end
+    
+	item = BLTMenu.CreateSimple(self, "slider", params, {text_key = "description", clbk_key = "on_value_change_callback", default_clbk = function(value)
         params.callback(tonumber(item._value_label:text()), item)
     end})
     return item
@@ -233,6 +249,55 @@ function BLTMenu:Tabs(params)
         params.callback(tab_selected, item)
     end})
     return item
+end
+
+function BLTMenu:Panel(params)
+    local item
+	params.callback = nil
+	params.text = nil
+    item = BLTMenu.CreateSimple(self, "panel", params, {text_key = false})
+    return item
+end
+
+function BLTMenu:ColorSlider(params)
+	local color = params.color
+	local panel = self:Panel(table.merge({
+		w = 360,
+		h = 166,
+	}, params))
+	local preview = panel:bitmap({
+		name = "preview",
+		w = 24,
+		h = 24,
+		texture = "ui/atlas/raid_atlas_menu",
+		texture_rect = {922, 955, 33, 33},
+		color = color
+	})
+	preview:set_righttop(panel:w() - 6, 6)
+	local title = self:SubTitle({text = params.text, localize = params.localize, parent = panel, x_offset = 240})
+	local prev
+	for _, v in pairs({"red", "green", "blue", "alpha"}) do
+		local item = self:Slider({
+			name = v,
+			text = v,
+			localize = false,
+			value = color[v],
+			min = 0,
+			max = 1,
+			w = 380,
+			callback = function(value, item)
+				color[item:name()] = value
+				preview:set_color(color)
+				if params.callback then
+					params.callback(color, panel)
+				end
+			end,
+			y = prev and prev:bottom() or title:bottom(),
+			parent = panel
+		})
+		prev = item
+	end
+	return panel
 end
 
 --Basically all the shit that was in mods_menu, view_mod and download_manager but instead of fucking repeating it.

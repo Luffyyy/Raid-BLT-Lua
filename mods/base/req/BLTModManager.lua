@@ -66,7 +66,6 @@ function BLTModManager:_RunAutoCheckForUpdates()
 		text = managers.localization:text("blt_checking_updates_help"),
 		icon = "ui/hud/atlas/raid_atlas",
 		icon_texture_rect = {891, 1285, 64, 64},
-		color = Color.white,
 		priority = 1000,
 	} )
 	-- Place a notification that we're checking for autoupdates
@@ -76,7 +75,6 @@ function BLTModManager:_RunAutoCheckForUpdates()
 			text = managers.localization:text("blt_checking_updates_help"),
 			icon = "ui/hud/atlas/raid_atlas",
 			icon_texture_rect = {891, 1285, 64, 64},
-			color = Color.white,
 			priority = 1000,
 		} )
 	end
@@ -132,7 +130,6 @@ function BLTModManager:clbk_got_update( update, required, reason )
 				text = managers.localization:text("blt_checking_updates_required_help"),
 				icon = "ui/hud/atlas/raid_atlas",
 				icon_texture_rect = {891, 1285, 64, 64},
-				color = Color.white,
 				priority = 1000,
 			} )
 
@@ -143,7 +140,6 @@ function BLTModManager:clbk_got_update( update, required, reason )
 				text = managers.localization:text("blt_checking_updates_none_required_help"),
 				icon = "ui/hud/atlas/raid_atlas",
 				icon_texture_rect = {891, 1285, 64, 64},
-				color = Color.white,
 				priority = 0,
 			} )
 

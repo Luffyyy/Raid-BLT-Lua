@@ -33,8 +33,8 @@ function BLTModItem:init( panel, index, mod )
 
 	self._mod = mod
 
-	local bg_color = mod:GetColor()
-	local text_color = tweak_data.screen_colors.title
+	local bg_color = mod:GetColor():with_alpha(tweak_data.gui.colors.raid_list_background.alpha)
+	local text_color = tweak_data.gui.colors.raid_white
 	if mod:LastError() then
 		bg_color = tweak_data.screen_colors.important_1
 		text_color = tweak_data.screen_colors.important_1
@@ -52,21 +52,9 @@ function BLTModItem:init( panel, index, mod )
 	-- Background
 	self._background = self._panel:rect({
 		color = bg_color,
-		alpha = 0.2,
-		--blend_mode = "add",
 		layer = -1
 	})
 	BoxGuiObject:new( self._panel, { sides = { 1, 1, 1, 1 } } )
-
-	self._panel:bitmap({
-		texture = "guis/textures/test_blur_df",
-		w = self._panel:w(),
-		h = self._panel:h(),
-		render_template = "VertexColorTexturedBlur3D",
-		layer = -1,
-		halign = "scale",
-		valign = "scale"
-	})
 
 	-- Mod name
 	local mod_name = self._panel:text({
@@ -74,7 +62,6 @@ function BLTModItem:init( panel, index, mod )
 		font_size = medium_font_size,
 		font = medium_font,
 		layer = 10,
-		--blend_mode = "add",
 		color = text_color,
 		text = mod:GetName(),
 		align = "center",
@@ -93,7 +80,6 @@ function BLTModItem:init( panel, index, mod )
 		font_size = small_font_size,
 		font = small_font,
 		layer = 10,
-		--blend_mode = "add",
 		color = text_color,
 		text = string.sub( mod:GetDescription(), 1, 120 ),
 		align = "left",
@@ -141,7 +127,7 @@ function BLTModItem:init( panel, index, mod )
 			font = small_font,
 			layer = 10,
 			--blend_mode = "add",
-			color = tweak_data.screen_colors.title,
+			color = tweak_data.gui.colors.raid_white,
 			text = "No Image",
 			align = "center",
 			vertical = "center",
@@ -158,10 +144,10 @@ function BLTModItem:init( panel, index, mod )
 	if not mod:IsUndisablable() then
 
 		local icon_enabled = self._panel:bitmap({
-			name = "",
+			name = "enabled",
 			texture = "ui/hud/atlas/raid_atlas",
 			texture_rect = {949, 1480, 52, 52},
-			color = Color.white,
+			color = text_color,
 			alpha = 1,
 			layer = 10,
 			w = icon_size,
@@ -183,9 +169,10 @@ function BLTModItem:init( panel, index, mod )
 	if mod:HasUpdates() then
 
 		local icon_updates = self._panel:bitmap({
-			name = "",
+			name = "updates",
 			texture = "ui/hud/atlas/raid_atlas",
 			texture_rect = {891, 1285, 64, 64},
+			color = text_color,
 			alpha = mod:AreUpdatesEnabled() and 1 or 0.4,
 			layer = 10,
 			w = icon_size,
@@ -222,7 +209,8 @@ end
 function BLTModItem:set_highlight( enabled, no_sound )
 	if self._enabled ~= enabled then
 		self._enabled = enabled
-		self._background:set_alpha( enabled and 0.4 or 0.2 )
+		local alpha = tweak_data.gui.colors.raid_list_background.alpha
+		self._background:set_color( self._background:color():with_alpha(enabled and (alpha + 0.2) or alpha))
 		if enabled and not no_sound then
 			managers.menu_component:post_event( "highlight" )
 		end
