@@ -348,9 +348,9 @@ function BLTNotificationsGui:_move_to_notification( destination )
 		local orig_x = o:x()
 		local orig_other_x = other_object:x()
 		over(duration, function (t)
-			other_object:set_x(Easing.inout_quart(orig_other_x, 0, t))
-			o:set_x(Easing.inout_quart(orig_x, -o:w(), t))
-			o:set_alpha(Easing.in_quart(1, 0, t))
+			other_object:set_x(PD2Easing.inout_quart(orig_other_x, 0, t))
+			o:set_x(PD2Easing.inout_quart(orig_x, -o:w(), t))
+			o:set_alpha(PD2Easing.in_quart(1, 0, t))
 		end)
 
 		if alive(o) then
