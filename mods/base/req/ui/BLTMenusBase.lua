@@ -1,14 +1,13 @@
 BLTMenu = BLTMenu or blt_class(RaidGuiBase)
---In Raid menus would be made either with json or by inherting BLTMenu class and adding it to menu components by RaidMenuHelper:CreateMenu
 --core functions
 function BLTMenu:init(ws, fullscreen_ws, node, name)
     self._ws = ws
     self._fullscreen_ws = fullscreen_ws
     self._fullscreen_panel = self._fullscreen_ws:panel():panel({})
     self._panel = self._ws:panel():panel({})
-    self._controls = {}
     --do we need a name..? hard without a decomp :/
     BLTMenu.super.init(self, ws, fullscreen_ws, node, name or "")
+    self._root_panel.ctrls = self._root_panel.ctrls or {}
     if self.InitMenuData then
         self:InitMenuData(self._root_panel)
     end
@@ -16,6 +15,7 @@ function BLTMenu:init(ws, fullscreen_ws, node, name)
         self:Init(self._root_panel)
     end
     self:Align()
+    self:Finalize()
 end
 
 function BLTMenu:close()
@@ -23,6 +23,47 @@ function BLTMenu:close()
     self._fullscreen_ws:panel():remove(self._fullscreen_panel)
     self._root_panel:clear()
     self:Close()
+end
+
+function BLTMenu:Finalize(panel)
+    panel = panel or self._root_panel
+    for _, item in pairs(panel:get_controls()) do
+        if item.ctrls then
+            self:Finalize(item)
+        elseif item._params.tabs then
+            self:SetPage(nil, item)
+        end
+    end
+end
+
+--Hides only items that have the 'page' parameter.
+function BLTMenu:SetPage(page, tabs)
+    if not page then
+        local tab = tabs._params.tabs[tabs._selected_item_idx]
+        page = tab and tab.callback_param
+    end
+    
+    local parent = tabs._params.parent
+    if parent and parent.ctrls then
+        for _, item in pairs(parent.ctrls) do
+            if item._params.page then
+                item:set_visible(page == item._params.page)
+            end
+        end
+        self:Align()
+    end
+end
+
+function BLTMenu:GetItem(name, deep, panel)
+    panel = panel or self._root_panel 
+    for _, item in pairs(panel.ctlrs) do
+        if item:name() == name then
+            return item
+        elseif item.ctrls and deep then
+            return self:GetItem(name, deep, item)
+        end
+    end
+    return nil
 end
 
 function BLTMenu:HideBackground()
@@ -37,21 +78,16 @@ function BLTMenu:_layout()
     self:Align()
 end
 
-function BLTMenu:Align(controls, root)
-    controls = controls or self._controls    
-    root = root or self._root_panel
+function BLTMenu:Align(panel)
+    panel = panel or self._root_panel    
+    local controls = panel and panel.ctrls    
     
-    if not controls or not root then
+    if not controls then
         return
     end
 
     local prev_item
     local last_before_reset
-    local legend = managers.raid_menu:current_legend_control()
-    local back_button
-    if legend then
-        back_button = legend._object._engine_panel
-    end
     for _, item in pairs(controls) do
         if item:visible() and not item._params.ignore_align then
             if prev_item then
@@ -59,7 +95,7 @@ function BLTMenu:Align(controls, root)
             else
                 self:AlignItemFirst(item)
             end
-            if prev_item and item:bottom() > (root:h() - (root.is_root_panel and 32 or 0)) then
+            if prev_item and item:bottom() > (panel:h() - (panel.is_root_panel and 32 or 0)) then
                 if self:AlignItemResetY(item, prev_item) then
                     last_before_reset = prev_item
                     prev_item = nil -- reset y pos
@@ -95,65 +131,73 @@ end
 
 --Parameters that all items have
 function BLTMenu:BasicItemData(params)
+    params = clone(params)
+
     if params.localize == nil then
         params.localize = true
     end
+    if params.upper == nil then
+        params.upper = true
+    end
+
     if params.text then
-        params.text = (params.localize and managers.localization:to_upper_text(params.text) or string.upper(params.text))
+        params.text = (params.localize and managers.localization:to_upper_text(params.text) or params.upper and string.upper(params.text) or params.text)
     else
         params.text = ""
     end
+    params.parent = params.parent or self._root_panel
     params.is_blt = true
     params.ignore_align = not not params.ignore_align
     params.w = params.w or 512
     params.h = params.h or 32
     params.x_offset = params.x_offset or self.default_x_offset or 6
     params.y_offset = params.y_offset or self.default_y_offset or 6
-    params.index = params.index or #self._controls + 1
+    params.index = params.index or #params.parent.ctrls + 1
     params.ws = params.ws or self._ws
-
     return params
 end
 
-function BLTMenu:SortItems()
-    if self._controls then
-        table.sort(self._controls, function(a,b)
+function BLTMenu:SortItems(panel)
+    panel = panel or self._root_panel
+    if panel.ctrls then
+        table.sort(panel.ctrls, function(a,b)
             return a._params.index < b._params.index
         end)
     end
 end
-    
+
 function BLTMenu:CreateSimple(typ, params, create_data)
     create_data = create_data or {}
-    local parent = params.parent or self._root_panel
     local data = BLTMenu.BasicItemData(self, params)
+    local parent = data.parent   
     if parent then
-        local item = parent[typ](parent, table.merge({
-            [create_data.clbk_key or "on_click_callback"] = params.callback and (create_data.default_clbk or function(a, item, value)
-                params.callback(value, item)
-            end),
-            [create_data.text_key or "text"] = create_data.text_key ~= false and params.text or nil,
-        }, data))
+        local clbk_key = create_data.clbk_key or "on_click_callback"
+        data[clbk_key] = data.callback and (create_data.default_clbk or function(a, item, value)
+            data.callback(value, item)
+        end)
+        local text_key = create_data.text_key or "text"
+        data[text_key] = create_data.text_key ~= false and data.text or ""
+        local item = parent[typ](parent, data)        
 		if params.enabled ~= nil and item.set_enabled then
 			item:set_enabled(params.enabled)
         end
-        if self._controls and item then
+        if parent then
             local insert = item._object and item._object._params and item._object or item
-            insert._params.index = params.index
-            insert._params.ignore_align = params.ignore_align
-            insert._params.x_offset = insert._params.x_offset or params.x_offset
-            insert._params.y_offset = insert._params.y_offset or params.y_offset
-            if not params.parent then
-                table.insert(self._controls, insert)
-            end
+            insert._params.index = data.index
+            insert._params.ignore_align = data.ignore_align
+            insert._params.x_offset = insert._params.x_offset or data.x_offset
+            insert._params.y_offset = insert._params.y_offset or data.y_offset
+            table.insert(parent.ctrls, insert)
         end
         if self.SortItems then
-            self:SortItems()
-            self:Align()
+            self:SortItems(parent)
+            self:Align(parent)
         end
         return item
     end
 end
+
+--Item creation functions
 
 function BLTMenu:Button(params)
     return BLTMenu.CreateSimple(self, "button", params)
@@ -205,7 +249,7 @@ function BLTMenu:Switch(params)
 end
 
 function BLTMenu:MultiChoice(params)
-    params.data_source_callback = params.items_func or function() return params.items or {} end
+    params.data_source_callback =  params.items_func or function() return params.items or {} end
     local item
     item = BLTMenu.CreateSimple(self, "stepper", params, {text_key = "description", clbk_key = "on_item_selected_callback", default_clbk = function(value)
         params.callback(value, item)
@@ -234,14 +278,31 @@ function BLTMenu:Slider(params)
 end
 
 function BLTMenu:Tabs(params)
-    local item
-    table.merge(params, {
-        dont_trigger_special_buttons = true, --no idea what this does
-        tabs_params = params.tabs or {{text = "NO TABS"}},
-        initial_tab_idx = params.selected_tab,
-        tab_width = params.tab_width or 160,
-        tab_height = params.tab_height,		        
-    })
+    if params.localize == nil then
+        params.localize = true
+    end
+    if params.upper == nil then
+        params.upper = true
+    end
+
+    params.dont_trigger_special_buttons = params.dont_trigger_special_buttons or true --no idea what this does
+    params.tabs_params = params.tabs or {{text = "NO TABS"}}
+    params.callback = params.callback or callback(self, self, "SetPage")
+    params.initial_tab_idx = params.selected_tab
+    params.tab_width = params.tab_width or 160
+
+    self.default_page = params.selected_tab or "1"
+    if params.tabs then
+        for _, tab in pairs(params.tabs) do
+            if tab.text then
+                local localize = tab.localize or (params.localize and tab.localize ~= false)
+                local upper = tab.upper or (params.upper and tab.upper ~= false)
+                tab.text = localize and managers.localization:to_upper_text(tab.text) or upper and string.upper(tab.text) or tab.text
+            end
+        end
+    end
+
+    local item    
     item = BLTMenu.CreateSimple(self, "tabs", params, {text_key = false, default_clbk = function(tab_selected)
         params.callback(tab_selected, item)
     end})
@@ -253,6 +314,7 @@ function BLTMenu:Panel(params)
 	params.callback = nil
 	params.text = nil
     item = BLTMenu.CreateSimple(self, "panel", params, {text_key = false})
+    item.ctrls = item.ctrls or {}
     return item
 end
 
@@ -271,7 +333,7 @@ function BLTMenu:ColorSlider(params)
 		color = color
 	})
 	preview:set_righttop(panel:w() - 6, 6)
-	local title = self:SubTitle({text = params.text, localize = params.localize, parent = panel, x_offset = 240})
+	local title = self:SubTitle({text = params.text, localize = params.localize, parent = panel})
 	local prev
 	for _, v in pairs({"red", "green", "blue", "alpha"}) do
 		local item = self:Slider({
@@ -289,7 +351,6 @@ function BLTMenu:ColorSlider(params)
 					params.callback(color, panel)
 				end
 			end,
-			y = prev and prev:bottom() or title:bottom(),
 			parent = panel
 		})
 		prev = item
@@ -304,11 +365,13 @@ function BLTMenu:KeyBind(params)
     if params.localize == nil then
         params.localize = true
     end
+    if params.upper == nil then
+        params.upper = true
+    end
+
     params.text = params.text or ""
     if not params.localize then
-        params.text = string.upper(params.text)
-    else
-        params.text = ""
+        params.text = params.upper and string.upper(params.text) or params.text
     end
     params.keybind_w = params.keybind_w or 120
     params.keybind_params = {
