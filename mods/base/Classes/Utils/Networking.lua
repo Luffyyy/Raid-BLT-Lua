@@ -119,10 +119,11 @@ function LuaNetworking:SendToPeersExcept(peer, type_prm, data)
 end
 
 function LuaNetworking:SendStringThroughChat(message)
-	if ChatManager._receivers == nil then
-		ChatManager._receivers = {}
+	local chat_manager = managers.chat
+	if chat_manager._receivers == nil then
+		chat_manager._receivers = {}
 	end
-	ChatManager:send_message(LuaNetworking.HiddenChannel, tostring(LuaNetworking:LocalPeerID()), message)
+	chat_manager:send_message(LuaNetworking.HiddenChannel, tostring(LuaNetworking:LocalPeerID()), message)
 end
 
 Hooks:Add("ChatManagerOnReceiveMessage", "ChatManagerOnReceiveMessage_Network",
