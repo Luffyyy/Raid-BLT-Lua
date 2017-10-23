@@ -539,11 +539,10 @@ end
 
 --------------------------------------------------------------------------------
 -- Patch MenuComponentManager to create the BLT Mods component
-
+ 
 Hooks:Add("MenuComponentManagerInitialize", "BLTViewModGui.MenuComponentManagerInitialize", function(self)
 	RaidMenuHelper:CreateMenu({
 		name = "blt_view_mod",
-		back_callback = "perform_blt_save",
 		class = BLTViewModGui
 	})
 end)

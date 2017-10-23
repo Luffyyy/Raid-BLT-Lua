@@ -17,7 +17,6 @@ function RaidMenuHelper:CreateMenu(params)
 					_meta = "node",
 					gui_class = params.gui_class or "MenuNodeGuiRaid",
 					name = params.node_name or name,
-					back_callback = params.back_callback,
 					topic_id = params.topic_id or name,
 					menu_components = params.menu_components or ("raid_menu_header raid_menu_footer raid_back_button " .. (params.components or name or "")),
 					node_background_width = params.background_width or 0.4,

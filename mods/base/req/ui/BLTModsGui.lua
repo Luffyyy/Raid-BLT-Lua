@@ -132,7 +132,6 @@ Hooks:Add("MenuComponentManagerInitialize", "BLTModsGui.MenuComponentManagerInit
 		name = "blt_mods",
 		class = BLTModsGui,
 		name_id = "blt_options_menu_blt_mods",
-		back_callback = "perform_blt_save",
 		inject_list = "raid_menu_left_options",
 	})
 end)

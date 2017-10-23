@@ -428,3 +428,12 @@ function table.merge(og_table, new_table)
     end
     return og_table
 end
+
+--Pretty much CoreClass.type_name with support for tables.
+function type_name(value)
+    local t = type(value)
+    if t == "userdata" or t == "table" and value.type_name then
+        return value.type_name
+    end
+    return t
+end

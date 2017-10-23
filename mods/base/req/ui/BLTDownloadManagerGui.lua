@@ -110,7 +110,6 @@ end
 Hooks:Add("MenuComponentManagerInitialize", "BLTDownloadManagerGui.MenuComponentManagerInitialize", function(self)
 	RaidMenuHelper:CreateMenu({
 		name = "blt_download_manager",
-		back_callback = "perform_blt_save",
 		class = BLTDownloadManagerGui
 	})
 end)

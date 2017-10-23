@@ -29,11 +29,14 @@ function BLTOptionsMenu:blt_choose_language(item)
     BLT.Mods:Save()
 end
 
+function BLTOptionsMenu:Close()
+	BLT.Mods:Save()
+end
+
 Hooks:Add("MenuComponentManagerInitialize", "BLTOptionsMenu.MenuComponentManagerInitialize", function(self)
     RaidMenuHelper:CreateMenu({
 		name = "blt_options",
 		name_id = "blt_options_menu_lua_mod_options",
-		back_callback = "perform_blt_save",
         inject_list = "raid_menu_left_options",
         class = BLTOptionsMenu,
 		inject_after = "network"

@@ -18,10 +18,15 @@ function BLTMenu:init(ws, fullscreen_ws, node, name)
     self:Finalize()
 end
 
+function BLTMenu:Clear()
+    self._root_panel:clear()
+    self._root_panel.ctrls = {}
+end
+
 function BLTMenu:close()
     self._ws:panel():remove(self._panel)
     self._fullscreen_ws:panel():remove(self._fullscreen_panel)
-    self._root_panel:clear()
+    self:Clear()
     self:Close()
 end
 
@@ -56,11 +61,26 @@ end
 
 function BLTMenu:GetItem(name, deep, panel)
     panel = panel or self._root_panel 
-    for _, item in pairs(panel.ctlrs) do
+    for _, item in pairs(panel.ctrls) do
         if item:name() == name then
             return item
         elseif item.ctrls and deep then
             return self:GetItem(name, deep, item)
+        end
+    end
+    return nil
+end
+
+
+function BLTMenu:GetPanel(name, deep, panel)
+    panel = panel or self._root_panel 
+    for _, item in pairs(panel.ctrls) do
+        if item.ctrls then
+            if item:name() == name then
+                return item
+            elseif deep then
+                return self:GetItem(name, deep, item)
+            end
         end
     end
     return nil
@@ -405,6 +425,7 @@ function BLTCustomMenu:close()
     self._ws:panel():remove(self._panel)
     self._fullscreen_ws:panel():remove(self._fullscreen_panel)
     self._root_panel:clear()
+    BLT.Mods:Save()
 end
 
 function BLTCustomMenu:mouse_pressed( o, button, x, y )
