@@ -77,7 +77,7 @@ function json.encode (v)
     return "null"
   end
   
-  local vtype = CoreClass.type_name(v)
+  local vtype = type_name(v)
 
   -- Handle strings 
   if vtype=='string' or vtype=='Vector3' or vtype=='Rotation' or vtype=='Color' or vtype=='callback' then
