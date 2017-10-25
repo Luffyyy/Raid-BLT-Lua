@@ -402,7 +402,7 @@ local escapeList = {
 }
 
 function json_private.encodeString(s)
-  if CoreClass.type_name(s) == "Color" then
+  if type_name(s) == "Color" then
 		return string.format("Color(%s, %s, %s, %s)", s.a, s.r, s.g, s.b)
 	end
   local s = tostring(s)  
@@ -442,7 +442,7 @@ end
 -- @param o The object to examine.
 -- @return boolean True if the object should be JSON encoded, false if it should be ignored.
 function isEncodable(o)
-	local t = CoreClass.type_name(o)
+	local t = type_name(o)
 	return (t=='string' or t=='boolean' or t=='number' or t=='nil' or t=='table' or t=='Vector3' or t=='Rotation' or t=='Color' or t=='callback') or (t=='function' and o==null) 
 end
 
