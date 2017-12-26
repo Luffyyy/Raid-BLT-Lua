@@ -69,7 +69,7 @@
 	"blt_download_all" : "Update All",
 
 	"blt_checking_updates" : "Checking for Updates",
-	"blt_checking_updates_help" : "Checking with the PaydayMods server for updates to your mods, please wait...",
+	"blt_checking_updates_help" : "Checking mods.. You can update mods by going to the mods manager.",
 	"blt_checking_updates_required" : "Updates Required",
 	"blt_checking_updates_required_help" : "Updates are available for your mods, visit the download manager to update them!",
 	"blt_view_patch_notes" : "View Patch Notes",
@@ -91,6 +91,27 @@
 
 	"blt_no_image" : "No Image",
 	"blt_no_name" : "No Name",
-	"blt_no_desc" : "No Description"
+	"blt_no_desc" : "No Description",
+	
+	"blt_mods_manager" : "Mods Manager",
+	"blt_update_all" : "Update all",
+    "blt_important_notice" : "Show update notice",
+    "blt_close" : "Close",
+    "blt_mod_type_normal" : "Normal",
+    "blt_mod_type_custom" : "Custom content",
+    "blt_mod_type_custom_raid" : "Custom raid",
+    "blt_visit_page" : "Visit page",
+    "blt_updated" : "Updated!",
+  	"blt_done" : "Done!",
+    "blt_updates_download_now" : "Download now",
+    "blt_mod_type" : "Mod type: $type",
+    "blt_mod_author" : "Author: $author",
+    "blt_mod_contact" : "Contact: $contact",
+	"blt_mods_manager_important_title" : "$mod has a new version!",
+    "blt_mods_manager_important_help" : "Go to the Mods Manager to update?",
+	"blt_waiting" : "Waiting for a response..",
+    "blt_waiting_update" : "Waiting to be updated..",
+	"blt_more_info" : "See more information",
+	"blt_download_complete" : "Download complete, installing.."
 
 }

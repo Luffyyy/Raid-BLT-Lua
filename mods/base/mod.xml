@@ -1,0 +1,73 @@
+<table 
+		name="Raid WW2 BLT"  
+		priority="1001"
+		disable_safe_mode="true" 
+		image="blt.png"
+		author="James Wilkinson, Luffy"
+		color="255 0 255"
+		contact=""
+		description="The collection of Lua files that allow the BLT hook to function."
+		undisablable="true" 
+		version="1.0"
+	>
+	<options build_menu="false">
+		<options>
+			<option name="ImportantNotice" type="boolean" default_value="true"/>
+			<option name="DisabledMods" type="table">
+				<default_value/>
+			</option>
+		</options>
+	</options>
+	<classes directory="Classes">
+		<class file="UI/MenuUI.lua"/>
+		<class file="UI/Items/TextBoxBase.lua"/>
+		<class file="UI/Items/ContextMenu.lua"/>
+		<class file="UI/Items/BaseItem.lua"/>
+		<class file="UI/Items/Item.lua"/>
+		<class file="UI/Items/Menu.lua"/>
+		<class file="UI/Items/KeyBind.lua"/>
+		<class file="UI/Items/Group.lua"/>
+		<class file="UI/Items/ImageButton.lua"/>
+		<class file="UI/Items/Toggle.lua"/>
+		<class file="UI/Items/ComboBox.lua"/>
+		<class file="UI/Items/Slider.lua"/>
+		<class file="UI/Items/TextBox.lua"/>
+		<class file="UI/Items/ColorTextBox.lua"/>
+
+		<class file="UI/Dialogs/MenuDialog.lua"/>
+		<class file="UI/Dialogs/FileBrowserDialog.lua"/>
+		<class file="UI/Dialogs/ColorDialog.lua"/>
+		<class file="UI/Dialogs/ListDialog.lua"/>
+		<class file="UI/Dialogs/InputDialog.lua"/>
+		<class file="UI/Dialogs/SelectListDialog.lua"/>
+		<class file="UI/Dialogs/SimpleListDialog.lua"/>
+		<class file="UI/Dialogs/DownloadDialog.lua"/>
+		<class file="UI/Dialogs/SimpleSelectListDialog.lua"/>
+		<class file="UI/MenuDialogManager.lua"/>
+		<class file="UI/ModsMenu.lua"/>
+	</classes>
+	<hooks>
+		<hook source_file="lib/managers/menu/menucomponentmanager" file="Classes/UI/PD2Insert.lua"/>
+		<hook source_file="lib/managers/menu/menucomponentmanager" file="Classes/UI/MenusBase.lua"/>
+		<hook source_file="lib/managers/menu/menucomponentmanager" file="Classes/UI/OptionsMenu.lua"/>
+		<hook source_file="lib/managers/menu/menucomponentmanager" file="Classes/UI/KeybindsMenu.lua"/>
+		<hook source_file="lib/managers/menu/menucomponentmanager" file="Classes/UI/NotificationsGui.lua"/>
+		<hook source_file="lib/managers/menu/raid_menu/controls/raidguipanel" file="Hooks/RaidGUIPanel.lua"/>
+		<hook source_file="lib/managers/menu/raid_menu/controls/raidguicontrolkeybind" file="Hooks/RaidGUIControlKeyBind.lua"/>
+		<hook source_file="core/lib/managers/menu/coremenudata" file="Hooks/CoreMenuData.lua"/>
+		<hook source_file="lib/setups/setup" file="Hooks/Setup.lua"/>
+		<hook source_file="lib/setups/gamesetup" file="Hooks/GameSetup.lua"/>
+		<hook source_file="lib/setups/menusetup" file="Hooks/MenuSetup.lua"/>
+		<hook source_file="core/lib/system/corepatchlua" file="Hooks/CorePatchLua.lua"/>
+		<hook source_file="lib/managers/localizationmanager" file="Hooks/LocalizationManager.lua"/>
+		<hook source_file="lib/managers/menumanager" file="Hooks/MenuManager.lua"/>
+		<hook source_file="core/lib/managers/menu/coremenulogic" file="Hooks/CoreMenuLogic.lua"/>
+		<hook source_file="lib/managers/chatmanager" file="Hooks/ChatManager.lua"/>
+		<hook source_file="lib/managers/menu/menucomponentmanager" file="Hooks/MenuComponentManager.lua"/>
+		<hook source_file="lib/managers/systemmenumanager" file="Hooks/SystemMenuManager.lua"/>
+		<hook source_file="lib/network/base/basenetworksession" file="Hooks/BaseNetworkSession.lua"/>
+		<hook source_file="lib/network/base/networkmanager" file="Hooks/NetworkManager.lua"/>
+		<hook source_file="lib/managers/menu/raid_menu/raidmenuscenemanager" file="Hooks/RaidMenuSceneManager.lua"/>
+	</hooks>
+	<auto_updates provider="modworkshop" id="21065" version="1.0" important="true"/>
+</table>
