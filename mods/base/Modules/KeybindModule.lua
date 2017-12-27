@@ -19,7 +19,7 @@ function KeybindModule:Load()
 	end
 	self._config.run_in_menu = self._config.run_in_menu or true
 	self._config.run_in_game = self._config.run_in_game or true
-	BLT.Keybinds:register_keybind_json(self._mod, self._config)
+	BLT.Keybinds:register_keybind(self._mod, self._config)
 end
 
 BLT:RegisterModule(KeybindModule.type_name, KeybindModule)

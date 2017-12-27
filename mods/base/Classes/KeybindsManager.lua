@@ -2,27 +2,27 @@
 BLTKeybind = BLTKeybind or class()
 BLTKeybind.StateMenu = 1
 BLTKeybind.StateGame = 2
-
-function BLTKeybind:init( parent_mod, parameters )
-
+BLTKeybind.StatePausedGame = 3
+function BLTKeybind:init(parent_mod, parameters)
 	self._mod = parent_mod
 
-	self._id = parameters.id
+	self._id = parameters.keybind_id or "missing_id"
 	self._key = {}
-	self._file = parameters.file
+	self._file = parameters.script_path
 	self._callback = parameters.callback
 
-	self._allow_menu = parameters.allow_menu or false
-	self._allow_game = parameters.allow_game or false
+	self._allow_menu = parameters.run_in_menu or false
+	self._allow_game = parameters.run_in_game or false
+	self._allow_paused_game = parameters.run_in_paused_game or false
 
 	self._show_in_menu = parameters.show_in_menu
 	if self._show_in_menu == nil then
 		self._show_in_menu = true
 	end
 	self._name = parameters.name or false
-	self._desc = parameters.desc or false
-	self._localize = parameters.localize or false
-
+	self._desc = parameters.description or false
+	self._localize = parameters.localized or false
+	self:SetKeys(BLT.Options:GetValue("Keybinds")[self:Id()] or {})
 end
 
 function BLTKeybind:ParentMod()
@@ -33,20 +33,23 @@ function BLTKeybind:Id()
 	return self._id
 end
 
-function BLTKeybind:SetKey( key, force )
+function BLTKeybind:SetKey(key, force)
 	if force then
-		self:_SetKey( force, key )
+		self:_SetKey(force, key)
 	else
-		self:_SetKey( "pc", key )
+		self:_SetKey("pc", key)
 	end
 end
 
-function BLTKeybind:_SetKey( idx, key )
+function BLTKeybind:_SetKey(idx, key)
 	if not idx then
 		return false
 	end
 	log(string.format("[Keybind] Bound %s to %s", tostring(self:Id()), tostring(key)))
 	self._key[idx] = key
+	
+	BLT.Options:GetValue("Keybinds")[self:Id()] = self:Keys()
+	BLT.Options:Save()
 end
 
 function BLTKeybind:Key()
@@ -55,6 +58,10 @@ end
 
 function BLTKeybind:Keys()
 	return self._key
+end
+
+function BLTKeybind:SetKeys(keys)
+	self._key = keys
 end
 
 function BLTKeybind:HasKey()
@@ -107,19 +114,25 @@ function BLTKeybind:AllowExecutionInGame()
 	return self._allow_game
 end
 
-function BLTKeybind:CanExecuteInState( state )
+function BLTKeybind:AllowExecutionInPausedGame()
+	return self._allow_paused_game
+end
+
+function BLTKeybind:CanExecuteInState(state)
 	if state == BLTKeybind.StateMenu then
 		return self:AllowExecutionInMenu()
 	elseif state == BLTKeybind.StateGame then
 		return self:AllowExecutionInGame()
+	elseif state == BLTKeybind.StatePausedGame then
+		return self:AllowExecutionInPausedGame()
 	end
 	return false
 end
 
 function BLTKeybind:Execute()
 	if self:File() then
-		local path = Application:nice_path( self:ParentMod():GetPath() .. "/" .. self:File(), false )
-		dofile( path )
+		local path = Application:nice_path(self:ParentMod():GetPath() .. "/" .. self:File(), false)
+		dofile(path)
 	end
 	if self:Callback() then
 		self:Callback()()
@@ -143,40 +156,21 @@ function BLTKeybindsManager:init()
 	self._potential_keybinds = {}
 end
 
-function BLTKeybindsManager:register_keybind( mod, parameters )
-
-	-- Create the mod
-	local bind = BLTKeybind:new( mod, parameters )
-	table.insert( self._keybinds, bind )
+function BLTKeybindsManager:register_keybind(mod, parameters)
+	local bind = BLTKeybind:new(mod, parameters)
+	table.insert(self._keybinds, bind)
 	log("[Keybind] Registered keybind " .. tostring(bind))
 
 	-- Check through the potential keybinds for the added bind and restore it's key
-	for i, bind_data in ipairs( self._potential_keybinds ) do
-		local success = self:_restore_keybind( bind_data )
+	for i, bind_data in ipairs(self._potential_keybinds) do
+		local success = self:_restore_keybind(bind_data)
 		if success then
-			table.remove( self._potential_keybinds, i )
+			table.remove(self._potential_keybinds, i)
 			break
 		end
 	end
 
 	return bind
-
-end
-
-function BLTKeybindsManager:register_keybind_json( mod, json_data )
-
-	local parameters = {
-		id = json_data["keybind_id"],
-		file = json_data["script_path"],
-		allow_menu = json_data["run_in_menu"],
-		allow_game = json_data["run_in_game"],
-		show_in_menu = json_data["show_in_menu"],
-		name = json_data["name"],
-		desc = json_data["description"],
-		localize = json_data["localized"],
-	}
-	self:register_keybind( mod, parameters )
-
 end
 
 function BLTKeybindsManager:keybinds()
@@ -184,11 +178,11 @@ function BLTKeybindsManager:keybinds()
 end
 
 function BLTKeybindsManager:has_keybinds()
-	return table.size( self:keybinds() ) > 0
+	return table.size(self:keybinds()) > 0
 end
 
 function BLTKeybindsManager:has_menu_keybinds()
-	for _, bind in ipairs( self:keybinds() ) do
+	for _, bind in ipairs(self:keybinds()) do
 		if bind:ShowInMenu() then
 			return true
 		end
@@ -197,25 +191,24 @@ function BLTKeybindsManager:has_menu_keybinds()
 end
 
 function BLTKeybindsManager:get_keybind( id )
-	for _, bind in ipairs( self._keybinds ) do
+	for _, bind in ipairs(self._keybinds) do
 		if bind:Id() == id then
 			return bind
 		end
 	end
 end
 
-Hooks:Add("CustomizeControllerOnKeySet", "CustomizeControllerOnKeySet.BLTKeybindsManager", function( connection_name, button )
-	local bind = BLT.Keybinds:get_keybind( connection_name )
+Hooks:Add("CustomizeControllerOnKeySet", "CustomizeControllerOnKeySet.BLTKeybindsManager", function(connection_name, button)
+	local bind = BLT.Keybinds:get_keybind(connection_name)
 	if bind then
-		bind:SetKey( button )
+		bind:SetKey(button)
 	end
 end)
 
 --------------------------------------------------------------------------------
 -- Run keybinds
 
-function BLTKeybindsManager:update( t, dt, state )
-
+function BLTKeybindsManager:update(t, dt, state)
 	-- Create inputs if needed
 	if not self._input_keyboard then
 		self._input_keyboard = Input:keyboard()
@@ -244,90 +237,29 @@ function BLTKeybindsManager:update( t, dt, state )
 	end
 
 	-- Run keybinds
-	for _, bind in ipairs( self:keybinds() ) do
-		if bind:IsActive() and bind:HasKey() and bind:CanExecuteInState( state ) then
-
+	for _, bind in ipairs(self:keybinds()) do
+		if bind:IsActive() and bind:HasKey() and bind:CanExecuteInState(state) then
 			local key = bind:Key()
 			if string.find(key, "mouse ") == 1 then
-				key_pressed = self._input_mouse:pressed( Idstring(key:sub(7)) )
+				key_pressed = self._input_mouse:pressed(Idstring(key:sub(7)))
 			else
-				key_pressed = self._input_keyboard:pressed( Idstring(key) )
+				key_pressed = self._input_keyboard:pressed(Idstring(key))
 			end
 			if key_pressed then
 				bind:Execute()
 			end
-
 		end
 	end
-
 end
 
-Hooks:Add("MenuUpdate", "Base_Keybinds_MenuUpdate", function( t, dt )
-	BLT.Keybinds:update( t, dt, BLTKeybind.StateMenu )
+Hooks:Add("MenuUpdate", "BLT.Keybinds.MenuUpdate", function(t, dt)
+	BLT.Keybinds:update(t, dt, BLTKeybind.StateMenu)
 end)
 
-Hooks:Add("GameSetupUpdate", "Base_Keybinds_GameStateUpdate", function( t, dt )
-	BLT.Keybinds:update( t, dt, BLTKeybind.StateGame )
+Hooks:Add("GameSetupUpdate", "BLT.Keybinds.Update", function(t, dt)
+	BLT.Keybinds:update(t, dt, BLTKeybind.StateGame)
 end)
 
---------------------------------------------------------------------------------
--- Save/Load for the manager
-
-function BLTKeybindsManager:save( cache )
-
-	cache.keybinds = {}
-
-	for _, bind in ipairs( self:keybinds() ) do
-		if bind:Key() ~= "" then
-
-			local data = {
-				id = bind:Id()
-			}
-			for id, key in pairs( bind:Keys() ) do
-				data[id] = key
-			end
-			table.insert( cache.keybinds, data )
-
-		end
-	end
-
-end
-
-function BLTKeybindsManager:load( cache )
-
-	if cache.keybinds then
-		for _, bind_data in ipairs( cache.keybinds ) do
-
-			local bind = self:get_keybind( bind_data.id )
-			if bind then
-				self:_restore_keybind( bind_data )
-			else
-				-- Store the bind so that we can restore it to any mods that are loaded later
-				table.insert( self._potential_keybinds, bind_data )
-			end
-
-		end
-	end
-
-end
-
-function BLTKeybindsManager:_restore_keybind( bind_data )
-	local bind = self:get_keybind( bind_data.id )
-	if bind then
-		for idx, key in pairs( bind_data ) do
-			if idx ~= "id" then
-				bind:SetKey( key, idx )
-			end
-		end
-		return true
-	end
-	return false
-end
-
-Hooks:Add("BLTOnSaveData", "BLTOnSaveData.BLTKeybindsManager", function( cache )
-	BLT.Keybinds:save( cache )
-end)
-
-Hooks:Add("BLTOnLoadData", "BLTOnLoadData.BLTKeybindsManager", function( cache )
-	BLT.Keybinds:load( cache )
+Hooks:Add("GameSetupPausedUpdate", "BLT.Keybinds.PausedUpdate", function(t, dt)
+	BLT.Keybinds:update(t, dt, BLTKeybind.StatePausedGame)
 end)

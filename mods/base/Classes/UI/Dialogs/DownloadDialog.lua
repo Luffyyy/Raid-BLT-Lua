@@ -39,21 +39,21 @@ function DownloadDialog:_Show(params)
         params.create_items(self._menu)
     end
     self:show_dialog()
-    self:SetStatus("beardlib_waiting")
+    self:SetStatus("blt_waiting")
 end
 
 function DownloadDialog:SetInstalling()
-    self:SetStatus("beardlib_download_complete")
+    self:SetStatus("blt_download_complete")
 end
 
 function DownloadDialog:SetFailed()
-    self:SetStatus("beardlib_download_failed")
+    self:SetStatus("blt_download_failed")
     self._menu:GetItem("No"):SetEnabled(true)
     self._allowed_to_cancel = true
 end
 
 function DownloadDialog:SetFinished()
-    self:SetStatus("beardlib_done")
+    self:SetStatus("blt_done")
     self._menu:GetItem("No"):SetEnabled(true)
     self._allowed_to_cancel = true
     self:hide()
@@ -70,7 +70,7 @@ function DownloadDialog:SetProgress(id, bytes, total_bytes)
     local progress = bytes / total_bytes
     local mb = bytes / (1024 ^ 2)
     local total_mb = total_bytes / (1024 ^ 2)
-    self:SetStatus(string.format(managers.localization:text("beardlib_downloading").."%.2f/%.2fmb(%.0f%%)", mb, total_mb, tostring(progress * 100)), true)
+    self:SetStatus(string.format(managers.localization:text("blt_downloading").."%.2f/%.2fmb(%.0f%%)", mb, total_mb, tostring(progress * 100)), true)
     self._progress:set_w(self._menu:Panel():w() * progress)
 end
 

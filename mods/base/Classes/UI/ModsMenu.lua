@@ -42,7 +42,7 @@ function BLTModsMenu:CreateItems(menu)
         name = "Main",
         accent_color = Color("e22626"),
         private = {background_color = Color(0.8, 0.2, 0.2, 0.2)},
-        items_size = 24,
+        items_size = 23,
     })
     menu._panel:rect({
         name = "title_bg",
@@ -116,12 +116,14 @@ function BLTModsMenu:CreateItems(menu)
             item:SetPositionByString("CenterBottom")
             item:Panel():move(0, -10)
         end,
+        auto_align = false,
         animate_align = true,
         align_method = "grid",
     })
     for _, mod in pairs(BLT.Mods:Mods()) do
         self:AddMod(mod, "normal")
     end
+    self._list:AlignItems(true)
 end
 
 function BLTModsMenu:Text(mod_item, t, opt)
@@ -165,6 +167,7 @@ function BLTModsMenu:AddMod(mod, type)
         h = s - 1,
         index = name == "Raid WW2 BLT" and 1 or nil,
         scrollbar = false,
+        auto_align = false,
         accent_color = concol,
         highlight_color = concol, 
         background_color = color:with_alpha(0.8)
@@ -186,13 +189,12 @@ function BLTModsMenu:AddMod(mod, type)
         position = "CenterTop"
     })
     local t = self:Text(mod_item, tostring(name), {name = "Title", offset = {mod_item.offset[1], 16}})
-    self:Text(mod_item, loc:text("blt_mod_type", {type = loc:text("blt_mod_type_" .. type)}))
     self:Text(mod_item, loc:text("blt_mod_author", {author = mod:GetAuthor()}))
-   -- text(loc:text("blt_mod_contact", {contact = mod:GetContact()}))
     self:Text(mod_item, "", {name = "Status"})
     mod_item:Toggle({
         name = "Enabled",
         text = false,
+        enabled = not mod.cannot_be_disabled,
         w = 32,
         h = 32,
         offset = 0,
@@ -210,9 +212,9 @@ function BLTModsMenu:AddMod(mod, type)
         color = color:contrast():with_alpha(0.25),
         w = 0,
     })
+    self:Button(mod_item, "blt_more_info", ClassClbk(self, "ViewMoreInfoMod", mod))
     self:Button(mod_item, "blt_visit_page", ClassClbk(self, "ViewMod", mod), mod.auto_updates_module ~= nil and mod.auto_updates_module:HasPage())
     self:Button(mod_item, "blt_updates_download_now", ClassClbk(self, "BeginModDownload", mod), false, {name = "Download"})
-    --self:Button(mod_item, "blt_more_info", ClassClbk(self, "ViewMoreInfoMod", mod), false)
  
     if mod.NeedsUpdate then
         self:SetModNeedsUpdate(mod)
@@ -264,7 +266,7 @@ function BLTModsMenu:UpdateAllMods(no_dialog)
 
     if no_dialog == true then
         self:UpdatesModsByList(tbl)
-    else        
+    else
         BLT.Dialogs:SimpleSelectList():Show({force = true, list = tbl, selected_list = tbl, callback = ClassClbk(self, "UpdatesModsByList")})
     end
 end
@@ -293,7 +295,18 @@ function BLTModsMenu:BeginModDownload(mod)
 end
 
 function BLTModsMenu:ViewMoreInfoMod(mod)
-
+    BLT.Dialogs:Simple():Show({
+        w = 1300,
+        create_items = function(menu)
+            local holder = menu:Menu({
+                auto_height = true,
+                scroll_color = self._menu.foreground,
+                scrollbar = true,
+                max_height = 700,
+            })
+            holder:Divider({size_by_text = true, text = mod:GetDeveloperInfo()})
+        end
+    })
 end
 
 local megabytes = (1024 ^ 2)

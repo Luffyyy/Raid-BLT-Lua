@@ -45,4 +45,15 @@ function LocalizationModule:RegisterHooks()
     end
 end
 
+function LocalizationModule:GetInfo(append)
+    append("Localization:")
+    append("", "Default language:", tostring(self.DefaultLocalization))
+    append("", "Languages:")
+    for _, tbl in ipairs(self._config) do
+        if tbl._meta == "localization" or tbl._meta == "loc" then
+            append("", "", tostring(tbl.language), ">", tostring(tbl.file))
+        end
+    end
+end
+
 BLT:RegisterModule(LocalizationModule.type_name, LocalizationModule)

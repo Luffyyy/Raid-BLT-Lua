@@ -1,17 +1,14 @@
 {
 	"blt_options_menu_blt_mods" : "BLT Mods",
-	"blt_options_menu_blt_mods_desc" : "Update and manage your installed BLT mods",
 	"blt_options_menu_lua_mod_options" : "Mod Options",
-	"blt_options_menu_lua_mod_options_desc" : "Configure and customize your installed BLT mods",
 	"blt_options_menu_keybinds" : "Mod Keybinds",
-	"blt_options_menu_keybinds_desc" : "Set your keybinds for your BLT mods",
 
 	"blt_mod_outdated" : "This mod is for an older BLT version and is no longer supported; the developer must update this mod to the latest version of the BLT. You will get errors and crashes by leaving this mod installed.",
 	"blt_mod_missing_dependencies" : "This mod requires other mods to function which are not installed, so it has been disabled.",
-	"blt_mod_missing_dependency" : "    Missing: $dependency",
-	"blt_mod_missing_dependency_download" : "    Missing: $dependency, added to Download Manager",
+	"blt_mod_missing_dependency" : "Missing: $dependency",
+	"blt_mod_missing_dependency_download" : "Missing: $dependency, added to Download Manager",
 	"blt_mod_dependency_disabled" : "This mod requires other mods which are not enabled, so it has been disabled.",
-	"blt_mod_disabled_dependency" : "    Disabled: $dependency",
+	"blt_mod_disabled_dependency" : "Disabled: $dependency",
 
 	"blt_mod_info_author" : "Author",
 	"blt_mod_info_contact" : "Contact",
@@ -27,11 +24,6 @@
 	"blt_mod_state_enabled_on_restart_desc" : "This mod will be loaded next time the game is started.",
 	"blt_mod_state_disabled_on_restart" : "Disabled On Restart",
 	"blt_mod_state_disabled_on_restart_desc" : "This mod will not be loaded by the game the next time it is started.",
-
-	"blt_mod_safemode_enabled" : "Safe Mode:\nEnabled",
-	"blt_mod_safemode_enabled_help" : "Disable this mod after major game updates to prevent crashes.",
-	"blt_mod_safemode_disabled" : "Safe Mode:\nDisabled",
-	"blt_mod_safemode_disabled_help" : "This mod will not be disabled automatically after major game updates.",
 
 	"blt_mod_updates_enabled" : "Automatic Updates:\nEnabled",
 	"blt_mod_updates_enabled_help" : "Automatically check with the PaydayMods server for newer versions of this mod.",
@@ -79,15 +71,6 @@
 	"blt_language_select" : "Language",
 	"blt_language_select_desc" : "Select the language for the BLT to be displayed in",
 	"blt_language_en" : "English",
-	"blt_language_es" : "Spanish",
-	"blt_language_cht" : "Chinese (Traditional)",
-	"blt_language_de" : "German",
-	"blt_language_fr" : "French",
-	"blt_language_ru" : "Russian",
-	"blt_language_tr" : "Turkish",
-	"blt_language_id" : "Indonesian",
-	"blt_language_it" : "Italian",
-	"blt_language_zh-cn" : "Chinese"
 
 	"blt_no_image" : "No Image",
 	"blt_no_name" : "No Name",

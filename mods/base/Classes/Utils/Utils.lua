@@ -670,7 +670,7 @@ end
 
 
 --Pretty much CoreClass.type_name with support for tables.
-function type_name(value)
+function get_type_name(value)
     local t = type(value)
     if t == "userdata" or t == "table" and value.type_name then
         return value.type_name

@@ -8,7 +8,7 @@ end
 
 function RaidGuiControlKeyBind:_key_press(text, key, input_id, ...)
 	if not self._params.is_blt then -- use normal for non blt keybinds.
-		RaidGuiControlKeyBind.orig._key_press(self, text, key, input_id, ...)
+		return RaidGuiControlKeyBind.orig._key_press(self, text, key, input_id, ...)
 	end
 	
 	if managers.system_menu:is_active() then
@@ -146,9 +146,10 @@ function RaidGuiControlKeyBind:_key_press(text, key, input_id, ...)
 
 	if connection then
 		local key_button = self._keybind_params.binding
-		Hooks:Call( "CustomizeControllerOnKeySet", self._keybind_params.connection_name, key_button )
 		if self._keybind_params.callback then
 			self._keybind_params.callback(key_button, self)
+		else
+			Hooks:Call("CustomizeControllerOnKeySet", self._keybind_params.connection_name, key_button)
 		end
 	end
 

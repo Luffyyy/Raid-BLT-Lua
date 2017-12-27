@@ -64,7 +64,7 @@ function Item:MousePressed(button, x, y)
     if not self:MouseCheck(true) then
         return
     end
-    if self:alive() and self:MouseInside(x,y) then
+	if self:alive() and self:MouseInside(x,y) then
         if button == Idstring("0") then
             self:RunCallback()
             return true

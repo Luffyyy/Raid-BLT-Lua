@@ -4,8 +4,8 @@ function SimpleSelectListDialog:init(params, menu)
     if self.type_name == SimpleSelectListDialog.type_name then
         params = params and clone(params) or {}
     end
-    params.w = 400
-    params.h = 500
+    params.w = 500
+    params.h = 700
     SimpleSelectListDialog.super.init(self, params, menu)
 end
 

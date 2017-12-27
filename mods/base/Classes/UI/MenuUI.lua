@@ -11,7 +11,6 @@ function MenuUI:init(params)
     self.layer = self.layer or 200 --Some fucking layer that is higher than most vanilla menus
     self._ws = managers.gui_data:create_fullscreen_workspace()
 	self._ws:connect_keyboard(Input:keyboard())
-    tweak_data.gui.MOUSE_LAYER = 9999999999 --nothing should have a layer that is bigger than mouse tbh
     self._panel = self._ws:panel():panel({
         name = self.name or self.type_name, 
         alpha = 0, layer = self.layer
@@ -64,8 +63,8 @@ function MenuUI:ReloadInterface(params, shallow)
         visible = not not self.background_blur or self.background_color ~= nil,
         render_template = self.background_blur and "VertexColorTexturedBlur3D" or "VertexColorTextured",
         texture = self.background_blur and "units/vanilla/textures/generic/small/white_df",
-        w = self.background_blur and self._panel:w(),
-        h = self.background_blur and self._panel:h(),
+        w = self._panel:w(),
+        h = self._panel:h(),
         color = self.background_color,
         alpha = self.background_alpha,       
     })

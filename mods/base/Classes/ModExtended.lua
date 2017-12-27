@@ -25,24 +25,10 @@ function BLTModExtended:init(path, ident, data, post_init)
 	self._errors = {}
 
 	-- Mod information
-	self._config = data
-	self.id = ident
-	self.load_dir = path
-	self.path = string.format("%s%s/", path, ident)
-	self.save_path = data.save_path or "saves/"
-	self.name = data.name or self.id or "Error: No Name!"
-	self.desc = data.description or self.desc
-	self.version = data.version or self.version
-	self.min_blt_version = data.min_blt_version
-	self.author = data.author or self.author
-	self.contact = data.contact or self.contact
-	self.priority = tonumber(data.priority) or 0
-	self.dependencies = data.dependencies or {}
-	self.disable_safe_mode = data.disable_safe_mode or false
-	self.undisablable = data.undisablable or false
-	self.safe_mode = true
+	self:InitParams(path, ident, data)
 
-	self._auto_post_init = data.post_init or post_init
+	self._early_post_init = data.early_post_init
+	self._auto_post_init = NotNil(data.auto_post_init, post_init)
 
 	self.color = data.color
 
@@ -89,7 +75,7 @@ function BLTModExtended:InitModules()
         end
     end
 
-    if self._auto_post_init or self._config.post_init then
+    if self._early_post_init then
         self:PostInitModules()
     end
     self.modules_initialized = true
@@ -104,78 +90,32 @@ function BLTModExtended:PostInitModules(ignored_modules)
                 self:log("[ERROR] An error occured on the post initialization of %s. Error:\n%s", module._name, tostring(err))
             end
         end
-    end
+	end
+	local data = self:GetConfig()
+	if data.global_key then
+		self.global = data.global_key
+		if _G[self.global] then
+			if data.merge_global then
+				table.merge(_G[self.global], self)
+				for k, v in pairs(getmetatable(self)) do
+					if type(v) == "function" then
+						_G[self.global][k] = v
+					end
+				end
+			end
+		else
+			rawset(_G, self.global, self)
+		end
+	end
 end
 
 function BLTModExtended:Setup()
 	print("[BLT] Setting up mod: ", self:GetId())
-    self:SetupCheck()
+	self:SetupCheck()
+	if not self._early_post_init and self._auto_post_init then
+        self:PostInitModules()
+    end
 end
 
-function BLTModExtended:GetAllHooks()
-	return self.hooks and self.hooks.registered or {}
-end
-
-function BLTModExtended:GetHooks()
-	return self:GetAllHooks().post or {}
-end
-
-function BLTModExtended:GetPreHooks()
-	return self:GetAllHooks().pre or {}
-end
-
-function BLTModExtended:GetDeveloperInfo()
-
-	local str = ""
-	local append = function( ... )
-		for i, s in ipairs( {...} ) do
-			str = str .. (i > 1 and "    " or "") .. tostring(s)
-		end
-		str = str .. "\n"
-	end
-
-	local hooks = self:GetHooks() or {}
-	local prehooks = self:GetPreHooks() or {}
-	--Show classes instead
-	local persists = {} -- self:GetPersistScripts() or {}
-
-	append( "Path:", self:GetPath() )
-	append( "Load Priority:", self:GetPriority() )
-	append( "Version:", self:GetVersion() )
-	local min = self:GetMinBLTVersion()
-	if min then
-		append( "Minimum BLT-Version:", min)
-	end
-
-	append( "Disablable:", not self:IsUndisablable() )
-	append( "Allow Safe Mode:", not self:DisableSafeMode() )
-
-	if table.size( hooks ) < 1 then
-		append( "No Hooks" )
-	else
-		append( "Hooks:" )
-		for _, hook in ipairs( hooks ) do
-			append( "", tostring(hook[1]), "->", tostring(hook[2]))
-		end
-	end
-
-	if table.size(prehooks) < 1 then
-		append("No Pre-Hooks")
-	else
-		append("Pre-Hooks:")
-		for _, hook in ipairs(prehooks) do
-			append( "", tostring(hook[1]), "->", tostring(hook[2]))
-		end
-	end
-
-	if table.size( persists ) < 1 then
-		append( "No Persisent Scripts" )
-	else
-		append( "Persisent Scripts:" )
-		for _, script in ipairs( persists ) do
-			append( "", script.global, "->", script.file )
-		end
-	end
-
-	return str
+function BLTModExtended:AddHooks(data_key, destination, wildcards_destination)
 end

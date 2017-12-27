@@ -4,7 +4,7 @@ function MenuDialog:init(params, menu)
     if self.type_name == MenuDialog.type_name then
         params = params and clone(params) or {}
     end
-    self._default_width = self._default_width or 420
+    self._default_width = self._default_width or 620
     self._no_blur = params.no_blur
     self._tbl = {}
     menu = menu or BLT.Dialogs:Menu()
@@ -18,16 +18,16 @@ function MenuDialog:init(params, menu)
         always_highlighting = true,
         reach_ignore_focus = true,
         scrollbar = false,
-        items_size = 20,
+        items_size = 28,
         offset = 8,
-        accent_color = Color("4385ef"),
-        background_color = Color(0.6, 0.2, 0.2, 0.2),
+        accent_color = tweak_data.gui.colors.raid_red,
+        background_color = Color(0.6, 0.25, 0.25, 0.25),
     }, params))
     BLT.Dialogs:AddDialog(self)
 end
 
 function MenuDialog:Show(params)
-    BLT.Dialogs:OpenDialog(self, type_name(params) == "table" and params or nil)
+    BLT.Dialogs:OpenDialog(self, get_type_name(params) == "table" and params or nil)
 end
 
 function MenuDialog:SetCurrentId(id)
@@ -95,6 +95,7 @@ function MenuDialog:show_dialog()
 end
 
 function MenuDialog:basic_show(params, force)
+    self._blur = params.blur or false
     BLT.Dialogs:ShowDialog(self)
     self._tbl = {}
     self._params = params
@@ -161,7 +162,7 @@ end
 
 function QuickDialog(opt, items)
     opt = opt or {}
-    local dialog = opt.dialog or BLT.Dialogs.simple
+    local dialog = opt.dialog or BLT.Dialogs:Simple()
     opt.dialog = nil
     opt.title = opt.title or "Info"
     dialog:Show(table.merge({no = "Close", yes = false, create_items = function(menu)

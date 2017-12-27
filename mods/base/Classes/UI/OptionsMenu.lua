@@ -16,6 +16,7 @@ function BLTOptionsMenu:Init(root)
         text = "blt_language_select",
         callback = callback(self, self, "blt_choose_language"),
         value = tostring(BLT.Localization:get_language().language),
+        enabled = #items > 1,
         items = items
     })
 
@@ -26,16 +27,11 @@ function BLTOptionsMenu:blt_choose_language(item)
     if BLT.Localization then
 		BLT.Localization:set_language(item.value)
     end
-    BLT.Mods:Save()
-end
-
-function BLTOptionsMenu:Close()
-	BLT.Mods:Save()
 end
 
 Hooks:Add("MenuComponentManagerInitialize", "BLTOptionsMenu.MenuComponentManagerInitialize", function(self)
     RaidMenuHelper:CreateMenu({
-		name = "blt_options",
+		name = BLTModManager.Constants.BLTOptions,
 		name_id = "blt_options_menu_lua_mod_options",
         inject_list = "raid_menu_left_options",
         class = BLTOptionsMenu,

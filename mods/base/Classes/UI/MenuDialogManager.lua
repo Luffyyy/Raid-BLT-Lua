@@ -4,7 +4,6 @@ function BLTMenuDialogManager:Init()
     self._menu = MenuUI:new({
         name = "BLTDialogs",
         layer = 5000,
-        background_blur = true,
         always_key_press = callback(self, self, "KeyPressed"),
     })
     self._dialogs = {}
@@ -89,8 +88,8 @@ function BLTMenuDialogManager:DialogOpened(dialog)
 end
 
 function BLTMenuDialogManager:CloseLastDialog()
-    if BLT.IgnoreDialogOnce then
-        BLT.IgnoreDialogOnce = false
+    if self.IgnoreDialogOnce then
+        self.IgnoreDialogOnce = false
         return false 
     end
     local dialog = self._opened_dialogs[1]
@@ -107,7 +106,7 @@ function BLTMenuDialogManager:Show()
     self._menu:enable()
     local dialog = self._opened_dialogs[1]
     if dialog then
-        self._menu:ReloadInterface({background_blur = not dialog._no_blur})
+        self._menu:ReloadInterface({background_color = Color.black:with_alpha(0.3), background_blur = dialog._blur})
         for _, dialog in pairs(self._opened_dialogs) do
             if dialog.ReloadInterface then
                 dialog:ReloadInterface()
@@ -123,7 +122,7 @@ function BLTMenuDialogManager:KeyPressed(o, k)
     end
 end
 
-function BLTMenuDialogManager:update()
+function BLTMenuDialogManager:Update()
     if self._ready_to_open or #self._opened_dialogs == 0 then
         local to_open = self._waiting_to_open[1]
         if to_open and (not to_open.dialog._params or to_open.dialog._params ~= to_open.params) then

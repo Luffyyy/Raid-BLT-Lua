@@ -92,7 +92,7 @@ end
 function OptionModule:ApplyValues(tbl, value_tbl)
     if tbl._meta == "option_set" and tbl.not_pre_generated then
         for key, value in pairs(value_tbl) do
-            local new_tbl = BeardLib.Utils:RemoveAllNumberIndexes(tbl.item_parameters and deep_clone(tbl.item_parameters) or {})
+            local new_tbl = Utils:RemoveAllNumberIndexes(tbl.item_parameters and deep_clone(tbl.item_parameters) or {})
             new_tbl._meta = "option"
             new_tbl.name = key
             new_tbl.value = value
@@ -128,7 +128,7 @@ function OptionModule:InitOptions(tbl, option_tbl)
         if sub_tbl._meta then
             if sub_tbl._meta == "option" then
                 if sub_tbl.type == "multichoice" then
-                    sub_tbl.values = sub_tbl.values_tbl and self._mod:StringToTable(sub_tbl.values_tbl) or BeardLib.Utils:RemoveNonNumberIndexes(sub_tbl.values)
+                    sub_tbl.values = sub_tbl.values_tbl and self._mod:StringToTable(sub_tbl.values_tbl) or Utils:RemoveNonNumberIndexes(sub_tbl.values)
                 end
 
                 if sub_tbl.value_changed then
@@ -142,15 +142,15 @@ function OptionModule:InitOptions(tbl, option_tbl)
                 if sub_tbl.enabled_callback then
                     sub_tbl.enabled_callback = self._mod:StringToCallback(sub_tbl.enabled_callback)
                 end
-                sub_tbl.default_value = type(sub_tbl.default_value) == "string" and BeardLib.Utils:normalize_string_value(sub_tbl.default_value) or sub_tbl.default_value
+                sub_tbl.default_value = type(sub_tbl.default_value) == "string" and Utils:normalize_string_value(sub_tbl.default_value) or sub_tbl.default_value
                 option_tbl[sub_tbl.name] = sub_tbl
                 option_tbl[sub_tbl.name].value = sub_tbl.default_value
             elseif sub_tbl._meta == "option_group" then
-                option_tbl[sub_tbl.name] = BeardLib.Utils:RemoveAllSubTables(clone(sub_tbl))
+                option_tbl[sub_tbl.name] = Utils:RemoveAllSubTables(clone(sub_tbl))
                 self:InitOptions(sub_tbl, option_tbl[sub_tbl.name])
             elseif sub_tbl._meta == "option_set" then
                 if not sub_tbl.not_pre_generated then
-                    local tbl = sub_tbl.items and BeardLib.Utils:RemoveNonNumberIndexes(sub_tbl.items)
+                    local tbl = sub_tbl.items and Utils:RemoveNonNumberIndexes(sub_tbl.items)
                     if sub_tbl.items_tbl then
                         tbl = self._mod:StringToTable(sub_tbl.values_tbl)
                     elseif sub_tbl.populate_items then
@@ -159,12 +159,12 @@ function OptionModule:InitOptions(tbl, option_tbl)
                     end
 
                     for _, item in pairs(tbl) do
-                        local new_tbl = BeardLib.Utils:RemoveAllNumberIndexes(deep_clone(sub_tbl.item_parameters))
+                        local new_tbl = Utils:RemoveAllNumberIndexes(deep_clone(sub_tbl.item_parameters))
                         new_tbl._meta = "option"
                         table.insert(sub_tbl, table.merge(new_tbl, item))
                     end
                 end
-                option_tbl[sub_tbl.name] = BeardLib.Utils:RemoveAllSubTables(clone(sub_tbl))
+                option_tbl[sub_tbl.name] = Utils:RemoveAllSubTables(clone(sub_tbl))
                 self:InitOptions(sub_tbl, option_tbl[sub_tbl.name])
             end
         end
@@ -183,7 +183,7 @@ function OptionModule:_SetValue(tbl, name, value, full_name)
         end
     else
         if tbl[name] == nil then
-            BeardLib:log(string.format("[ERROR] Option of name %q does not exist in mod, %s", name, self._mod.name))
+            BLT:log(string.format("[ERROR] Option of name %q does not exist in mod, %s", name, self._mod.name))
             return
         end
         tbl[name].value = value
@@ -206,7 +206,7 @@ function OptionModule:SetValue(name, value)
         local tbl = self._storage
         for _, part in pairs(string_split) do
             if tbl[part] == nil then
-                BeardLib:log(string.format("[ERROR] Option Group of name %q does not exist in mod, %s", name, self._mod.name))
+                BLT:log(string.format("[ERROR] Option Group of name %q does not exist in mod, %s", name, self._mod.name))
                 return
             end
             tbl = tbl[part]
@@ -230,7 +230,7 @@ function OptionModule:GetOption(name)
         for _, part in pairs(string_split) do
             if tbl[part] == nil then
                 if tbl.type ~= "table" then
-                    BeardLib:log(string.format("[ERROR] Option of name %q does not exist in mod, %s", name, self._mod.name))
+                    BLT:log(string.format("[ERROR] Option of name %q does not exist in mod, %s", name, self._mod.name))
                 end
                 return
             end
@@ -339,7 +339,7 @@ function OptionModule:CreateSlider(parent_node, option_tbl, option_path)
     }
 
     local merge_data = self:GetParameter(option_tbl, "merge_data") or {}
-    merge_data = BeardLib.Utils:RemoveAllNumberIndexes(merge_data)
+    merge_data = Utils:RemoveAllNumberIndexes(merge_data)
 
     MenuHelperPlus:AddSlider(table.merge({
         id = self:GetParameter(option_tbl, "name"),
@@ -374,7 +374,7 @@ function OptionModule:CreateToggle(parent_node, option_tbl, option_path)
     }
 
     local merge_data = self:GetParameter(option_tbl, "merge_data") or {}
-    merge_data = BeardLib.Utils:RemoveAllNumberIndexes(merge_data)
+    merge_data = Utils:RemoveAllNumberIndexes(merge_data)
 
     MenuHelperPlus:AddToggle(table.merge({
         id = self:GetParameter(option_tbl, "name"),
@@ -396,7 +396,7 @@ function OptionModule:CreateMultiChoice(parent_node, option_tbl, option_path)
     local options = self:GetParameter(option_tbl, "values")
 
     if not options then
-        BeardLib:log("[ERROR] Unable to get an option table for option " .. option_tbl.name)
+        BLT:log("[ERROR] Unable to get an option table for option " .. option_tbl.name)
     end
 
     local enabled = not self:GetParameter(option_tbl, "disabled")
@@ -411,7 +411,7 @@ function OptionModule:CreateMultiChoice(parent_node, option_tbl, option_path)
     }
 
     local merge_data = self:GetParameter(option_tbl, "merge_data") or {}
-    merge_data = BeardLib.Utils:RemoveAllNumberIndexes(merge_data)
+    merge_data = Utils:RemoveAllNumberIndexes(merge_data)
 
     MenuHelperPlus:AddMultipleChoice(table.merge({
         id = self:GetParameter(option_tbl, "name"),
@@ -447,7 +447,7 @@ function OptionModule:CreateMatrix(parent_node, option_tbl, option_path, compone
     }
 
     local merge_data = self:GetParameter(option_tbl, "merge_data") or {}
-    merge_data = BeardLib.Utils:RemoveAllNumberIndexes(merge_data)
+    merge_data = Utils:RemoveAllNumberIndexes(merge_data)
     local base_params = table.merge({
         id = self:GetParameter(option_tbl, "name"),
         title = managers.localization:text(self:GetParameter(option_tbl, "title_id") or id .. "TitleID"),
@@ -495,7 +495,7 @@ function OptionModule:CreateColour(parent_node, option_tbl, option_path)
     end
 
     local merge_data = self:GetParameter(option_tbl, "merge_data") or {}
-    merge_data = BeardLib.Utils:RemoveAllNumberIndexes(merge_data)
+    merge_data = Utils:RemoveAllNumberIndexes(merge_data)
 
     MenuHelperPlus:AddColorButton(table.merge({
         id = self:GetParameter(option_tbl, "name"),
@@ -535,13 +535,13 @@ function OptionModule:CreateOption(parent_node, option_tbl, option_path)
     elseif option_tbl.type == "rotation" then
         self:CreateRotation(parent_node, option_tbl, option_path)
     else
-        BeardLib:log("[ERROR] No supported type for option " .. tostring(option_tbl.name) .. " in mod " .. self._mod.name)
+        BLT:log("[ERROR] No supported type for option " .. tostring(option_tbl.name) .. " in mod " .. self._mod.name)
     end
 end
 
 function OptionModule:CreateDivider(parent_node, tbl)
     local merge_data = self:GetParameter(tbl, "merge_data") or {}
-    merge_data = BeardLib.Utils:RemoveAllNumberIndexes(merge_data)
+    merge_data = Utils:RemoveAllNumberIndexes(merge_data)
     MenuHelperPlus:AddDivider(table.merge({
         id = self:GetParameter(tbl, "name"),
         node = parent_node,
@@ -556,7 +556,7 @@ function OptionModule:CreateSubMenu(parent_node, option_tbl, option_path)
     local menu_name = self:GetParameter(option_tbl, "node_name") or  base_name .. "Node"
 
     local merge_data = self:GetParameter(option_tbl, "merge_data") or {}
-    merge_data = BeardLib.Utils:RemoveAllNumberIndexes(merge_data)
+    merge_data = Utils:RemoveAllNumberIndexes(merge_data)
     local main_node = MenuHelperPlus:NewNode(nil, table.merge({
         name = menu_name
     }, merge_data))
@@ -603,7 +603,7 @@ function OptionModule:BuildMenu(node)
 end
 
 --Create MenuCallbackHandler callbacks
-Hooks:Add("BeardLibCreateCustomNodesAndButtons", "BeardLibOptionModuleCreateCallbacks", function(self_menu)
+Hooks:Add("BLTCreateCustomNodesAndButtons", "BLTOptionModuleCreateCallbacks", function(self_menu)
     MenuCallbackHandler.OptionModuleGeneric_ValueChanged = function(this, item)
         local value = item:value()
         if item.TYPE == "toggle" then value = value == "on" end

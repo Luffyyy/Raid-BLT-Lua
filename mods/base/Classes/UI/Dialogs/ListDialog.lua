@@ -13,9 +13,9 @@ function ListDialog:init(params, menu)
     params.h = nil
 
     ListDialog.super.init(self, table.merge({
-        h = params.main_h or 20,
+        h = params.main_h or 32,
         w = 900,
-        items_size = 20,
+        items_size = 32,
         offset = 0,
         auto_height = false,
         align_method = "grid",
@@ -28,7 +28,7 @@ function ListDialog:init(params, menu)
         name = "List",        
         w = 900,
         h = params.h and params.h - self._menu.h or 600,
-        items_size = 18,
+        items_size = 28,
         auto_foreground = true,
         auto_align = false,
         background_color = self._menu.background_color,
@@ -41,46 +41,29 @@ function ListDialog:init(params, menu)
     self._menu:Panel():set_leftbottom(self._list_menu:Panel():left(), self._list_menu:Panel():top() - 1)
 end
 
-function ListDialog:_Show(params)
-    if not self:basic_show(params) then
-        return
-    end
-    self._filter = {}
-    self._case_sensitive = params.case_sensitive
-    self._limit = NotNil(params.limit, true)
-    self._list = params.list
-    local tw = self._menu.w * 0.8
-    self._menu:TextBox({
-        name = "Search",
-        w = tw,
-        control_slice = 0.8,
-        text = "beardlib_search",
-        localized = true,
-        callback = callback(self, self, "Search"),  
-        label = "temp"
-    })
-    local bw = (self._menu.w - tw) * 0.25
-    local offset = {bw / 3, 0}
-    self._menu:Toggle({
+function ListDialog:CreateShortcuts(params)
+    local offset = {4, 0}
+    local bw = self._menu:Toggle({
         name = "Limit",
         w = bw,
         offset = offset,
         text = ">|",
-        help = "beardlib_limit_results",
+        help = "blt_limit_results",
         help_localized = true,
+        size_by_text = true,
         value = self._limit,
         callback = function(menu, item)
             self._limit = item:Value()
             self:MakeListItems()
         end,  
         label = "temp"
-    })
+    }):Width()
     self._menu:Toggle({
         name = "CaseSensitive",
         w = bw,
         offset = offset,
         text = "Aa",
-        help = "beardlib_match_case",
+        help = "blt_match_case",
         help_localized = true,
         value = self._case_sensitive,
         callback = function(menu, item)
@@ -89,16 +72,39 @@ function ListDialog:_Show(params)
         end,  
         label = "temp"
     })
-    self._menu:ImageButton({
+    return offset, bw
+end
+
+function ListDialog:_Show(params)
+    if not self:basic_show(params) then
+        return
+    end
+    self._filter = {}
+    self._case_sensitive = params.case_sensitive
+    self._limit = NotNil(params.limit, true)
+    self._list = params.list
+    local offset, bw = self:CreateShortcuts(params)
+    --the closet shit I found that could look like an exit icon
+    local close = self._menu:ImageButton({
         name = "Close",
         w = bw,
+        offset = offset,
         h = 20,
         icon_w = 14,
         icon_h = 14,
-        position = "Right",
-        texture = "guis/textures/menu_ui_icons",
-        texture_rect = {84, 89, 36, 36},
+        texture = "ui/atlas/raid_atlas_bonus_loot",
+        texture_rect = {667, 179, 130, 130},
         callback = callback(self, self, "hide"),  
+        label = "temp"
+    })
+    self._menu:TextBox({
+        name = "Search",
+        w = self._menu:ItemsWidth() - close:Right() - offset[1],
+        control_slice = 0.86,
+        index = 1,
+        text = "blt_search",
+        localized = true,
+        callback = callback(self, self, "Search"),  
         label = "temp"
     })
     if params.sort ~= false then
@@ -110,7 +116,7 @@ function ListDialog:_Show(params)
 end
 
 function ListDialog:ItemsCount()
-    return #self._list_menu._all_items
+    return #self._list_menu:Items()
 end
 
 function ListDialog:SearchCheck(t)
@@ -125,37 +131,41 @@ function ListDialog:SearchCheck(t)
 end
 
 function ListDialog:MakeListItems(params)
-    self._list_menu:ClearItems("temp2")  
+    self._list_menu:ClearItems("temp2")
     local case = self._case_sensitive
     local limit = self._limit
     local groups = {}
-    for _,v in pairs(self._list) do
+    local i = 0
+    for _, v in pairs(self._list) do
         local t = type(v) == "table" and v.name or v
         if self:SearchCheck(t) then
-            if not limit or self:ItemsCount() <= 250 then
-                local menu = self._list_menu
-                if type(v) == "table" and v.create_group then 
-                    menu = groups[v.create_group] or self._list_menu:Group({
-                        auto_align = false,
-                        name = v.create_group,
-                        text = v.create_group,
-                        label = "temp2"
-                    }) 
-                    groups[v.create_group] = menu
-                end
-                menu:Button(table.merge(type(v) == "table" and v or {}, {
-                    name = t,
-                    text = t,
-                    callback = function(menu, item)
-                        if self._callback then
-                            self._callback(v)
-                        end
-                    end, 
-                    label = "temp2"
-                }))
+            i = i + 1
+            if limit and i >= 250 then
+                break
             end
+            local menu = self._list_menu
+            if type(v) == "table" and v.create_group then 
+                menu = groups[v.create_group] or self._list_menu:Group({
+                    auto_align = false,
+                    name = v.create_group,
+                    text = v.create_group,
+                    label = "temp2"
+                }) 
+                groups[v.create_group] = menu
+            end
+            menu:Button(table.merge(type(v) == "table" and v or {}, {
+                name = t,
+                text = t,
+                callback = function(menu, item)
+                    if self._callback then
+                        self._callback(v)
+                    end
+                end, 
+                label = "temp2"
+            }))
         end
     end
+    
     self:show_dialog()
     self._list_menu:AlignItems(true)
 end

@@ -1,19 +1,25 @@
 <table 
-		name="Raid WW2 BLT"  
+		name="Raid WW2 BLT"
+		global_key = "BLT"
+		merge_global = "true"
 		priority="1001"
-		disable_safe_mode="true" 
 		image="blt.png"
 		author="James Wilkinson, Luffy"
-		color="255 0 255"
-		contact=""
+		color="Color('bf204b')"
+		contact="https://modworkshop.net/member.php?action=profile&uid=11"
 		description="The collection of Lua files that allow the BLT hook to function."
-		undisablable="true" 
-		version="1.0"
+		cannot_be_disabled="true"
+		early_post_init="true"
 	>
+	<auto_updates provider="modworkshop" id="21065" version="1.0" important="true"/>
 	<options build_menu="false">
 		<options>
+			<option name="Language" type="string" default_value="English"/>
 			<option name="ImportantNotice" type="boolean" default_value="true"/>
 			<option name="DisabledMods" type="table">
+				<default_value/>
+			</option>
+			<option name="Keybinds" type="table">
 				<default_value/>
 			</option>
 		</options>
@@ -68,6 +74,7 @@
 		<hook source_file="lib/network/base/basenetworksession" file="Hooks/BaseNetworkSession.lua"/>
 		<hook source_file="lib/network/base/networkmanager" file="Hooks/NetworkManager.lua"/>
 		<hook source_file="lib/managers/menu/raid_menu/raidmenuscenemanager" file="Hooks/RaidMenuSceneManager.lua"/>
+		<hook source_file="lib/managers/menu/menuinput" file="Hooks/MenuInput.lua"/>
+		<hook source_file="lib/tweak_data/tweakdata" file="Hooks/TweakData.lua"/>
 	</hooks>
-	<auto_updates provider="modworkshop" id="21065" version="1.0" important="true"/>
 </table>

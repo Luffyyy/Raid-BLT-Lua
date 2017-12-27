@@ -16,6 +16,7 @@ function ImageButton:InitBasicItem()
         color = self.img_color or self.foreground,
         w = self.icon_w or self.w - 4,
         h = self.icon_h or self.h - 4,
+        rotation = self.img_rot,
         halign = "center", 
         valign = "center",
         layer = 5

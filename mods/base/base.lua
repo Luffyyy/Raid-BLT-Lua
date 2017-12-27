@@ -50,7 +50,6 @@ function BLT:Initialize()
 	BLT:Require("Classes/Utils/QuickMenu")
 	BLT:Require("Classes/Mod")
 	BLT:Require("Classes/ModExtended")
-	BLT:Require("Classes/ModDependency")
 	BLT:Require("Classes/Logs")
 	BLT:Require("Classes/ModManager")
 	BLT:Require("Classes/Localization")
@@ -102,20 +101,15 @@ function BLT:Setup()
 	-- Initialization functions
 	self.Logs:CleanLogs()
 	self.Mods:SetModsList(self:ProcessModsList(self:FindMods()))
-	-- Some backwards compatibility for v1 mods
-	
-	local bltconfig = self.Mods:GetModByName("Raid WW2 BLT") --find a better way to do this
-	if bltconfig then
-		self._mod = bltconfig
-		table.merge(self, bltconfig)
-	end
 
 	self.Dialogs = BLTMenuDialogManager:new()
 	self.ModsMenu = BLTModsMenu:new()
 
-	_G.LuaModManager = {}
-	_G.LuaModManager.Constants = C
-	_G.LuaModManager.Mods = {} -- No mods are available via old api
+	_G.LuaModManager = {
+		_languages = {},
+		Constants = C,
+		Mods = {}
+	}
 end
 
 function BLT:GetVersion()
@@ -136,13 +130,12 @@ function BLT:RunHookTable(hooks_table, path)
 end
 
 function BLT:RunHookFile(path, hook_data)
-	rawset( _G, BLTModManager.Constants.required_script_global, path or false )
-	rawset( _G, BLTModManager.Constants.mod_path_global, hook_data.mod:GetPath() or false )
-	dofile( hook_data.mod:GetPath() .. hook_data.script )
+	rawset(_G, BLTModManager.Constants.required_script_global, path or false)
+	rawset(_G, BLTModManager.Constants.mod_path_global, hook_data.mod:GetPath() or false)
+	dofile(hook_data.mod:GetPath() .. hook_data.script)
 end
 
 function BLT:OverrideRequire()
-
 	if self.require then
 		return false
 	end
@@ -152,25 +145,25 @@ function BLT:OverrideRequire()
 
 	-- Override require function to run hooks
 
-	self.new_require = function( ... )
-		local args = { ... }
+	self.new_require = function(...)
+		local args = {...}
 		local path = args[1]
 		local path_lower = path:lower()
 		local require_result = nil
 
-		self:RunHookTable( self.hook_tables.pre, path_lower )
-		require_result = self.require( ... )
-		self:RunHookTable( self.hook_tables.post, path_lower )
+		self:RunHookTable(self.hook_tables.pre, path_lower)
+		require_result = self.require(...)
+		self:RunHookTable(self.hook_tables.post, path_lower)
 
-		for k, v in ipairs( self.hook_tables.wildcards ) do
-			self:RunHookFile( path, v.mod_path, v.script )
+		for k, v in ipairs(self.hook_tables.wildcards) do
+			self:RunHookFile(path, v.mod_path, v.script)
 		end
 
 		return require_result
 	end
 
 	-- Load mods in first require(due to how the engine loads stuff that we need), then return the require to new_require.
-	_G.require = function( ... )
+	_G.require = function(...)
 		self:Setup()
 		_G.require = self.new_require
 		self.new_require(...)
@@ -256,6 +249,7 @@ function BLT:RegisterModule(key, module)
 end
 
 function BLT:Update(t, dt)
+	self.Dialogs:Update()
 	for id, clbk in pairs(self.Updaters) do
 		clbk(t, dt)
 	end

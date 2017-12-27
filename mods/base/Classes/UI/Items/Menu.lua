@@ -23,10 +23,9 @@ function Menu:Init(params)
         layer = 0
     })
     self._scroll = ScrollablePanel:new(self.panel, "ItemsPanel", {
-        layer = 4, 
+        layer = 4,
         padding = 0.0001, 
         scroll_width = self.scrollbar == false and 0 or self.scroll_width, 
-        hide_shade = true, 
         color = self.scroll_color or self.highlight_color,
         scroll_speed = self.scroll_speed
     })
@@ -64,7 +63,7 @@ end
 function Menu:WorkParams(params)
     Menu.super.WorkParams(self, params)
     params = params or {}
-    self:WorkParam("scroll_width", 8)
+    self:WorkParam("scroll_width", 12)
     self:WorkParam("scroll_speed", 48)
     self.background_visible = NotNil(self.background_visible, self.type_name == "Menu" and true or false)
     self.private.background_color = NotNil(self.private.background_color, self.background_visible and self.background_color or nil)    
@@ -273,15 +272,16 @@ function Menu:AlignItemsGrid(animate)
                 max_x = math.max(max_x, x + panel:w())
             end
             if (not repos or item.count_as_aligned or item.count_height) then
-                max_h = math.max(max_h, y + panel:h())
+                max_h = math.max(max_h, repos and item:Bottom() or y + panel:h())
             end
         end
-    end    
+    end
+    local actual_max_h = max_h
     max_h = max_h + self:AdditionalHeight() + (self.last_y_offset or (prev_item and prev_item:Offset()[2] or 0))
     if self.auto_height and self.h ~= max_h then
         self:_SetSize(nil, max_h, true)
     end
-    self:UpdateCanvas()
+    self:UpdateCanvas(actual_max_h)
 end
 
 function Menu:AlignItems(menus)
@@ -326,25 +326,26 @@ function Menu:AlignItemsNormal(animate)
                 prev_item = item
             end
             if not repos or item.count_as_aligned or item.count_height then
-                max_h = math.max(max_h, panel:bottom())
+                max_h = math.max(max_h, repos and item:Bottom() or y + panel:h())
             end
         end
     end
+    local actual_max_h = max_h
     max_h = max_h + self:AdditionalHeight() + (self.last_y_offset or (prev_item and prev_item:Offset()[2] or 0))
     if self.auto_height and self.h ~= max_h then
         self:_SetSize(nil, max_h, true)
     end
-    self:UpdateCanvas()
+    self:UpdateCanvas(actual_max_h)
 end
 
-function Menu:UpdateCanvas()
+function Menu:UpdateCanvas(max_h)
     if not self:alive() then
         return
     end
     if self.type_name == "Group" then
         self:SetScrollPanelSize()
     end
-    self._scroll:update_canvas_size()
+    self._scroll:update_canvas_size(max_h)
     self:CheckItems()
 end
 

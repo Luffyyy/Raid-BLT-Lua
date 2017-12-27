@@ -1,4 +1,5 @@
-BLTPersistScripts = class()
+BLTPersistScripts = BLTPersistScripts or class()
+--I'll be keeping this for old format, you should use the classes module for new format(or hooks for more specific execution time)
 function BLTPersistScripts:init()
 	Hooks:Add("MenuUpdate", "BLTPersistScripts.MenuUpdate", function(t, dt)
 		self:update_persists()

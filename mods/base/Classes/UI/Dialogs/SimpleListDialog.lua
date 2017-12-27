@@ -5,9 +5,9 @@ function SimpleListDialog:init(params, menu)
         params = params and clone(params) or {}
     end
 
-    params.w = 400
-    params.h = 500
-    params.main_h = 40
+    params.w = 600
+    params.h = 700
+    params.main_h = 70
     
     SimpleListDialog.super.init(self, params, menu)
 end
@@ -44,12 +44,13 @@ function SimpleListDialog:_Show(params)
     local close = self._menu:ImageButton({
         name = "Close",
         w = bs,
-        h = self._menu.h,
-        icon_w = 14,
-        icon_h = 14,
-        position = "CenterRight",
-        texture = "guis/textures/menu_ui_icons",
-        texture_rect = {84, 89, 36, 36},
+        h = self._menu.items_size,
+        icon_w = 20,
+        icon_h = 20,
+        img_rot = 45,
+        position = "RightTop",
+        texture = "ui/atlas/raid_atlas_menu",
+        texture_rect = {761, 721, 18, 18},
         callback = callback(self, self, "hide", false),  
         label = "temp"
     })
@@ -57,14 +58,14 @@ function SimpleListDialog:_Show(params)
     self._menu:ImageButton({
         name = "Apply",
         w = bs,
-        h = self._menu.h,
-        icon_w = 14,
-        icon_h = 14,
+        h = self._menu.items_size,
+        icon_w = 24,
+        icon_h = 24,
         position = function(item)
             item:Panel():set_righttop(close:Panel():position())
         end,
-        texture = "guis/textures/menu_ui_icons",
-        texture_rect = {82, 50, 36, 36},
+        texture = "ui/atlas/raid_atlas_menu",
+        texture_rect = {341, 997, 22, 22},
         callback = callback(self, self, "hide", true),  
         label = "temp"
     })

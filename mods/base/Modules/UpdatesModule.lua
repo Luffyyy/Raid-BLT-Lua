@@ -71,7 +71,6 @@ UpdatesModule._providers = {
                     for _, data in pairs(server_data) do
                         BLT:log("[Updates] Received update data for '%s'", data.ident)
                         if data.ident == self.id then
-                            log(tostring(data.ident), tostring(self.id), tostring(data.hash), tostring(local_hash))
                             self._server_hash = data.hash
                             local local_hash = self.provider.get_hash(self)
                             BLT:log("[Updates] Comparing hash data:\nServer: %s\n Local: %s", data.hash, local_hash)
@@ -305,6 +304,25 @@ function UpdatesModule:StoreDownloadedAssets(config, data, id)
             coroutine:parnet():remove(coroutine)
         end
     end)
+end
+
+function UpdatesModule:GetInfo(append)
+    append("Auto-updates:")
+    if self.provider and self.provider.get_info then
+        self.provider.get_info(self, append)
+    else
+        if self._config.provider then
+            append("", "Provider:", tostring(self._config.provider))
+        else
+            append("", "No Provider")
+        end
+        if self.id then
+            append("", "Id:", tostring(self.id))
+        end
+        if self.version then
+            append("", "Version:", tostring(self.version))
+        end
+    end
 end
 
 BLT:RegisterModule(UpdatesModule.type_name, UpdatesModule)
