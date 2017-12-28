@@ -1,5 +1,5 @@
 
-CloneClass( ChatManager )
+CloneClass(ChatManager)
 
 Hooks:RegisterHook("ChatManagerOnSendMessage")
 function ChatManager:send_message(channel_id, sender, message, ...)

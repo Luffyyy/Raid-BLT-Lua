@@ -1,6 +1,6 @@
 ColorDialog = ColorDialog or class(MenuDialog)
 ColorDialog.type_name = "ColorDialog"
-ColorDialog._default_width = 420
+ColorDialog._default_width = 620
 function ColorDialog:init(params, menu)
     if self.type_name == ColorDialog.type_name then
         params = params and clone(params) or {}
@@ -10,7 +10,6 @@ function ColorDialog:init(params, menu)
         w = ColorDialog._default_width,
         offset = 8,
         auto_height = true,
-        items_size = 20,
         auto_align = true
     }), menu)
 end
@@ -24,7 +23,7 @@ function ColorDialog:_Show(params)
     local preview = self._menu:Divider({
         name = "ColorPreview",
         text = "",
-        items_size = 32,
+        items_size = 42,
         offset = 0,
         background_color = params.color,
     })
@@ -39,8 +38,7 @@ function ColorDialog:_Show(params)
         background_color = false,
         highlight_color = false,
         callback = callback(self, self, "update_hex"),
-        w = 120,
-        items_size = 20,
+        w = 160,
         override_panel = preview
     })
     if params.create_items then

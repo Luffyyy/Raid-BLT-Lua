@@ -1,7 +1,7 @@
 BLTModsMenu = BLTModsMenu or class() 
 function BLTModsMenu:init()
 	MenuUI:new({
-        name = "BeardLibEditorMods",
+        name = "BLTMods",
         layer = 1000,
         offset = 6,
         show_help_time = 0.1,
@@ -173,6 +173,12 @@ function BLTModsMenu:AddMod(mod, type)
         background_color = color:with_alpha(0.8)
     })
     self._list:SetScrollSpeed(mod_item:Height())
+    if mod:Errors() then
+        self:Text(mod_item, loc:text("blt_mod_failed_load"))
+    elseif not mod:IsEnabled() then
+        self:Text(mod_item, loc:text("blt_mod_no_load"))
+    end
+
     local img = mod._config.image
     img = img and DB:has(Idstring("texture"), Idstring(mod._config.image)) and img or nil
     local img_item = mod_item:Image({
@@ -186,7 +192,7 @@ function BLTModsMenu:AddMod(mod, type)
         count_as_aligned = true,
         texture_rect = not img and {353, 894, 100, 100},
         texture = img or "ui/atlas/raid_atlas_menu",
-        position = "CenterTop"
+        position = "center_x"
     })
     local t = self:Text(mod_item, tostring(name), {name = "Title", offset = {mod_item.offset[1], 16}})
     self:Text(mod_item, loc:text("blt_mod_author", {author = mod:GetAuthor()}))

@@ -14,7 +14,7 @@ function Item:Init(params)
 	end
 	self:Reposition()
     if self.items then
-		self._list = BeardLib.Items.ContextMenu:new(self, self.parent_panel:layer() + 100) 
+		self._list = BLT.Items.ContextMenu:new(self, self.parent_panel:layer() + 100) 
 	end
 	if self.override_panel then
 		self.override_panel:AddItem(self)

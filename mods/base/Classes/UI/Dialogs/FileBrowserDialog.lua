@@ -10,7 +10,7 @@ function FileBrowserDialog:_Show(params, force)
     self._file_click = params.file_click
     self._base_path = params.base_path
     self._browse_func = params.browse_func
-    self:Browse(params.where)
+    self:Browse(params.where or string.gsub(Application:base_path(), "\\", "/"))
     self:show_dialog()
 end
 
@@ -20,15 +20,27 @@ function FileBrowserDialog:init(params, menu)
     end
 
     menu = menu or BLT.Dialogs:Menu()
-    
+    local items_size = params.items_size or 32
+    local h = 700
+    FileBrowserDialog.super.init(self, table.merge(params, {
+        w = 1300,
+        h = items_size + 4,
+        auto_height = false,
+        position = function(item)
+            item:SetPositionByString("Center")
+            item:Panel():move(0, -h/2)
+        end,
+        align_method = "grid",
+        offset = 0
+    }), menu)
+
     self._folders_menu = menu:Menu(table.merge(params, {
-        w = 300,
-        h = 600,
+        w = 500,
+        h = h  ,
         background_color = params.background_color or Color(0.6, 0.2, 0.2, 0.2),
         name = "Folders",
         position = function(item)
-            item:SetPositionByString("CenterLeft")
-            item:Panel():move(200)
+            item:Panel():set_position(self._menu:Panel():leftbottom())
         end,
         auto_height = false,
         visible = false
@@ -36,25 +48,19 @@ function FileBrowserDialog:init(params, menu)
 
     self._files_menu = menu:Menu(table.merge(params, {
         name = "Files",
+        w = 800,
         position = function(item)
-            item:Panel():set_position(self._folders_menu:Panel():right() + 1, self._folders_menu:Panel():top())
-        end,
-        w = 600
+            item:Panel():set_righttop(self._menu:Panel():rightbottom())
+        end
     }))
-    FileBrowserDialog.super.init(self, table.merge(params, {
-        w = 900,
-        h = self._files_menu.items_size + 4,
-        auto_height = false,
-        position = function(item)
-            item:Panel():set_leftbottom(self._folders_menu:Panel():left(), self._folders_menu:Panel():top() - 1)
-        end,
-        align_method = "grid",
-        offset = 0
-    }), menu) 
+
     self._menus = {self._files_menu, self._folders_menu}
+    local path_and_search = (0.85 * self._menu:Width())
+    local rest = (0.15 * self._menu:Width()) / 3
     self._menu:Button({
         name = "Backward",
-        w = 30,
+        w = rest,
+        h = self._menu.h,
         text = "<",
         text_align = "center",
         callback = callback(self, self, "FolderBack"),  
@@ -63,7 +69,8 @@ function FileBrowserDialog:init(params, menu)
     enabled = self._old_dir and self._old_dir ~= self._current_dir or false
     self._menu:Button({
         name = "Forward",
-        w = 30,
+        w = rest,
+        h = self._menu.h,
         text = ">",
         text_align = "center",
         callback = function()
@@ -74,22 +81,28 @@ function FileBrowserDialog:init(params, menu)
     self._menu:TextBox({
         name = "CurrentPath",
         text = false,
-        w = 540,
+        w = path_and_search * 0.65,
         control_slice = 1,
         forbidden_chars = {':','*','?','"','<','>','|'},
         callback = callback(self, self, "OpenPathSetDialog"),
     })
     self._menu:TextBox({
         name = "Search",
-        w = 200,
+        w = path_and_search * 0.35,
+        control_slice = 0.7,
         callback = callback(self, self, "Search"),  
         label = "temp"
     })
-    self._menu:Button({
+    self._menu:ImageButton({
         name = "Close",
-        w = 100,
-        text = "Close",
-        text_align = "center",
+        w = rest,
+        h = self._menu.h,
+        offset = offset,
+        icon_w = 24,
+        icon_h = 24,
+        img_rot = 45,
+        texture = "ui/atlas/raid_atlas_menu",
+        texture_rect = {761, 721, 18, 18},
         callback = callback(self, self, "hide"),  
         label = "temp"
     })
@@ -207,7 +220,7 @@ function FileBrowserDialog:FolderBack()
     end 
 end
 
-function FileBrowserDialog:hide( ... )
+function FileBrowserDialog:hide(...)
     if FileBrowserDialog.super.hide(self, ...) then
         self._current_dir = nil
         self._old_dir = nil

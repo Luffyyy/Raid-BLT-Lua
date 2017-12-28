@@ -1,5 +1,5 @@
 Hooks:PostHook(MenuSetup, "update", "BLT.MenuUpdate", function(...)
-	Hooks:Call("MenuUpdate", t, dt)
+	Hooks:Call("MenuUpdate", ...)
 end)
 Hooks:PreHook(MenuSetup, "quit", "BLT.SetupQuit", function(...)
 	Hooks:Call("SetupOnQuit", ...)

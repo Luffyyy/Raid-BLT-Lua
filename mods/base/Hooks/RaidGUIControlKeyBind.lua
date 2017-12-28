@@ -112,7 +112,6 @@ function RaidGuiControlKeyBind:_key_press(text, key, input_id, ...)
 
 	local connection = nil
 	if self._keybind_params.axis then
-		
 		connections[self._keybind_params.axis]._btn_connections[self._keybind_params.button].name = key_name
 		managers.controller:set_user_mod(self._keybind_params.connection_name, {
 			axis = self._keybind_params.axis,
@@ -121,11 +120,9 @@ function RaidGuiControlKeyBind:_key_press(text, key, input_id, ...)
 		})
 		self._keybind_params.binding = key_name
 		connection = connections[self._keybind_params.axis]
-
 	else
-
 		if connections[self._keybind_params.button] == nil then
-			for k, v in pairs( connections ) do
+			for k, v in pairs(connections) do
 				connections[self._keybind_params.button] = clone(v)
 				break
 			end
@@ -141,7 +138,6 @@ function RaidGuiControlKeyBind:_key_press(text, key, input_id, ...)
 		})
 		self._keybind_params.binding = key_name
 		connection = connections[self._keybind_params.button]
-
 	end
 
 	if connection then

@@ -72,7 +72,7 @@ end
 
 function Group:MouseMoved(x, y)
     if not Group.super.MouseMoved(self, x, y) then
-        return BeardLib.Items.Item.MouseMoved(self, x, y)
+        return BLT.Items.Item.MouseMoved(self, x, y)
     end
     return false
 end

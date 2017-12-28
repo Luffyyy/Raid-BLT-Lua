@@ -428,39 +428,36 @@ function BLTCustomMenu:close()
     BLT.Mods:Save()
 end
 
-function BLTCustomMenu:mouse_pressed( o, button, x, y )
+function BLTCustomMenu:mouse_pressed(o, button, x, y)
 	BLTCustomMenu.super.mouse_pressed(self, o, button, x, y)
 	local result = false 
 	
-	for _, item in ipairs( self._buttons ) do 
-	   if item:inside( x, y ) then 
-		 if item.mouse_clicked then 
-		   result = item:mouse_clicked( button, x, y ) 
-		 end 
-		 break 
-	   end 
+	for _, item in ipairs(self._buttons) do 
+	   if item:inside(x, y) then 
+		    if item.mouse_clicked then 
+		        result = item:mouse_clicked(button, x, y) 
+		    end 
+            break 
+	    end 
 	end 
 	
-	if button == Idstring( "0" ) then 
-	
-		for _, item in ipairs( self._buttons ) do
-			if item:inside( x, y ) then
+	if button == Idstring("0") then 
+		for _, item in ipairs(self._buttons) do
+			if item:inside(x, y) then
 				if item:parameters().callback then
 					item:parameters().callback()
 				end
-				managers.menu_component:post_event( "menu_enter" )
+				managers.menu_component:post_event("menu_enter")
 				return true
 			end
 		end
-
     end
     
     if alive(self._scroll) then
-        return self._scroll:mouse_pressed( o, button, x, y )
+        return self._scroll:mouse_pressed(o, button, x, y)
     end
 
 	return result
-	
 end
 
 function BLTCustomMenu:mouse_moved(o, x, y)
@@ -471,18 +468,18 @@ function BLTCustomMenu:mouse_moved(o, x, y)
 
     local used, pointer
 
-    local inside_scroll = alive(self._scroll) and self._scroll:panel():inside( x, y )
-    for _, item in ipairs( self._buttons ) do
-        if not used and item:inside( x, y ) and inside_scroll then
-            item:set_highlight( true )
+    local inside_scroll = alive(self._scroll) and self._scroll:panel():inside(x, y)
+    for _, item in ipairs(self._buttons) do
+        if not used and item:inside(x, y) and inside_scroll then
+            item:set_highlight(true)
             used, pointer = true, "link"
         else
-            item:set_highlight( false )
+            item:set_highlight(false)
         end
     end
 
     if alive(self._scroll) and not used then
-        used, pointer = self._scroll:mouse_moved( o, x, y )
+        used, pointer = self._scroll:mouse_moved(o, x, y)
     end
 
     return used, pointer
@@ -496,7 +493,7 @@ function BLTCustomMenu:mouse_clicked(o, button, x, y)
     BLTCustomMenu.super.mouse_clicked(self, o, button, x, y)
 
     if alive(self._scroll) then
-        return self._scroll:mouse_clicked( o, button, x, y )
+        return self._scroll:mouse_clicked(o, button, x, y)
     end
 end
 
@@ -507,19 +504,19 @@ function BLTCustomMenu:mouse_released(o, button, x, y)
     
     BLTCustomMenu.super.mouse_released(self, o, button, x, y)
 	if alive(self._scroll) then
-		return self._scroll:mouse_released( button, x, y )
+		return self._scroll:mouse_released(button, x, y)
 	end
 end
 
-function BLTCustomMenu:mouse_wheel_up( x, y )
+function BLTCustomMenu:mouse_wheel_up(x, y)
 	if alive(self._scroll) then
-		self._scroll:scroll( x, y, 1 )
+		self._scroll:scroll(x, y, 1)
 	end
 end
 
-function BLTCustomMenu:mouse_wheel_down( x, y )
+function BLTCustomMenu:mouse_wheel_down(x, y)
 	if alive(self._scroll) then
-		self._scroll:scroll( x, y, -1 )
+		self._scroll:scroll(x, y, -1)
 	end
 end
 

@@ -185,7 +185,7 @@ end
 function decode_scanArray(s,startPos)
   local array = {}	-- The return value
   local stringLen = string.len(s)
-  assert(string.sub(s,startPos,startPos)=='[','decode_scanArray called but array does not start at position ' .. startPos .. ' in string:\n'..s )
+  assert(string.sub(s,startPos,startPos)=='[','decode_scanArray called but array does not start at position ' .. startPos .. ' in string:\n'..s)
   startPos = startPos + 1
   -- Infinite loop for array elements
   repeat
@@ -209,7 +209,7 @@ end
 -- @param string s The JSON string to scan.
 -- @param int startPos The starting position of the comment
 function decode_scanComment(s, startPos)
-  assert( string.sub(s,startPos,startPos+1)=='/*', "decode_scanComment called but comment does not start at position " .. startPos)
+  assert(string.sub(s,startPos,startPos+1)=='/*', "decode_scanComment called but comment does not start at position " .. startPos)
   local endPos = string.find(s,'*/',startPos+2)
   assert(endPos~=nil, "Unterminated comment in string at " .. startPos)
   return endPos+2  
@@ -226,7 +226,7 @@ function decode_scanConstant(s, startPos)
   local constNames = {"true","false","null"}
 
   for i,k in pairs(constNames) do
-    if string.sub(s,startPos, startPos + string.len(k) -1 )==k then
+    if string.sub(s,startPos, startPos + string.len(k) -1)==k then
       return consts[k], startPos + string.len(k)
     end
   end
@@ -378,7 +378,7 @@ end
 function decode_scanWhitespace(s,startPos)
   local whitespace=" \n\r\t"
   local stringLen = string.len(s)
-  while ( string.find(whitespace, string.sub(s,startPos,startPos), 1, true)  and startPos <= stringLen) do
+  while (string.find(whitespace, string.sub(s,startPos,startPos), 1, true)  and startPos <= stringLen) do
     startPos = startPos + 1
   end
   return startPos

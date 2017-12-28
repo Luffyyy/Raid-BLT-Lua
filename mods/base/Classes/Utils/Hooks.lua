@@ -5,44 +5,44 @@ Hooks._prehooks = Hooks._prehooks or {}
 Hooks._posthooks = Hooks._posthooks or {}
 
 --[[
-	Hooks:Register( key )
+	Hooks:Register(key)
 		Registers a hook so that functions can be added to it, and later called 
 	key, Unique identifier for the hook, so that hooked functions can be added to it
 ]]
-function Hooks:RegisterHook( key )
+function Hooks:RegisterHook(key)
 	self._registered_hooks[key] = self._registered_hooks[key] or {}
 end
 
 --[[
-	Hooks:Register( key )
+	Hooks:Register(key)
 		Functionaly the same as Hooks:RegisterHook
 ]]
-function Hooks:Register( key )
-	self:RegisterHook( key )
+function Hooks:Register(key)
+	self:RegisterHook(key)
 end
 
 --[[
-	Hooks:AddHook( key, id, func )
+	Hooks:AddHook(key, id, func)
 		Adds a function call to a hook, so that it will be called when the hook is
 	key, 	The unique identifier of the hook to be called on
 	id, 	A unique identifier for this specific function call
 	func, 	The function to call with the hook 
 ]]
-function Hooks:AddHook( key, id, func )
+function Hooks:AddHook(key, id, func)
 	self._registered_hooks[key] = self._registered_hooks[key] or {}
 	self._registered_hooks[key][id] = self._registered_hooks[key][id] or func
 end
 
 --[[
-	Hooks:Add( key, id, func )
+	Hooks:Add(key, id, func)
 		Functionaly the same as Hooks:AddHook
 ]]
-function Hooks:Add( key, id, func )
-	self:AddHook( key, id, func )
+function Hooks:Add(key, id, func)
+	self:AddHook(key, id, func)
 end
 
 --[[
-	Hooks:UnregisterHook( key )
+	Hooks:UnregisterHook(key)
 		Removes a hook, so that it will not call any functions
 	key, The unique identifier of the hook to unregister
 ]]
@@ -51,11 +51,11 @@ function Hooks:UnregisterHook(key)
 end
 
 --[[
-	Hooks:Unregister( key )
+	Hooks:Unregister(key)
 		Functionaly the same as Hooks:UnregisterHook
 ]]
-function Hooks:Unregister( key )
-	self:UnregisterHook( key )
+function Hooks:Unregister(key)
+	self:UnregisterHook(key)
 end
 
 function Hooks:RemoveHook(key, id)
@@ -65,7 +65,7 @@ function Hooks:RemoveHook(key, id)
 end
 
 --[[
-	Hooks:Remove( id )
+	Hooks:Remove(id)
 		Removes a hooked function call with the specified id to prevent it from being called
 	id, Removes the function call and prevents it from being called
 ]]
@@ -82,7 +82,7 @@ function Hooks:Remove(id)
 end
 
 --[[
-	Hooks:Call( key, ... )
+	Hooks:Call(key, ...)
 			Calls a specified hook, and all of its hooked functions
 	key,	The unique identifier of the hook to call its hooked functions
 	args,	The arguments to pass to the hooked functions 
@@ -94,13 +94,13 @@ function Hooks:Call(key, ...)
 	
 	for id, func in pairs(self._registered_hooks[key]) do
 		if type(func) == "function" then
-			func( ... )
+			func(...)
 		end
 	end
 end
 
 --[[
-	Hooks:ReturnCall( key, ... )
+	Hooks:ReturnCall(key, ...)
 		Calls a specified hook, and returns the first non-nil value returned by a hooked function
 	key, 		The unique identifier of the hook to call its hooked functions
 	args, 		The arguments to pass to the hooked functions
@@ -122,15 +122,14 @@ function Hooks:ReturnCall(key, ...)
 end
 
 --[[
-	Hooks:PreHook( object, func, id, pre_call )
+	Hooks:PreHook(object, func, id, pre_call)
 		Automatically hooks a function to be called before the specified function on a specified object
 	object, 	The object for the hooked function to be called on
 	func, 		The name of the function (as a string) on the object for the hooked call to be ran before
 	id, 		The unique identifier for this prehook
 	pre_call, 	The function to be called before the func on object
 ]]
-function Hooks:PreHook( object, func, id, pre_call )
-
+function Hooks:PreHook(object, func, id, pre_call)
 	if not object then
 		self:_PrePostHookError(func)
 		return
@@ -141,14 +140,12 @@ function Hooks:PreHook( object, func, id, pre_call )
 	end
 
 	if object and self._prehooks[object][func] == nil then
-
 		self._prehooks[object][func] = {
 			original = object[func],
 			overrides = {}
 		}
 
 		object[func] = function(...)
-
 			local hooked_func = self._prehooks[object][func]
 			local r, _r
 
@@ -167,54 +164,48 @@ function Hooks:PreHook( object, func, id, pre_call )
 			end
 
 			return r
-
 		end
-
 	end
 
-	for k, v in pairs( self._prehooks[object][func].overrides ) do
+	for k, v in pairs(self._prehooks[object][func].overrides) do
 		if v.id == id then
 			return
 		end
 	end
 
-	local func_tbl = {
-		id = id,
-		func = pre_call,
-	}
-	table.insert( self._prehooks[object][func].overrides, func_tbl )
+	table.insert(self._prehooks[object][func].overrides, {id = id, func = pre_call})
+end
 
+function Hooks:Pre(...)
+	self:PreHook(...)
 end
 
 --[[
-	Hooks:RemovePreHook( id )
+	Hooks:RemovePreHook(id)
 		Removes the prehook with id, and prevents it from being run
 	id, The unique identifier of the prehook to remove
 ]]
-function Hooks:RemovePreHook( id )
-
-	for object_i, object in pairs( self._prehooks ) do
-		for func_i, func in pairs( object ) do
-			for override_i, override in ipairs( func.overrides ) do
+function Hooks:RemovePreHook(id)
+	for object_i, object in pairs(self._prehooks) do
+		for func_i, func in pairs(object) do
+			for override_i, override in ipairs(func.overrides) do
 				if override and override.id == id then
-					table.remove( func.overrides, override_i )
+					table.remove(func.overrides, override_i)
 				end
 			end
 		end
 	end
-
 end
 
 --[[
-	Hooks:PostHook( object, func, id, post_call )
+	Hooks:PostHook(object, func, id, post_call)
 		Automatically hooks a function to be called after the specified function on a specified object
 	object, 	The object for the hooked function to be called on
 	func, 		The name of the function (as a string) on the object for the hooked call to be ran after
 	id, 		The unique identifier for this posthook
 	post_call, 	The function to be called after the func on object
 ]]
-function Hooks:PostHook( object, func, id, post_call )
-
+function Hooks:PostHook(object, func, id, post_call)
 	if not object then
 		self:_PrePostHookError(func)
 		return
@@ -225,14 +216,12 @@ function Hooks:PostHook( object, func, id, post_call )
 	end
 
 	if object and self._posthooks[object][func] == nil then
-
 		self._posthooks[object][func] = {
 			original = object[func],
 			overrides = {}
 		}
 
 		object[func] = function(...)
-
 			local hooked_func = self._posthooks[object][func]
 			local r, _r
 
@@ -251,37 +240,34 @@ function Hooks:PostHook( object, func, id, post_call )
 			end
 
 			return r
-
 		end
 
 	end
 
-	for k, v in pairs( self._posthooks[object][func].overrides ) do
+	for k, v in pairs(self._posthooks[object][func].overrides) do
 		if v.id == id then
 			return
 		end
 	end
 
-	local func_tbl = {
-		id = id,
-		func = post_call,
-	}
-	table.insert( self._posthooks[object][func].overrides, func_tbl )
+	table.insert(self._posthooks[object][func].overrides, {id = id, func = post_call})
+end
 
+function Hooks:Post(...)
+	self:PostHook(...)
 end
 
 --[[
-	Hooks:RemovePostHook( id )
+	Hooks:RemovePostHook(id)
 		Removes the posthook with id, and prevents it from being run
 	id, The unique identifier of the posthook to remove
 ]]
-function Hooks:RemovePostHook( id )
-
-	for object_i, object in pairs( self._posthooks ) do
-		for func_i, func in pairs( object ) do
-			for override_i, override in ipairs( func.overrides ) do
+function Hooks:RemovePostHook(id)
+	for object_i, object in pairs(self._posthooks) do
+		for func_i, func in pairs(object) do
+			for override_i, override in ipairs(func.overrides) do
 				if override and override.id == id then
-					table.remove( func.overrides, override_i )
+					table.remove(func.overrides, override_i)
 				end
 			end
 		end
@@ -289,7 +275,7 @@ function Hooks:RemovePostHook( id )
 
 end
 
-function Hooks:_PrePostHookError( func )
+function Hooks:_PrePostHookError(func)
 	log(string.format("[Hooks] Error: Could not hook function '%s'", tostring(func)))
 	log(debug.traceback())
 end

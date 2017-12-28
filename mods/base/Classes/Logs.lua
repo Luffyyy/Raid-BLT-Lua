@@ -30,7 +30,7 @@ function BLTLogs:CleanLogs(lifetime)
 			local file_date = self:LogNameToNumber(file_name)
 			if file_date > 0 and file_date < current_time - (lifetime * self.day_length) then
 				print("[BLT] Removing log:", file_name)
-				os.remove( string.format("%s%s", self.logs_location, file_name) )
+				os.remove(string.format("%s%s", self.logs_location, file_name))
 			end
 		end
 	end

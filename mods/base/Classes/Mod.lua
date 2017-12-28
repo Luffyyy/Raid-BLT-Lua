@@ -85,19 +85,18 @@ end
 function BLTMod:SetupCheck()
     -- Check mod is compatible with this version of the BLT
     local disabled_mods = BLT.Options:GetValue("DisabledMods")
-    self:SetEnabled(not disabled_mods[self.path])
 
     local mod_blt_version = self:GetMinBLTVersion()
     mod_blt_version = mod_blt_version and tonumber(mod_blt_version) or nil
     if mod_blt_version and mod_blt_version > BLT:GetVersion() then
         self._blt_outdated = true
-        table.insert(self._errors, "blt_outdated")
+        table.insert(self._errors, {"blt_mod_blt_outdated", mod_blt_version})
     end
 
     -- Check dependencies are installed for this mod
-    if not self:AreDependenciesInstalled() then
-        table.insert(self._errors, "blt_mod_missing_dependencies")
-    end
+   	self:AreDependenciesAvailable(true)
+	
+	self:SetEnabled(not self:Errors() and not disabled_mods[self.path])
 end
 
 function BLTMod:Setup()
@@ -323,37 +322,38 @@ function BLTMod:GetDisabledDependencies()
     return self.disabled_dependencies or {}
 end
 
-function BLTMod:AreDependenciesInstalled()
-    local installed = false
+function BLTMod:AreDependenciesAvailable(pick_errors)
+	if not BLT.Options then
+		return true
+	end
+
     local dep_mods = {}
+	local available = true
+    local disabled_mods = BLT.Options:GetValue("DisabledMods")
 
-    self.missing_dependencies = {}
-    self.disabled_dependencies = {}
-
-    -- Iterate all mods and updates to find dependencies, store any that are missing
+	-- Iterate all mods and updates to find dependencies, store any that are missing
     local dependencies = self:GetDependencies()
     for _, mod in pairs(BLT.Mods:Mods()) do
         local name = mod:GetName()
         if table.contains(dependencies, name) then
-            if mod:IsEnabled() then
-                dep_mods[name] = mod
-                installed = true
-            else
-                table.insert(self.disabled_dependencies, mod)
-                table.insert(self._errors, "blt_mod_dependency_disabled")
-            end
-            break
+			dep_mods[name] = mod
         end
     end
 
-    for _, id in pairs(self:GetDependencies()) do
-        if not dep_mods[id] then
-        --local dependency = BLTModDependency:new(self, id)
-        --table.insert(self.missing_dependencies, dependency)
-        end
+    for _, id in ipairs(dependencies) do
+        local mod = dep_mods[id]
+		if mod then
+			if mod:CanBeDisabled() and disabled_mods[mod:GetPath()] and pick_errors then
+				table.insert(self._errors, {"blt_mod_dependency_disabled", id})
+				available = false
+			end
+		else
+			table.insert(self._errors, {"blt_mod_missing_dependency", id})
+			available = false
+		end
     end
 
-    return installed
+    return available
 end
 
 function BLTMod:GetDeveloperInfo()
@@ -372,12 +372,24 @@ function BLTMod:GetDeveloperInfo()
     local persists = self:GetPersistScripts() or {}
     local version = self:GetVersion()
 
+	if #self._errors > 0 then
+		append("Failed to load!")
+		append("", "Errors:")
+        for _, err in pairs(self._errors) do
+            local param = type(err) == "table" and err[2] or nil
+            err = param and err[1] or err
+			append("", "", tostring(managers.localization:text(err, {param = param})))
+        end
+    end
+    
     append("Name:", self:GetName())
     append("Path:", self:GetPath())
     append("Description:", self:GetDescription())
+    append("Author:", self:GetAuthor())
     append("Contact:", self:GetContact())
     append("Path:", self:GetPath())
 	append("Load Priority:", self:GetPriority())
+
 	if version then
 		append("Version:", version)
 	end

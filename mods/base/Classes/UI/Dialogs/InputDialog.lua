@@ -8,9 +8,8 @@ function InputDialog:init(params, menu)
     InputDialog.super.init(self, table.merge(params, {
         offset = 8,
         auto_height = true,
-        items_size = 20,
     }), menu)
-    self._default_width = 500
+    self._default_width = 600
 end
 
 function InputDialog:_Show(params)

@@ -124,8 +124,8 @@ function BLT:RunHookTable(hooks_table, path)
 	if not hooks_table or not hooks_table[path] then
 		return false
 	end
-	for i, hook_data in pairs( hooks_table[path] ) do
-		self:RunHookFile( path, hook_data )
+	for i, hook_data in pairs(hooks_table[path]) do
+		self:RunHookFile(path, hook_data)
 	end
 end
 

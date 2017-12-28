@@ -50,28 +50,24 @@ end
 
 function LuaNetworking:StringToTable(str)
 	local tbl = {}
-	local tblPairs = string.split( str, "[,]" )
+	local tblPairs = string.split(str, "[,]")
 	for k, v in pairs(tblPairs) do
-		local pairData = string.split( v, "[|]" )
-		tbl[ pairData[1] ] = pairData[2]
+		local pairData = string.split(v, "[|]")
+		tbl[pairData[1]] = pairData[2]
 	end
 	return tbl
 end
 
 function LuaNetworking:GetNameFromPeerID(id)
-
 	if managers.network and managers.network:session() and managers.network:session():peers() then
-		
-		for k, v in pairs( managers.network:session():peers() ) do
+		for k, v in pairs(managers.network:session():peers()) do
 			if k == id then
 				return v:name()
 			end
 		end
-
 	end
 
 	return "No Name"
-	
 end
 
 function LuaNetworking:GetPeers()
@@ -83,11 +79,7 @@ function LuaNetworking:GetPeers()
 end
 
 function LuaNetworking:GetNumberOfPeers()
-	local i = 0
-	for k, v in pairs( self:GetPeers() ) do
-		i = i + 1
-	end
-	return i
+	return table.size(self:GetPeers())
 end
 
 function LuaNetworking:SendToPeers(type_prm, data)
@@ -131,29 +123,27 @@ function LuaNetworking:SendStringThroughChat(message)
 	if ChatManager._receivers == nil then
 		ChatManager._receivers = {}
 	end
-	ChatManager:send_message( LuaNetworking.HiddenChannel, tostring(LuaNetworking:LocalPeerID()), message )
+	ChatManager:send_message(LuaNetworking.HiddenChannel, tostring(LuaNetworking:LocalPeerID()), message)
 end
 
 Hooks:Add("ChatManagerOnReceiveMessage", "ChatManagerOnReceiveMessage_Network", function(channel_id, name, message, color, icon)
 	local LN = LuaNetworking
-	name = name:gsub( "%%", "%%%%" )
-	message = message:gsub( "%%", "%%%%" )
+	name = name:gsub("%%", "%%%%")
+	message = message:gsub("%%", "%%%%")
 	local s = string.format("[%s] %s: %s", channel_id, name, message)
 	log(s)
 
 	local senderID = nil
 	if LN:IsMultiplayer() then
-
 		if name == managers.network:session():local_peer():name() then
 			senderID = LN:LocalPeerID()
 		end
 
-		for k, v in pairs( managers.network:session():peers() ) do
+		for k, v in pairs(managers.network:session():peers()) do
 			if v:name() == name then
 				senderID = k
 			end
 		end
-
 	end
 
 	if senderID == LN:LocalPeerID() then
@@ -166,13 +156,11 @@ Hooks:Add("ChatManagerOnReceiveMessage", "ChatManagerOnReceiveMessage_Network", 
 	if splt and (splt == LN.AllPeers or splt == LN.SinglePeer or splt == LN.ExceptPeer) then --Pretty bad method but I seriously have no idea where is channel id without a decomp.
 		LN:ProcessChatString(senderID or name, message, color, icon)
 	end
-
 end)
 
 Hooks:RegisterHook("NetworkReceivedData")
 function LuaNetworking:ProcessChatString(sender, message, color, icon)
-
-	local splitData = string.split( message, LuaNetworking.Split )
+	local splitData = string.split(message, LuaNetworking.Split)
 	local msgType = splitData[1]
 	if msgType == LuaNetworking.AllPeers then
 		LuaNetworking:ProcessAllPeers(sender, message, color, icon)
@@ -183,29 +171,25 @@ function LuaNetworking:ProcessChatString(sender, message, color, icon)
 	if msgType == LuaNetworking.ExceptPeer then
 		LuaNetworking:ProcessExceptPeer(sender, message, color, icon)
 	end
-	
 end
 
 function LuaNetworking:ProcessAllPeers(sender, message, color, icon)
-	local splitData = string.split( message, LuaNetworking.Split )
+	local splitData = string.split(message, LuaNetworking.Split)
 	Hooks:Call("NetworkReceivedData", sender, splitData[2], splitData[3])
 end
 
 function LuaNetworking:ProcessSinglePeer(sender, message, color, icon)
-
-	local splitData = string.split( message, LuaNetworking.Split )
-	local toPeer = tonumber( splitData[2] )
+	local splitData = string.split(message, LuaNetworking.Split)
+	local toPeer = tonumber(splitData[2])
 
 	if toPeer == LuaNetworking:LocalPeerID() then
 		Hooks:Call("NetworkReceivedData", sender, splitData[3], splitData[4])
 	end
-
 end
 
 function LuaNetworking:ProcessExceptPeer(sender, message, color, icon)
-	
-	local splitData = string.split( message, LuaNetworking.Split )
-	local exceptedPeers = string.split( splitData[2], "[,]" )
+	local splitData = string.split(message, LuaNetworking.Split)
+	local exceptedPeers = string.split(splitData[2], "[,]")
 
 	local excepted = false
 	for k, v in pairs(exceptedPeers) do
@@ -217,7 +201,6 @@ function LuaNetworking:ProcessExceptPeer(sender, message, color, icon)
 	if not excepted then
 		Hooks:Call("NetworkReceivedData", sender, splitData[3], splitData[4])
 	end
-
 end
 
 -- Extensions
@@ -232,8 +215,7 @@ function LuaNetworking:ColourToString(col)
 end
 
 function LuaNetworking:StringToColour(str)
-
-	local data = string.split( str, "[|]" )
+	local data = string.split(str, "[|]")
 	if #data < 4 then
 		return nil
 	end
@@ -245,5 +227,4 @@ function LuaNetworking:StringToColour(str)
 	local a = tonumber(string.split(data[4], split_str)[2])
 
 	return Color(a, r, g, b)
-
 end

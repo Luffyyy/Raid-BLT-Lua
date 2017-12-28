@@ -39,7 +39,7 @@ function TextBoxBase:init(parent, params)
         word_wrap = not params.lines or params.lines > 1,
         color = color,
         selection_color = color:with_alpha(0.5), --I fucking wish there was something better..
-		font = parent.font or "fonts/font_medium_mf",
+		font = parent.font or tweak_data.menu.pd2_large_font,
 		font_size = self.items_size
     })
     self.text:set_selection(self.text:text():len())

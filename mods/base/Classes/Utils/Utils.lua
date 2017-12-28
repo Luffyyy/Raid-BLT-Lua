@@ -6,7 +6,7 @@ Utils = Utils or {}
 _G.Utils = Utils
 
 --[[
-	CloneClass( class, clone_key )
+	CloneClass(class, clone_key)
 		Copies an existing class into an orig table, so that class functions can be overwritten and called again easily
     class, The class table to clone
     clone_key the key for the cloned table of the class, default is 'orig'
@@ -20,7 +20,7 @@ function _G.CloneClass(class, clone_key)
 end
 
 --[[
-	PrintTable( tbl, level )
+	PrintTable(tbl, level)
 		Prints the contents of a table to your console
 		Warning, may cause game slowdown if the table is fairly large, only for debugging purposes
 	tbl, The table to print to console
@@ -51,16 +51,16 @@ end
 
 
 --[[
-	SaveTable( tbl, file )
+	SaveTable(tbl, file)
 		Saves the contents of a table to the specified file
 	tbl, 	The table to save to a file
 	file, 	The path (relative to raid_win64_d3d9_release.exe) and file name to save the table to
 ]]
-function _G.SaveTable( tbl, file )
-	Utils.DoSaveTable( tbl, {}, file, nil, "" )
+function _G.SaveTable(tbl, file)
+	Utils.DoSaveTable(tbl, {}, file, nil, "")
 end
 
-function Utils.DoSaveTable( tbl, cmp, fileName, fileIsOpen, preText )
+function Utils.DoSaveTable(tbl, cmp, fileName, fileIsOpen, preText)
 
 	local file = nil
 	if fileIsOpen == nil then
@@ -74,14 +74,14 @@ function Utils.DoSaveTable( tbl, cmp, fileName, fileIsOpen, preText )
 		for k, v in pairs(tbl) do
 			if type(v) == "table" and not cmp[v] then
 				cmp[v] = true
-				file:write( preText .. string.format("[\"%s\"] -> table", tostring (k)) .. "\n" )
+				file:write(preText .. string.format("[\"%s\"] -> table", tostring (k)) .. "\n")
 				Utils.DoSaveTable(v, cmp, fileName, file, preText .. "\t")
 			else
-				file:write( preText .. string.format( "\"%s\" -> %s", tostring(k), tostring(v) ) .. "\n" )
+				file:write(preText .. string.format("\"%s\" -> %s", tostring(k), tostring(v)) .. "\n")
 			end
 		end
 	else
-		file:write( preText .. tostring(tbl) .. "\n")
+		file:write(preText .. tostring(tbl) .. "\n")
 	end
 
 	if fileIsOpen == nil then
@@ -132,7 +132,7 @@ end
 function Utils:IsInCustody()
 	local player = managers.player:local_player()
 	local in_custody = false
-	if managers and managers.trade and not alive( player ) and managers.network:session() and managers.network:session():local_peer() and managers.network:session():local_peer():id() then
+	if managers and managers.trade and not alive(player) and managers.network:session() and managers.network:session():local_peer() and managers.network:session():local_peer():id() then
 		in_custody = managers.trade:is_peer_in_custody(managers.network:session():local_peer():id())
 	end
 	return in_custody
@@ -204,14 +204,14 @@ function Utils:IsCurrentWeaponSecondary()
 end
 
 --[[
-	Utils:GetPlayerAimPos( player, maximum_range )
+	Utils:GetPlayerAimPos(player, maximum_range)
 		Gets the point in the world, as a Vector3, where the player is aiming at
 	player, 		The player to get the aiming position of
 	maximum_range, 	The maximum distance to check for a point (default 100000, 1km)
 	return, 		A Vector3 containing the location that the player is looking at, or false if the player was not looking at anything
 			or was looking at something past the maximum_range
 ]]
-function Utils:GetPlayerAimPos( player, maximum_range )
+function Utils:GetPlayerAimPos(player, maximum_range)
 	local ray = self:GetCrosshairRay(player:camera():position(), player:camera():position() + player:camera():forward() * (maximum_range or 100000))
 	if not ray then
 		return false
@@ -220,14 +220,14 @@ function Utils:GetPlayerAimPos( player, maximum_range )
 end
 
 --[[
-	Utils:GetCrosshairRay( from, to, slot_mask )
+	Utils:GetCrosshairRay(from, to, slot_mask)
 		Gets a ray between two points and checks for a collision with the slot_mask along the ray
 	from, 		The starting position of the ray, defaults to the player's head
 	to, 		The ending position of the ray, defaults to 1m in from of the player's head
 	slot_mask, 	The collision group to check against the ray, defaults to all objects the player can shoot
 	return, 	A table containing the ray information
 ]]
-function Utils:GetCrosshairRay( from, to, slot_mask )
+function Utils:GetCrosshairRay(from, to, slot_mask)
 
 	slot_mask = slot_mask or "bullet_impact_targets"
 
@@ -242,9 +242,9 @@ function Utils:GetCrosshairRay( from, to, slot_mask )
 
 	if not to then
 		to = Vector3()
-		mvector3.set( to, player:camera():forward() )
-		mvector3.multiply( to, 20000 )
-		mvector3.add( to, from )
+		mvector3.set(to, player:camera():forward())
+		mvector3.multiply(to, 20000)
+		mvector3.add(to, from)
 	end
 
 	local colRay = World:raycast("ray", from, to, "slot_mask", managers.slot:get_mask(slot_mask))
@@ -253,22 +253,22 @@ function Utils:GetCrosshairRay( from, to, slot_mask )
 end
 
 --[[
-	Utils:ToggleItemToBoolean( item )
+	Utils:ToggleItemToBoolean(item)
 		Gets the string value of a toggle item and converts it to a boolean value
 	item, 		The toggle menu item to get a boolean value from
 	return, 	True if the toggle item is on, false otherwise
 ]]
-function Utils:ToggleItemToBoolean( item )
+function Utils:ToggleItemToBoolean(item)
 	return item:value() == "on" and true or false
 end
 
 --[[
-	Utils:EscapeURL( item )
+	Utils:EscapeURL(item)
 		Escapes characters in a URL to turn it into a usable URL
 	input_url, 	The url to escape the characters of
 	return, 	A url string with escaped characters
 ]]
-function Utils:EscapeURL( input_url )
+function Utils:EscapeURL(input_url)
 	local url = input_url:gsub(" ", "%%20")
 	url = url:gsub("!", "%%21")
 	url = url:gsub("#", "%%23")
@@ -276,7 +276,7 @@ function Utils:EscapeURL( input_url )
 	return url
 end
 
-function Utils:TimestampToEpoch( year, month, day )
+function Utils:TimestampToEpoch(year, month, day)
 	-- Adapted from http://stackoverflow.com/questions/4105012/convert-a-string-date-to-a-timestamp
 	local offset = os.time() - os.time(os.date("!*t"))
 	local time = os.time({
@@ -856,48 +856,48 @@ Vector3.StringFormat = "%08f,%08f,%08f"
 Vector3.MatchFormat = "([-0-9.]+),([-0-9.]+),([-0-9.]+)"
 
 --[[
-	Vector3.ToString( v )
+	Vector3.ToString(v)
 		Converts a Vector3 to a string, useful in conjunction with Networking
 	v, 			The Vector3 to convert to a formatted string
 	return, 	A formatted string containing the data of the Vector3
 ]]
-function Vector3.ToString( v )
-	return string.format( Vector3.StringFormat, v.x, v.y, v.z )
+function Vector3.ToString(v)
+	return string.format(Vector3.StringFormat, v.x, v.y, v.z)
 end
 
 --[[
-	string.ToVector3( string )
+	string.ToVector3(string)
 		Converts a formatted string to a Vector3, useful in conjunction with Networking
 	string, 	The string to convert to a Vector3
 	return, 	A Vector3 of the converted string or nil if no conversion could be made
 ]]
-function string.ToVector3( string )
-	local x, y, z = string:match( Vector3.MatchFormat )
+function string.ToVector3(string)
+	local x, y, z = string:match(Vector3.MatchFormat)
 	if x ~= nil and y ~= nil and z ~= nil then
-		return Vector3( tonumber(x), tonumber(y), tonumber(z) )
+		return Vector3(tonumber(x), tonumber(y), tonumber(z))
 	end
 	return nil
 end
 
 
 --[[
-	string.is_nil_or_empty( str )
+	string.is_nil_or_empty(str)
 		Returns if a string exists or not
 	str, 		The string to check if it exists or is empty
 	return, 	Returns false if the string is empty ("") or nil, true otherwise
 ]]
-function string.is_nil_or_empty( str )
+function string.is_nil_or_empty(str)
 	return str == "" or str == nil
 end
 
 --[[
-	math.round_with_precision( num, idp )
+	math.round_with_precision(num, idp)
 		Rounds a number to the specified precision (decimal places)
 	num, 		The number to round
 	idp, 		The number of decimal places to round to (0 default)
 	return, 	The input number rounded to the input precision (or floored integer)
 ]]
-function math.round_with_precision( num, idp )
+function math.round_with_precision(num, idp)
 	local mult = 10 ^ (idp or 0)
 	return math.floor(num * mult + 0.5) / mult
 end
@@ -915,7 +915,7 @@ end
 
 -- From: http://stackoverflow.com/questions/7183998/in-lua-what-is-the-right-way-to-handle-varargs-which-contains-nil
 function table.pack(...)
-  return { n = select("#", ...), ... }
+  return {n = select("#", ...), ...}
 end
 
 function table.merge(og_table, new_table)

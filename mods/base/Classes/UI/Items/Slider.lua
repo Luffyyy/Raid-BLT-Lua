@@ -37,8 +37,8 @@ function Slider:Init()
         w = ch,
         h = ch,
         y = 1,
-        texture = "guis/textures/menu_ui_icons",
-        texture_rect = {767, 681, 29, 29},
+        texture = "ui/atlas/raid_atlas_menu",
+        texture_rect = {765, 679, 33, 33},
         layer = 3,
         color = fgcolor,
     })
@@ -47,7 +47,7 @@ function Slider:Init()
         name = "fg",
         x = ch / 2,
         w = self._slider:w() * (self.value / self.max),
-        h = 2,
+        h = 4,
         layer = 2,
         color = fgcolor
     })
@@ -57,12 +57,11 @@ function Slider:Init()
         name = "bg",
         x = ch / 2,        
         w = self._slider:w() - ch,
-        h = 2,
+        h = 4,
         layer = 1,
         color = fgcolor:with_alpha(0.25),
     })
     self.sbg:set_center_y(self._slider:h() / 2)
-
 
     self._slider:set_right(self._textbox.panel:x())
     self._mouse_pos_x, self._mouse_pos_y = 0,0

@@ -82,10 +82,10 @@ end
 
 function BLTKeybind:Name()
 	if not self._name then
-		return managers.localization:text( "blt_no_name" )
+		return managers.localization:text("blt_no_name")
 	end
 	if self:IsLocalized() then
-		return managers.localization:text( self._name )
+		return managers.localization:text(self._name)
 	else
 		return self._name
 	end
@@ -93,10 +93,10 @@ end
 
 function BLTKeybind:Description()
 	if not self._desc then
-		return managers.localization:text( "blt_no_desc" )
+		return managers.localization:text("blt_no_desc")
 	end
 	if self:IsLocalized() then
-		return managers.localization:text( self._desc )
+		return managers.localization:text(self._desc)
 	else
 		return self._desc
 	end
@@ -190,7 +190,7 @@ function BLTKeybindsManager:has_menu_keybinds()
 	return false
 end
 
-function BLTKeybindsManager:get_keybind( id )
+function BLTKeybindsManager:get_keybind(id)
 	for _, bind in ipairs(self._keybinds) do
 		if bind:Id() == id then
 			return bind

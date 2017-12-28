@@ -9,7 +9,7 @@
 		contact="https://modworkshop.net/member.php?action=profile&uid=11"
 		description="The collection of Lua files that allow the BLT hook to function."
 		cannot_be_disabled="true"
-		early_post_init="true"
+		early_init="true"
 	>
 	<auto_updates provider="modworkshop" id="21065" version="1.0" important="true"/>
 	<options build_menu="false">

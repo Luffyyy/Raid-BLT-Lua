@@ -5,7 +5,7 @@
 
 function io.file_is_readable(fname)
 
-	local file = io.open(fname, "r" )
+	local file = io.open(fname, "r")
 	if file ~= nil then
 		io.close(file)
 		return true
@@ -28,14 +28,14 @@ function io.remove_directory_and_files(path, verbose)
 		return false
 	end
 
-	if not file.DirectoryExists( path ) then
+	if not file.DirectoryExists(path) then
 		log("[Error] Directory does not exist: " .. path)
 		return false
 	end
 
-	local dirs = file.GetDirectories( path )
+	local dirs = file.GetDirectories(path)
 	if dirs then
-		for k, v in pairs( dirs ) do
+		for k, v in pairs(dirs) do
 			local child_path = path .. v .. "/"
 			vlog("Removing directory: " .. child_path)
 			io.remove_directory_and_files(child_path, verbose)
@@ -74,7 +74,7 @@ end
 function io.save_as_json(data, path)
 
 	local count = 0
-	for k, v in pairs( data ) do
+	for k, v in pairs(data) do
 		count = count + 1
 	end
 
@@ -82,7 +82,7 @@ function io.save_as_json(data, path)
 
 		local file = io.open(path, "w+")
 		if file then
-			file:write(json.encode( data ))
+			file:write(json.encode(data))
 			file:close()
 			return true
 		else

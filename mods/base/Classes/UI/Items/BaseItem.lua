@@ -107,7 +107,7 @@ function BaseItem:WorkParams(params)
 	if self.auto_foreground and self.foreground_highlight ~= false then
 		self.foreground_highlight = bgh:contrast()
 	end
-	self:WorkParam("items_size", 16)
+	self:WorkParam("items_size", 24)
 	self:WorkParam("enabled_alpha", 1)
 	self:WorkParam("disabled_alpha", 0.5)
 	self:WorkParam("background_alpha")

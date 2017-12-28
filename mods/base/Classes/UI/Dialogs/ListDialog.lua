@@ -14,7 +14,7 @@ function ListDialog:init(params, menu)
 
     ListDialog.super.init(self, table.merge({
         h = params.main_h or 32,
-        w = 900,
+        w = 1000,
         items_size = 32,
         offset = 0,
         auto_height = false,
@@ -26,8 +26,8 @@ function ListDialog:init(params, menu)
 
     self._list_menu = menu:Menu(table.merge({
         name = "List",        
-        w = 900,
-        h = params.h and params.h - self._menu.h or 600,
+        w = 1000,
+        h = params.h and params.h - self._menu.h or 700,
         items_size = 28,
         auto_foreground = true,
         auto_align = false,
@@ -84,19 +84,20 @@ function ListDialog:_Show(params)
     self._limit = NotNil(params.limit, true)
     self._list = params.list
     local offset, bw = self:CreateShortcuts(params)
-    --the closet shit I found that could look like an exit icon
     local close = self._menu:ImageButton({
         name = "Close",
         w = bw,
+        h = self._menu.items_size,
         offset = offset,
-        h = 20,
-        icon_w = 14,
-        icon_h = 14,
-        texture = "ui/atlas/raid_atlas_bonus_loot",
-        texture_rect = {667, 179, 130, 130},
+        icon_w = 24,
+        icon_h = 24,
+        img_rot = 45,
+        texture = "ui/atlas/raid_atlas_menu",
+        texture_rect = {761, 721, 18, 18},
         callback = callback(self, self, "hide"),  
         label = "temp"
     })
+
     self._menu:TextBox({
         name = "Search",
         w = self._menu:ItemsWidth() - close:Right() - offset[1],

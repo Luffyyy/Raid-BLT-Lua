@@ -202,8 +202,8 @@ end
 
 function UpdatesModule:ShowNoChangePrompt()
     QuickMenu:new(
-        managers.localization:text("beardlib_no_change"),
-        managers.localization:text("beardlib_no_change_desc"),
+        managers.localization:text("blt_no_change"),
+        managers.localization:text("blt_no_change_desc"),
         {{
             text = managers.localization:text("menu_ok"),
             is_cancel_button = true

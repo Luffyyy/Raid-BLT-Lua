@@ -27,12 +27,13 @@ function BLTModExtended:init(path, ident, data, post_init)
 	-- Mod information
 	self:InitParams(path, ident, data)
 
-	self._early_post_init = data.early_post_init
+	self._early_init = data.early_init
 	self._auto_post_init = NotNil(data.auto_post_init, post_init)
 
 	self.color = data.color
-
-	self:InitModules()
+    if self._early_init then
+        self:InitModules()
+    end
 end
 
 function BLTModExtended:InitModules()
@@ -74,8 +75,7 @@ function BLTModExtended:InitModules()
             end
         end
     end
-
-    if self._early_post_init then
+    if self._auto_post_init then
         self:PostInitModules()
     end
     self.modules_initialized = true
@@ -112,8 +112,8 @@ end
 function BLTModExtended:Setup()
 	print("[BLT] Setting up mod: ", self:GetId())
 	self:SetupCheck()
-	if not self._early_post_init and self._auto_post_init then
-        self:PostInitModules()
+	if not self._early_init then
+        self:InitModules()
     end
 end
 

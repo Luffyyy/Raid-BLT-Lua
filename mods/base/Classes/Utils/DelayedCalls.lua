@@ -1,24 +1,19 @@
 
 DelayedCalls = DelayedCalls or {}
 DelayedCalls._calls = DelayedCalls._calls or {}
-
-Hooks:Add("MenuUpdate", "MenuUpdate_Queue", function( t, dt )
+Hooks:Add("MenuUpdate", "MenuUpdate_Queue", function(t, dt)
 	DelayedCalls:Update(t, dt)
 end)
 
-Hooks:Add("GameSetupUpdate", "GameSetupUpdate_Queue", function( t, dt )
+Hooks:Add("GameSetupUpdate", "GameSetupUpdate_Queue", function(t, dt)
 	DelayedCalls:Update(t, dt)
 end)
 
-function DelayedCalls:Update( time, deltaTime )
-
+function DelayedCalls:Update(t, dt)
 	local t = {}
-
-	for k, v in pairs( self._calls ) do
-
+	for k, v in pairs(self._calls) do
 		if v ~= nil then
-			
-			v.currentTime = v.currentTime + deltaTime
+			v.currentTime = v.currentTime + dt
 			if v.currentTime > v.timeToWait then
 				if v.functionCall then
 					v.functionCall()
@@ -27,23 +22,19 @@ function DelayedCalls:Update( time, deltaTime )
 			else
 				table.insert(t, v)
 			end
-
 		end
-
 	end
-
 	self._calls = t
-
 end
 
 --[[
-	DelayedCalls:Add( id, time, func )
+	DelayedCalls:Add(id, time, func)
 		Adds a function to be automatically called after a set delay
 	id, 	Unique identifier for this delayed call
 	time, 	Time in seconds to call the specified function after
 	func, 	Function call to call after the time runs out 
 ]]
-function DelayedCalls:Add( id, time, func )
+function DelayedCalls:Add(id, time, func)
 	local queuedFunc = {
 		functionCall = func,
 		timeToWait = time,
@@ -53,10 +44,10 @@ function DelayedCalls:Add( id, time, func )
 end
 
 --[[
-	DelayedCalls:Remove( id )
+	DelayedCalls:Remove(id)
 		Removes a scheduled call before it can be automatically called
 	id, Unique identifier for the delayed call remove 
 ]]
-function DelayedCalls:Remove( id )
+function DelayedCalls:Remove(id)
 	self._calls[id] = nil
 end

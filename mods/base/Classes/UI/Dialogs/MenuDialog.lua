@@ -18,7 +18,7 @@ function MenuDialog:init(params, menu)
         always_highlighting = true,
         reach_ignore_focus = true,
         scrollbar = false,
-        items_size = 28,
+        items_size = 32,
         offset = 8,
         accent_color = tweak_data.gui.colors.raid_red,
         background_color = Color(0.6, 0.25, 0.25, 0.25),

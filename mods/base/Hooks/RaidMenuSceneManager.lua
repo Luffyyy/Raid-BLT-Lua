@@ -11,7 +11,6 @@ RaidMenuSceneManager.orig_on_escape = RaidMenuSceneManager.orig_on_escape or Rai
 function RaidMenuSceneManager:on_escape(...)
 	if self._back_disabled then
         return
-        managers.menu:active_menu().renderer:disable_input(0.2)
     end
     if self._ignore_back_once then
         self._ignore_back_once = nil
