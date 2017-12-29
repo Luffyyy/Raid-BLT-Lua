@@ -56,8 +56,9 @@ function BLTModManager:RegisterHook(source_file, path, file, type, mod)
 		else
 			table.insert(BLT.hook_tables.wildcards, data)
 		end
-    else
-        BLT:log("[ERROR] Hook file not readable by the lua state! File: %s", file)
+	else
+		mod = mod or BLT
+        mod:log("[ERROR] Hook file not readable by the lua state! File: %s", file)
     end
 end
 

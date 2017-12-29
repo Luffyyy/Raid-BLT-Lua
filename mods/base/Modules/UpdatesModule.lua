@@ -156,8 +156,6 @@ function UpdatesModule:RetrieveCurrentVersion()
         end
     elseif self._config.version then
         self.version = self._config.version
-    else
-        self:log("[ERROR] Unable to get version for '%s's assets. File: %s", self._mod.name, self.version_file)
     end
     if tonumber(self.version) then -- has to be here, xml seems to fuckup numbers.
         self.version = math.round_with_precision(tonumber(self.version), 4)

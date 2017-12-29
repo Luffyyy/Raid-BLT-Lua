@@ -184,11 +184,11 @@ function BLT:LoadMods(path, mods_list)
 		-- Check if this directory is excluded from being checked for mods (logs, saves, etc.)
 		if not self.Mods:IsExcludedDirectory(directory) then
 			local mod_path = path .. directory .. "/"
-			local mod_defintion = mod_path .. "mod.txt"
-			local is_xml
+			local mod_defintion = mod_path .. "mod.xml"
+			local is_json
 			if not FileIO:Exists(mod_defintion) then
-				mod_defintion = mod_path .. "mod.xml"
-				is_xml = true
+				mod_defintion = mod_path .. "mod.txt"
+				is_json = true
 			end
 
 			-- Attempt to read the mod defintion file
@@ -196,14 +196,14 @@ function BLT:LoadMods(path, mods_list)
 			if file then
 				log("[BLT] Loading mod: " .. tostring(directory))
 				-- Read the file contents
-				local mod_content = FileIO:ConvertScriptData(file:read("*all"), is_xml and "custom_xml" or "json")
+				local mod_content = FileIO:ConvertScriptData(file:read("*all"), is_json and "json" or "custom_xml")
 				file:close()
 				-- Create a BLT mod from the loaded data
 				if mod_content then
-					if is_xml then
-						table.insert(mods_list, BLTModExtended:new(path, directory, mod_content, true))
-					else
+					if is_json then
 						table.insert(mods_list, BLTMod:new(path, directory, mod_content))
+					else
+						table.insert(mods_list, BLTModExtended:new(path, directory, mod_content, true))
 					end
 				else
 					log("[BLT] An error occured while loading mod.txt from: " .. tostring(mod_path))
