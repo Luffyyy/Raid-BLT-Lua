@@ -907,6 +907,9 @@ function string.pretty2(str)
     return str:gsub("([^A-Z%W])([A-Z])", "%1 %2"):gsub("([A-Z]+)([A-Z][^A-Z$])", "%1 %2")
 end
 
+function string.CamelCase(s) -- see what I did there
+    return s:pretty(true):gsub("%s", "") 
+end
 function string.key(str)
     local ids = Idstring(str)
     local key = ids:key()
@@ -919,6 +922,9 @@ function table.pack(...)
 end
 
 function table.merge(og_table, new_table)
+    if not new_table then
+        return og_table
+    end
     for i, data in pairs(new_table) do
         i = type(data) == "table" and data.index or i
         if type(data) == "table" and type(og_table[i]) == "table" then

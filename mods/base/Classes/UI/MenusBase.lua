@@ -8,6 +8,12 @@ function BLTMenu:init(ws, fullscreen_ws, node, name)
     --do we need a name..? hard without a decomp :/
     BLTMenu.super.init(self, ws, fullscreen_ws, node, name or "")
     self._root_panel.ctrls = self._root_panel.ctrls or {}
+    if self.PreInit then
+        self:PreInit(self._root_panel)
+    end
+    if self.Init then
+        self:Init(self._root_panel)
+    end
     if self._items_data then
         for _, item in ipairs(self._items_data) do
             item.value_name = item.value_name or item.name
@@ -19,8 +25,6 @@ function BLTMenu:init(ws, fullscreen_ws, node, name)
                     else
                         item.value = get_value(item.value_name, item)
                     end
-                else
-                    log("[BLT][Warning] Get value function was not given, cannot set values without it.")
                 end
             end
             local type = item.type
@@ -28,12 +32,6 @@ function BLTMenu:init(ws, fullscreen_ws, node, name)
                 self[type](self, item)
             end
         end
-    end
-    if self.InitMenuData then
-        self:InitMenuData(self._root_panel)
-    end
-    if self.Init then
-        self:Init(self._root_panel)
     end
     self:Align()
     self:Finalize()
@@ -171,14 +169,19 @@ function BLTMenu:Close()
 end
 
 --Parameters that all items have
-function BLTMenu:BasicItemData(params)
-    params = clone(params)
+function BLTMenu:BasicItemData(params, no_clone)
+    params = no_clone and params or clone(params)
 
     if params.localize == nil then
         params.localize = true
     end
     if params.upper == nil then
         params.upper = true
+    end
+    
+    params.name = params.name or params.text or "ERROR"
+    if params.text == nil and params.localize then
+        params.text = (self._mod and self._mod.name or "") .. params.name .. "Text"
     end
 
     if params.text then
@@ -209,7 +212,7 @@ end
 
 function BLTMenu:CreateSimple(typ, params, create_data)
     create_data = create_data or {}
-    local data = BLTMenu.BasicItemData(self, params)
+    local data = BLTMenu.BasicItemData(self, params, create_data.no_clone)
     local parent = data.parent   
     if parent then
         local clbk_key = create_data.clbk_key or "on_click_callback"
@@ -261,10 +264,12 @@ function BLTMenu:LongRoundedButton(params)
 end
 
 function BLTMenu:CreateSimpleLabel(typ, params)
+    params = clone(params)
     params.callback = nil
     params.x_offset = params.x_offset or self.default_label_x_offset or 1
     params.y_offset = params.y_offset or self.default_label_y_offset or 1
-    local label = BLTMenu.CreateSimple(self, typ, params)
+    params.text = NotNil(params.text, false)
+    local label = BLTMenu.CreateSimple(self, typ, params, {no_clone = true})
     label._params.align_item = true
     return label
 end
@@ -290,9 +295,10 @@ function BLTMenu:Switch(params)
 end
 
 function BLTMenu:MultiChoice(params)
+    params = clone(params)
     params.data_source_callback = params.items_func or function() return params.items or {} end
     local item
-    item = BLTMenu.CreateSimple(self, "stepper", params, {text_key = "description", clbk_key = "on_item_selected_callback", default_clbk = function(value)
+    item = BLTMenu.CreateSimple(self, "stepper", params, {no_clone = true, text_key = "description", clbk_key = "on_item_selected_callback", default_clbk = function(value)
         params.callback(value, item)
     end})
     if params.selected ~= nil then
@@ -309,6 +315,7 @@ function BLTMenu:MultiChoice(params)
 end
 
 function BLTMenu:Slider(params)
+    params = clone(params)
     local item
     local max = params.max or 100
     local min = params.min or 0
@@ -319,13 +326,15 @@ function BLTMenu:Slider(params)
     	params.value = (params.value - min) / (max - min) * 100
     end
     
-	item = BLTMenu.CreateSimple(self, "slider", params, {text_key = "description", clbk_key = "on_value_change_callback", default_clbk = function(value)
+	item = BLTMenu.CreateSimple(self, "slider", params, {no_clone = true, text_key = "description", clbk_key = "on_value_change_callback", default_clbk = function(value)
         params.callback(tonumber(item._value_label:text()), item)
     end})
     return item
 end
 
 function BLTMenu:Tabs(params)
+    params = clone(params)
+
     if params.localize == nil then
         params.localize = true
     end
@@ -351,17 +360,18 @@ function BLTMenu:Tabs(params)
     end
 
     local item    
-    item = BLTMenu.CreateSimple(self, "tabs", params, {text_key = false, default_clbk = function(tab_selected)
+    item = BLTMenu.CreateSimple(self, "tabs", params, {no_clone = true, text_key = false, default_clbk = function(tab_selected)
         params.callback(tab_selected, item)
     end})
     return item
 end
 
 function BLTMenu:Panel(params)
+    params = clone(params)
     local item
 	params.callback = nil
 	params.text = nil
-    item = BLTMenu.CreateSimple(self, "panel", params, {text_key = false})
+    item = BLTMenu.CreateSimple(self, "panel", params, {no_clone = true, text_key = false})
     item.ctrls = item.ctrls or {}
     return item
 end
@@ -385,7 +395,7 @@ function BLTMenu:ColorButton(params)
             end
         })
     end
-    btn = self:Button(btn_params)
+    btn = BLTMenu.Button(self, btn_params)
     preview = btn._object_text:parent():bitmap({
 		name = "preview",
 		w = 24,
@@ -401,6 +411,7 @@ function BLTMenu:ColorButton(params)
 end
 
 function BLTMenu:KeyBind(params)
+    params = clone(params)
     local id = params.keybind_id or ""
     --doing this because for some reason lgl thought it's a good idea to put the text of the item inside keybind_params
     --like why aren't all items just use a parameter like 'text' sigh
@@ -424,7 +435,7 @@ function BLTMenu:KeyBind(params)
         name = id,
         button = id
     }
-    BLTMenu.CreateSimple(self, "keybind", params)
+    BLTMenu.CreateSimple(self, "keybind", params, {no_clone = true})
 end
 
 
@@ -549,15 +560,6 @@ function BLTCustomMenu:make_fine_text(text)
 	local x,y,w,h = text:text_rect()
 	text:set_size(w, h)
 	text:set_position(math.round(text:x()), math.round(text:y()))
-end
-
-
-RaidBackButton = RaidBackButton or class(BLTCustomMenu)
-function RaidBackButton:init(ws, fullscreen_ws, node)
-    RaidGuiBase:set_legend({
-        controller = {"menu_legened_back"},
-        keyboard = {{key = "footer_back", callback = callback(managers.raid_menu, managers.raid_menu, "close_menu")}},
-    })
 end
 
 -------------------------------------------------------------------------------

@@ -485,7 +485,7 @@ function OptionModule:CreateDivider(menu, tbl, type)
     local merge_data = self:GetParameter(tbl, "merge_data") or {}
     merge_data = Utils:RemoveAllNumberIndexes(merge_data)
     table.insert(menu._items_data, table.merge({
-        type = type and string.pretty(type, true):gsub("%s", "") or "Label",
+        type = type and string.CamelCase(type) or "Label",
         name = self:GetParameter(tbl, "name"),
         text = self:GetParameter(tbl, "text"),
         y_offset = self:GetParameter(tbl, "y_offset"),
@@ -501,6 +501,7 @@ function OptionModule:CreateSubMenu(menu, option_tbl, option_path)
     local clss = class(BLTMenu)
     clss._items_data = {}
     clss._get_value = callback(self, self, "GetValue")
+    clss._mod = self._mod
     self._menus[base_name] = clss
     RaidMenuHelper:CreateMenu({
 		name = base_name,

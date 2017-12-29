@@ -3,6 +3,7 @@
 RaidMenuHelper = RaidMenuHelper or {}
 function RaidMenuHelper:CreateMenu(params)
 	local name = string.gsub(params.name, "%s", "") --remove spaces from names, it doesn't seem to like them that much.
+	local text = params.text or params.name_id
 	local component_name = params.component_name or name
 	managers.menu:register_menu_new({
 		name = name,
@@ -27,7 +28,7 @@ function RaidMenuHelper:CreateMenu(params)
 		}
 	})
 	if managers.raid_menu then
-		managers.raid_menu.menus[component_name] = {name = component_name}
+		managers.raid_menu.menus[component_name] = {name = component_name, class = params.class}
 	end
 	if params.class then
         if managers.menu_component then
@@ -38,12 +39,26 @@ function RaidMenuHelper:CreateMenu(params)
     end
     if params.inject_list then
         self:InjectButtons(params.inject_list, params.inject_after, {
-            self:PrepareListButton(params.name_id or params.text, params.localize, self:MakeNextMenuClbk(component_name), params.flags)
+            self:PrepareListButton(text, params.localize, self:MakeNextMenuClbk(component_name), params.flags)
 		}, true)
 	elseif params.inject_menu then
-        self:InjectButtons(params.inject_menu, params.inject_after, {
-            self:PrepareButton(params.name_id or params.text, params.localize, function() log("OPEN MENU", tostring(component_name)) managers.raid_menu:open_menu(component_name) end)
-		})		
+		local menu = managers.raid_menu.menus[params.inject_menu]
+		local clbk = function() managers.raid_menu:open_menu(component_name) end --callbacks apparently break the back button
+		if menu and menu.class then
+			menu.class._items_data = menu.class._items_data or {}
+			table.insert(menu.class._items_data, table.merge({
+				type = "Button",
+				name = params.name.."Button",
+				text = text,
+				localize = params.localize,
+				index = params.index,
+				callback = clbk
+			}, params.merge_data))
+		else
+			self:InjectButtons(params.inject_menu, params.inject_after, {
+				self:PrepareButton(text, params.localize, clbk)
+			})
+		end
     end
     return params.name
 end
@@ -159,25 +174,27 @@ end
 function RaidMenuHelper:LoadXML(path)
 	local file = io.open(path, "r")
 	if file then
-		local data = ScriptSerializer:from_custom_xml(file:read("*all"))
-		if data and data.items then
-			for _, v in pairs(data.items) do --convert _meta to type
-				if type(v) == "table" then
-					if v._meta then
-						v.type = v._meta
-						v._meta = nil
-					end
-				end
-			end
-			self:LoadMenu(data)
-		end
+		self:ConvertXMLData(ScriptSerializer:from_custom_xml(file:read("*all")))
+		self:LoadMenu(data)
 		file:close()
 	else
 		log(string.format("[BLT][ERROR] Failed reading XML file at path %s", tostring(path)))
 	end
 end
 
-function RaidMenuHelper:LoadMenu(data)
+function RaidMenuHelper:ConvertXMLData(data)
+	if type(data) == "table" then
+		for _, v in pairs(data) do
+			if type(v) == "table" and v._meta then
+				v.type = v._meta --convert _meta to type
+				v._meta = nil
+				self:ConvertXMLData(v)
+			end
+		end
+	end
+end
+
+function RaidMenuHelper:LoadMenu(data, mod)
 	if not data.name then
 		log("[BLT][ERROR] Creation of menu at path %s has failed, no menu name given.")
 		return
@@ -190,7 +207,7 @@ function RaidMenuHelper:LoadMenu(data)
 			clss = data.class
 		else
 			clss = class(BLTMenu)
-			rawset(_G, clss, data.name.."Menu")
+			rawset(_G, clss, data.global_name or data.name.."Menu")
 		end
 		if data.get_value and clss then
 			if data.get_value:starts("callback") then
@@ -202,7 +219,6 @@ function RaidMenuHelper:LoadMenu(data)
 			else
 				log(string.format("[BLT][Warning] Get value function given in menu named %s doesn't exist.", tostring(data.name)))
 			end
-			data.get_value = nil
 		end
 		RaidMenuHelper:CreateMenu({
 			name = data.name,
@@ -212,26 +228,36 @@ function RaidMenuHelper:LoadMenu(data)
 			inject_menu = data.inject_menu,
 		})
 		if clss then
-			local ready_items = {}
-			for k, item in ipairs(data.items) do
-				if item.callback then
-					if item.callback:begins("callback") then
-						item.callback = loadstring("return "..tostring(item.callback))
-					elseif clss[item.callback] then
-						item.callback = callback(clss, clss, item.callback)
+			clss._mod = mod
+			clss._items_data = {}
+			for k, item in ipairs(data) do
+				if type(item) == "table" and item.type then
+					item.type = string.CamelCase(item.type) -- write the types how you want(multi_choice, MultiChoice)
+					if item.type == "Menu" then
+						item.inject_menu = item.inject_menu or data.name
+						item.get_value = item.get_value or data.get_value
+						item.localize = NotNil(item.localize, data.localize)
+						self:LoadMenu(item)
 					else
-						log(string.format("[BLT][Warning] Callback given to item named %s in menu named %s doesn't exist", tostring(item.name), tostring(data.name)))
+						if item.callback then
+							if item.callback:begins("callback") then
+								item.callback = loadstring("return "..tostring(item.callback))
+							elseif clss[item.callback] then
+								item.callback = callback(clss, clss, item.callback)
+							else
+								log(string.format("[BLT][Warning] Callback given to item named %s in menu named %s doesn't exist", tostring(item.name), tostring(data.name)))
+							end
+						end
+						table.insert(clss._items_data, item)
 					end
 				end
-				table.insert(ready_items, item)
 			end
 			clss._get_value = get_value
-			clss._items_data = ready_items
 		else
 			log(string.format("[BLT][ERROR] Failed to create menu named %s, invalid class given!", tostring(data.menu.name)))
 		end
 	end
-	if managers.menu_component then
+	if managers and managers.menu_component then
 		load_menu()
 	else
 		Hooks:Add("MenuComponentManagerInitialize", tostring(data.name)..".MenuComponentManagerInitialize", load_menu)		
