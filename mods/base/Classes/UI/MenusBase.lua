@@ -8,6 +8,27 @@ function BLTMenu:init(ws, fullscreen_ws, node, name)
     --do we need a name..? hard without a decomp :/
     BLTMenu.super.init(self, ws, fullscreen_ws, node, name or "")
     self._root_panel.ctrls = self._root_panel.ctrls or {}
+    if self._items_data then
+        for _, item in ipairs(self._items_data) do
+            item.value_name = item.value_name or item.name
+            if item.value_name then
+                local get_value = item.get_value or self._get_value
+                if get_value then
+                    if item.value_is_index then
+                        item.selected = get_value(item.value_name, item)
+                    else
+                        item.value = get_value(item.value_name, item)
+                    end
+                else
+                    log("[BLT][Warning] Get value function was not given, cannot set values without it.")
+                end
+            end
+            local type = item.type
+            if self[type] then
+                self[type](self, item)
+            end
+        end
+    end
     if self.InitMenuData then
         self:InitMenuData(self._root_panel)
     end
@@ -269,12 +290,19 @@ function BLTMenu:Switch(params)
 end
 
 function BLTMenu:MultiChoice(params)
-    params.data_source_callback =  params.items_func or function() return params.items or {} end
+    params.data_source_callback = params.items_func or function() return params.items or {} end
     local item
     item = BLTMenu.CreateSimple(self, "stepper", params, {text_key = "description", clbk_key = "on_item_selected_callback", default_clbk = function(value)
         params.callback(value, item)
     end})
-    if params.value ~= nil then
+    if params.selected ~= nil then
+        for i, v in ipairs(params.data_source_callback()) do
+            if i == params.selected then
+                item:select_item_by_value(v.value)
+                break
+            end
+        end
+    elseif params.value ~= nil then
         item:select_item_by_value(params.value)
     end
     return item
@@ -338,44 +366,38 @@ function BLTMenu:Panel(params)
     return item
 end
 
-function BLTMenu:ColorSlider(params)
-	local color = params.color
-	local panel = self:Panel(table.merge({
-		w = 360,
-		h = 166,
-	}, params))
-	local preview = panel:bitmap({
+function BLTMenu:ColorButton(params)
+	local preview
+    local btn_params = clone(params)
+    local btn
+    btn_params.callback = function()
+        BLT.Dialogs:Color():Show({
+            title = btn_params.override_title or btn_params.localize ~= false and managers.localization:text(btn_params.text) or btn_params.text, 
+            color = btn_params.value,
+            force = true,
+            callback = function(color)
+                if alive(preview) then
+                    preview:set_color(color)
+                end
+                if params.callback then
+                    params.callback(color, btn)
+                end
+            end
+        })
+    end
+    btn = self:Button(btn_params)
+    preview = btn._object_text:parent():bitmap({
 		name = "preview",
 		w = 24,
-		h = 24,
-		texture = "ui/atlas/raid_atlas_menu",
-		texture_rect = {922, 955, 33, 33},
-		color = color
-	})
-	preview:set_righttop(panel:w() - 6, 6)
-	local title = self:SubTitle({text = params.text, localize = params.localize, parent = panel})
-	local prev
-	for _, v in pairs({"red", "green", "blue", "alpha"}) do
-		local item = self:Slider({
-			name = v,
-			text = v,
-			localize = false,
-			value = color[v],
-			min = 0,
-			max = 1,
-			w = 380,
-			callback = function(value, item)
-				color[item:name()] = value
-				preview:set_color(color)
-				if params.callback then
-					params.callback(color, panel)
-				end
-			end,
-			parent = panel
-		})
-		prev = item
-	end
-	return panel
+        h = 24,
+        x = -26,
+        rotation = 360,
+        texture = "ui/atlas/raid_atlas_menu",
+        texture_rect = {765, 679, 33, 33},
+		color = params.value
+    })
+    preview:set_center_y(preview:parent():h() / 2)
+	return btn
 end
 
 function BLTMenu:KeyBind(params)

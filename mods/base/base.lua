@@ -1,5 +1,3 @@
-blt.forcepcalls(true)
-
 -- Only run if we have the global table
 if not _G or BLT then
 	return
@@ -87,14 +85,10 @@ function BLT:Setup()
 	self.Localization = BLTLocalization:new()
 	self.Notifications = BLTNotificationsManager:new()
 	self.PersistScripts = BLTPersistScripts:new()
-	
-	local C = self.Mods.Constants
-	if not FileIO:Exists(C.maps_directory) then
-	--	FileIO:MakeDir(C.maps_directory) not yet :(
-	end
 
 	Global.blt_checked_updates = Global.blt_checked_updates or {}
-
+	local C = self.Mods.Constants
+	
 	rawset(_G, C.logs_path_global, C.mods_directory .. C.logs_directory)
 	rawset(_G, C.save_path_global, C.mods_directory .. C.saves_directory)
 
@@ -132,6 +126,9 @@ end
 function BLT:RunHookFile(path, hook_data)
 	rawset(_G, BLTModManager.Constants.required_script_global, path or false)
 	rawset(_G, BLTModManager.Constants.mod_path_global, hook_data.mod:GetPath() or false)
+	if hook_data.mod then
+		rawset(_G, BLTModManager.Constants.mod_global, hook_data.mod)
+	end
 	dofile(hook_data.mod:GetPath() .. hook_data.script)
 end
 

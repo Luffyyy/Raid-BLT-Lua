@@ -15,7 +15,7 @@ function OptionModule:init(core_mod, config)
     self.FileName = self._config.save_file or self._mod.name .. "Options.txt"
 
     self._storage = {}
-
+    self._menus = {}
     if self._config.loaded_callback then
         self._on_load_callback = self._mod:StringToCallback(self._config.loaded_callback)
     end
@@ -25,7 +25,7 @@ function OptionModule:init(core_mod, config)
     end
     
     if self._config.auto_build_menu == nil or self._config.auto_build_menu then
-        --self:BuildMenuHook()
+        self:BuildMenuHook()
     end
 
     return true
@@ -246,7 +246,7 @@ end
 function OptionModule:GetValue(name, real)
     local option = self:GetOption(name)
     if option then
-        if real then
+        if real == true then
             if option.converter then
                 return option.converter(option, option.value)
             elseif option.type == "multichoice" then
@@ -322,316 +322,253 @@ function OptionModule:GetParameter(tbl, i)
     return nil
 end
 
-function OptionModule:CreateSlider(parent_node, option_tbl, option_path)
-    local id = self._mod.name .. option_tbl.name
-
+function OptionModule:CreateSlider(menu, option_tbl, option_path)
     option_path = option_path == "" and option_tbl.name or option_path .. "/" .. option_tbl.name
-
     local enabled = not self:GetParameter(option_tbl, "disabled")
-
     if option_tbl.enabled_callback then
         enabled = option_tbl:enabled_callback()
     end
 
-    local self_vars = {
-        option_key = option_path,
-        module = self
-    }
-
     local merge_data = self:GetParameter(option_tbl, "merge_data") or {}
     merge_data = Utils:RemoveAllNumberIndexes(merge_data)
-
-    MenuHelperPlus:AddSlider(table.merge({
-        id = self:GetParameter(option_tbl, "name"),
-        title = self:GetParameter(option_tbl, "title_id") or id .. "TitleID",
-        node = parent_node,
-        desc = self:GetParameter(option_tbl, "desc_id") or id .. "DescID",
-        callback = "OptionModuleGeneric_ValueChanged",
+    
+    table.insert(menu._items_data, table.merge({
+        type = "Slider",
+        name = self:GetParameter(option_tbl, "name"),
+        text = self:GetParameter(option_tbl, "text") or self._mod.name .. option_tbl.name .. "Text",
+        callback = callback(self, self, "ItemValueChanged"),
         min = self:GetParameter(option_tbl, "min"),
         max = self:GetParameter(option_tbl, "max"),
         step = self:GetParameter(option_tbl, "step"),
         enabled = enabled,
-        value = self:GetValue(option_path),
-        show_value = self:GetParameter(option_tbl, "show_value"),
-        merge_data = self_vars
+        value_name = option_path
     }, merge_data))
 end
 
-function OptionModule:CreateToggle(parent_node, option_tbl, option_path)
-    local id = self._mod.name .. option_tbl.name
-
+function OptionModule:CreateToggle(menu, option_tbl, option_path)
     option_path = option_path == "" and option_tbl.name or option_path .. "/" .. option_tbl.name
-
     local enabled = not self:GetParameter(option_tbl, "disabled")
-
     if option_tbl.enabled_callback then
         enabled = option_tbl:enabled_callback()
     end
 
-    local self_vars = {
-        option_key = option_path,
-        module = self
-    }
-
     local merge_data = self:GetParameter(option_tbl, "merge_data") or {}
     merge_data = Utils:RemoveAllNumberIndexes(merge_data)
 
-    MenuHelperPlus:AddToggle(table.merge({
-        id = self:GetParameter(option_tbl, "name"),
-        title = self:GetParameter(option_tbl, "title_id") or id .. "TitleID",
-        node = parent_node,
-        desc = self:GetParameter(option_tbl, "desc_id") or id .. "DescID",
-        callback = "OptionModuleGeneric_ValueChanged",
-        value = self:GetValue(option_path),
+    table.insert(menu._items_data, table.merge({
+        type = "Toggle",
+        name = self:GetParameter(option_tbl, "name"),
+        text = self:GetParameter(option_tbl, "text") or self._mod.name .. option_tbl.name .. "Text",
+        callback = callback(self, self, "ItemValueChanged"),
         enabled = enabled,
-        merge_data = self_vars
+        value_name = option_path
     }, merge_data))
 end
 
-function OptionModule:CreateMultiChoice(parent_node, option_tbl, option_path)
-    local id = self._mod.name .. option_tbl.name
-
+function OptionModule:CreateMultiChoice(menu, option_tbl, option_path)
     option_path = option_path == "" and option_tbl.name or option_path .. "/" .. option_tbl.name
-
     local options = self:GetParameter(option_tbl, "values")
-
     if not options then
         BLT:log("[ERROR] Unable to get an option table for option " .. option_tbl.name)
+        return
     end
-
     local enabled = not self:GetParameter(option_tbl, "disabled")
-
     if option_tbl.enabled_callback then
         enabled = option_tbl:enabled_callback()
     end
 
-    local self_vars = {
-        option_key = option_path,
-        module = self
-    }
-
     local merge_data = self:GetParameter(option_tbl, "merge_data") or {}
     merge_data = Utils:RemoveAllNumberIndexes(merge_data)
 
-    MenuHelperPlus:AddMultipleChoice(table.merge({
-        id = self:GetParameter(option_tbl, "name"),
-        title = self:GetParameter(option_tbl, "title_id") or id .. "TitleID",
-        node = parent_node,
-        desc = self:GetParameter(option_tbl, "desc_id") or id .. "DescID",
-        callback = "OptionModuleGeneric_ValueChanged",
-        value = self:GetValue(option_path),
+    table.insert(menu._items_data, table.merge({
+        type = "MultiChoice",
+        name = self:GetParameter(option_tbl, "name"),
+        text = self:GetParameter(option_tbl, "text") or self._mod.name .. option_tbl.name .. "Text",
+        callback = callback(self, self, "MultiChoiceItemValueChanged"),
+        value_is_index = true,
         items = options,
-        localized_items = self:GetParameter(option_tbl, "localized_items"),
         enabled = enabled,
-        merge_data = self_vars
+        value_name = option_path
     }, merge_data))
 end
 
-function OptionModule:CreateMatrix(parent_node, option_tbl, option_path, components)
-    local id = self._mod.name .. option_tbl.name
-
+function OptionModule:CreateMatrix(menu, option_tbl, option_path, components)
     option_path = option_path == "" and option_tbl.name or option_path .. "/" .. option_tbl.name
-
     local enabled = not self:GetParameter(option_tbl, "disabled")
-
     if option_tbl.enabled_callback then
         enabled = option_tbl:enabled_callback()
     end
+
     local scale_factor = self:GetParameter(option_tbl, "scale_factor") or 1
-
-    local self_vars = {
-        option_key = option_path,
-        module = self,
-        scale_factor = scale_factor,
-        opt_type = option_tbl.type
-    }
-
     local merge_data = self:GetParameter(option_tbl, "merge_data") or {}
     merge_data = Utils:RemoveAllNumberIndexes(merge_data)
+
     local base_params = table.merge({
-        id = self:GetParameter(option_tbl, "name"),
-        title = managers.localization:text(self:GetParameter(option_tbl, "title_id") or id .. "TitleID"),
-        node = parent_node,
-        desc = managers.localization:text(self:GetParameter(option_tbl, "desc_id") or id .. "DescID"),
-        callback = "OptionModuleVector_ValueChanged",
+        type = "Slider",
+        name = self:GetParameter(option_tbl, "name"),
+        text = managers.localization:text(self:GetParameter(option_tbl, "title_id") or self._mod.name .. option_tbl.name .. "Text"),
+        callback = callback(self, self, "MatrixItemValueChanged"),
         min = self:GetParameter(option_tbl, "min") or 0,
         max = self:GetParameter(option_tbl, "max") or scale_factor,
         step = self:GetParameter(option_tbl, "step") or (scale_factor > 1 and 1 or 0.01),
+        localize = false,
         enabled = enabled,
-        show_value = self:GetParameter(option_tbl, "show_value"),
-        localized = false,
-        localized_help = false,
-        merge_data = self_vars
+        scale_factor = scale_factor,
+        get_value = function(value_name, item)
+            local val, component = self:GetValue(item.value_name), item.component
+            return (type(val[component]) == "function" and val[component](val) or val[component] or 0) * scale_factor
+        end,
+        value_name = option_path,
+        opt_type = option_tbl.type
     }, merge_data)
-    local value = self:GetValue(option_path)
-    local GetComponentValue = function(val, component)
-        return type(val[component]) == "function" and val[component](val) or val[component]
-    end
 
     for _, vec in pairs(components) do
         local params = clone(base_params)
-        params.id = params.id .. "-" .. vec.id
-        params.title = params.title .. " - " .. vec.title
-        params.desc = params.desc .. " - " .. vec.title
-        params.merge_data.component = vec.id
+        params.name = params.name .. "-" .. vec.id
+        params.text = params.text .. " - " .. vec.title
+        params.component = vec.id
         if vec.max then
             params.max = vec.max
         end
-        params.value = GetComponentValue(value, vec.id) * scale_factor
-        MenuHelperPlus:AddSlider(params)
+        table.insert(menu._items_data, params)
     end
 end
 
-function OptionModule:CreateColour(parent_node, option_tbl, option_path)
-    local alpha = not not self:GetParameter(option_tbl, "alpha")
-    local id = self._mod.name .. option_tbl.name
-
+function OptionModule:CreateColour(menu, option_tbl, option_path)
     option_path = option_path == "" and option_tbl.name or option_path .. "/" .. option_tbl.name
-
     local enabled = not self:GetParameter(option_tbl, "disabled")
-
     if option_tbl.enabled_callback then
         enabled = option_tbl:enabled_callback()
     end
 
     local merge_data = self:GetParameter(option_tbl, "merge_data") or {}
     merge_data = Utils:RemoveAllNumberIndexes(merge_data)
-
-    MenuHelperPlus:AddColorButton(table.merge({
-        id = self:GetParameter(option_tbl, "name"),
-        title = self:GetParameter(option_tbl, "title_id") or id .. "TitleID",
-        node = parent_node,
-        desc = self:GetParameter(option_tbl, "desc_id") or id .. "DescID",
-        callback = "OptionModuleGeneric_ValueChanged",
+    
+    table.insert(menu._items_data, table.merge({
+        type = "ColorButton",
+        name = self:GetParameter(option_tbl, "name"),
+        text = self:GetParameter(option_tbl, "text") or self._mod.name .. option_tbl.name .. "Text",
+        callback = callback(self, self, "ItemValueChanged"),
         enabled = enabled,
-        value = self:GetValue(option_path),
-        show_value = self:GetParameter(option_tbl, "show_value"),
-        merge_data = {
-            option_key = option_path,
-            module = self
-        }
+        value_name = option_path
     }, merge_data))
 end
 
-function OptionModule:CreateVector(parent_node, option_tbl, option_path)
-    self:CreateMatrix(parent_node, option_tbl, option_path, { {id="x", title="X"}, {id="y", title="Y"}, {id="z", title="Z"} })
+function OptionModule:CreateVector(menu, option_tbl, option_path)
+    self:CreateMatrix(menu, option_tbl, option_path, { {id="x", title="X"}, {id="y", title="Y"}, {id="z", title="Z"} })
 end
 
-function OptionModule:CreateRotation(parent_node, option_tbl, option_path)
-    self:CreateMatrix(parent_node, option_tbl, option_path, { {id="yaw", title="YAW"}, {id="pitch", title="PITCH"}, {id="roll", title="ROLL", max=90} })
+function OptionModule:CreateRotation(menu, option_tbl, option_path)
+    self:CreateMatrix(menu, option_tbl, option_path, { {id="yaw", title="YAW"}, {id="pitch", title="PITCH"}, {id="roll", title="ROLL", max=90} })
 end
 
-function OptionModule:CreateOption(parent_node, option_tbl, option_path)
+function OptionModule:CreateOption(menu, option_tbl, option_path)
     if option_tbl.type == "number" then
-        self:CreateSlider(parent_node, option_tbl, option_path)
+        self:CreateSlider(menu, option_tbl, option_path)
     elseif option_tbl.type == "bool" or option_tbl.type == "boolean" then
-        self:CreateToggle(parent_node, option_tbl, option_path)
+        self:CreateToggle(menu, option_tbl, option_path)
     elseif option_tbl.type == "multichoice" then
-        self:CreateMultiChoice(parent_node, option_tbl, option_path)
+        self:CreateMultiChoice(menu, option_tbl, option_path)
     elseif option_tbl.type == "colour" or option_tbl.type == "color" then
-        self:CreateColour(parent_node, option_tbl, option_path)
+        self:CreateColour(menu, option_tbl, option_path)
     elseif option_tbl.type == "vector" then
-        self:CreateVector(parent_node, option_tbl, option_path)
+        self:CreateVector(menu, option_tbl, option_path)
     elseif option_tbl.type == "rotation" then
-        self:CreateRotation(parent_node, option_tbl, option_path)
+        self:CreateRotation(menu, option_tbl, option_path)
     else
         BLT:log("[ERROR] No supported type for option " .. tostring(option_tbl.name) .. " in mod " .. self._mod.name)
     end
 end
 
-function OptionModule:CreateDivider(parent_node, tbl)
+--Add title and subtitle later
+function OptionModule:CreateDivider(menu, tbl, type)
     local merge_data = self:GetParameter(tbl, "merge_data") or {}
     merge_data = Utils:RemoveAllNumberIndexes(merge_data)
-    MenuHelperPlus:AddDivider(table.merge({
-        id = self:GetParameter(tbl, "name"),
-        node = parent_node,
-        size = self:GetParameter(tbl, "size")
+    table.insert(menu._items_data, table.merge({
+        type = type and string.pretty(type, true):gsub("%s", "") or "Label",
+        name = self:GetParameter(tbl, "name"),
+        text = self:GetParameter(tbl, "text"),
+        y_offset = self:GetParameter(tbl, "y_offset"),
+        localize = self:GetParameter(tbl, "localize")
     }, merge_data))
 end
 
-function OptionModule:CreateSubMenu(parent_node, option_tbl, option_path)
+function OptionModule:CreateSubMenu(menu, option_tbl, option_path)
     option_path = option_path or ""
     local name = self:GetParameter(option_tbl, "name")
     local base_name = name and self._mod.name .. name .. self._name or self._mod.name .. self._name
-    local menu_name = self:GetParameter(option_tbl, "node_name") or  base_name .. "Node"
 
-    local merge_data = self:GetParameter(option_tbl, "merge_data") or {}
-    merge_data = Utils:RemoveAllNumberIndexes(merge_data)
-    local main_node = MenuHelperPlus:NewNode(nil, table.merge({
-        name = menu_name
-    }, merge_data))
+    local clss = class(BLTMenu)
+    clss._items_data = {}
+    clss._get_value = callback(self, self, "GetValue")
+    self._menus[base_name] = clss
+    RaidMenuHelper:CreateMenu({
+		name = base_name,
+		name_id = self:GetParameter(option_tbl, "title_id") or base_name .. "ButtonText",
+        inject_menu = menu,
+        class = clss
+	})
 
     if option_tbl.build_items == nil or option_tbl.build_items then
-        self:InitializeNode(main_node, option_tbl, name and (option_path == "" and name or option_path .. "/" .. name) or "")
+        self:InitializeMenu(clss, option_tbl, name and (option_path == "" and name or option_path .. "/" .. name) or "")
     end
-
-    MenuHelperPlus:AddButton({
-        id = base_name .. "Button",
-        title = self:GetParameter(option_tbl, "title_id") or base_name .. "ButtonTitleID",
-        desc = self:GetParameter(option_tbl, "desc_id") or base_name .. "ButtonDescID",
-        node = parent_node,
-        next_node = menu_name
-    })
-
-    managers.menu:add_back_button(main_node)
 end
 
-function OptionModule:InitializeNode(node, option_tbl, option_path)
+function OptionModule:InitializeMenu(menu, option_tbl, option_path)
     option_tbl = option_tbl or self._config.options
     option_path = option_path or ""
     for i, sub_tbl in ipairs(option_tbl) do
-        if sub_tbl._meta then
-            if sub_tbl._meta == "option" and not sub_tbl.hidden then
-                self:CreateOption(node, sub_tbl, option_path)
-            elseif sub_tbl._meta == "divider" then
-                self:CreateDivider(node, sub_tbl)
-            elseif sub_tbl._meta == "option_group" or sub_tbl._meta == "option_set" and (sub_tbl.build_menu == nil or sub_tbl.build_menu) then
-                self:CreateSubMenu(node, sub_tbl, option_path)
+        local meta = sub_tbl._meta
+        if meta then
+            if meta == "option" and not sub_tbl.hidden then
+                self:CreateOption(menu, sub_tbl, option_path)
+            elseif meta == "divider" or meta == "label" or meta == "title" or meta == "sub_title" then
+                self:CreateDivider(menu, sub_tbl, meta ~= "divider" and meta)
+            elseif meta == "option_group" or sub_tbl._meta == "option_set" and (sub_tbl.build_menu == nil or sub_tbl.build_menu) then
+                self:CreateSubMenu(menu._name, sub_tbl, option_path)
             end
         end
     end
 end
 
 function OptionModule:BuildMenuHook()
-    Hooks:Add("MenuManagerSetupCustomMenus", self._mod.name .. "Build" .. self._name .. "Menu", function(self_menu, nodes)
-        self:BuildMenu(nodes.lua_mod_options_menu or nodes.blt_options)
+    Hooks:Add("MenuComponentManagerInitialize", self._mod.name .. "Build" .. self._name .. "Menu", function(self_menu, nodes)	
+        self:BuildMenu(BLTModManager.Constants.BLTOptions)
     end)
 end
 
-function OptionModule:BuildMenu(node)
-    self:CreateSubMenu(node, self._config.options)
+function OptionModule:BuildMenu(menu)
+    self:CreateSubMenu(menu, self._config.options)
 end
 
---Create MenuCallbackHandler callbacks
-Hooks:Add("BLTCreateCustomNodesAndButtons", "BLTOptionModuleCreateCallbacks", function(self_menu)
-    MenuCallbackHandler.OptionModuleGeneric_ValueChanged = function(this, item)
-        local value = item:value()
-        if item.TYPE == "toggle" then value = value == "on" end
-        OptionModule.SetValue(item._parameters.module, item._parameters.option_key, value)
-    end
+function OptionModule:ItemValueChanged(value, item)
+    self:SetValue(item._params.value_name, value)
+    self:Save()
+end
 
-    MenuCallbackHandler.OptionModuleVector_ValueChanged = function(this, item)
-        local cur_val =  OptionModule.GetValue(item._parameters.module, item._parameters.option_key)
-        local new_value = item:value() / item._parameters.scale_factor
-        if item._parameters.opt_type == "colour" or item._parameters.opt_type == "color" then
-            cur_val[item._parameters.component] = new_value
-        elseif item._parameters.opt_type == "vector" then
-            if item._parameters.component == "x" then
-                mvector3.set_x(cur_val, new_value)
-            elseif item._parameters.component == "y" then
-                mvector3.set_y(cur_val, new_value)
-            elseif item._parameters.component == "z" then
-                mvector3.set_z(cur_val, new_value)
-            end
-        elseif item._parameters.opt_type == "rotation" then
-            local comp = item._parameters.component
-            self:log("1" .. tostring(cur_val))
-            mrotation.set_yaw_pitch_roll(cur_val, comp == "yaw" and new_value or cur_val:yaw(), comp == "pitch" and new_value or cur_val:pitch(), comp == "roll" and new_value or cur_val:roll())
-            self:log("2" .. tostring(cur_val))
+function OptionModule:MultiChoiceItemValueChanged(selected, item)
+    self:SetValue(item._params.value_name, table.get_key(item._params.data_source_callback(), selected))
+    self:Save()
+end
+
+function OptionModule:MatrixItemValueChanged(value, item)
+    local cur_val = self:GetValue(item._params.value_name)
+    local comp = item._params.component
+    local new_value = value / item._params.scale_factor
+    if item._params.opt_type == "vector" then
+        if comp == "x" then
+            mvector3.set_x(cur_val, new_value)
+        elseif comp == "y" then
+            mvector3.set_y(cur_val, new_value)
+        elseif comp == "z" then
+            mvector3.set_z(cur_val, new_value)
         end
-
-        OptionModule.SetValue(item._parameters.module, item._parameters.option_key, cur_val)
+    elseif item._params.opt_type == "rotation" then
+        mrotation.set_yaw_pitch_roll(cur_val, comp == "yaw" and new_value or cur_val:yaw(), comp == "pitch" and new_value or cur_val:pitch(), comp == "roll" and new_value or cur_val:roll())
     end
-end)
+    item._params.val = cur_val
+    self:SetValue(item._params.value_name, cur_val)
+    self:Save()
+end
 
 BLT:RegisterModule(OptionModule.type_name, OptionModule)

@@ -94,6 +94,7 @@ BLTModManager.Constants.ExcludedModDirectories = {
 }
 BLTModManager.Constants.required_script_global = "RequiredScript"
 BLTModManager.Constants.mod_path_global = "ModPath"
+BLTModManager.Constants.mod_global = "CurrentMod"
 BLTModManager.Constants.logs_path_global = "LogsPath"
 BLTModManager.Constants.save_path_global = "SavePath"
 BLTModManager.Constants.BLTOptions = "blt_options"

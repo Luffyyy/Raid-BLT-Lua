@@ -14,7 +14,7 @@ function BLTOptionsMenu:Init(root)
     self:MultiChoice({
         name = "blt_localization_choose",
         text = "blt_language_select",
-        callback = callback(self, self, "blt_choose_language"),
+        callback = callback(self, self, "SetLanguage"),
         value = tostring(BLT.Localization:get_language().language),
         enabled = #items > 1,
         items = items
@@ -23,7 +23,7 @@ function BLTOptionsMenu:Init(root)
     self:Label({h = 36})    
 end
 
-function BLTOptionsMenu:blt_choose_language(item)
+function BLTOptionsMenu:SetLanguage(item)
     if BLT.Localization then
 		BLT.Localization:set_language(item.value)
     end

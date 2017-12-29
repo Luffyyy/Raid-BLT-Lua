@@ -2,7 +2,8 @@
 --I just like the idea of having a class that has item creation functions
 RaidMenuHelper = RaidMenuHelper or {}
 function RaidMenuHelper:CreateMenu(params)
-    local name = params.name
+	local name = string.gsub(params.name, "%s", "") --remove spaces from names, it doesn't seem to like them that much.
+	local component_name = params.component_name or name
 	managers.menu:register_menu_new({
 		name = name,
 		input = params.input or "MenuInput",
@@ -26,22 +27,22 @@ function RaidMenuHelper:CreateMenu(params)
 		}
 	})
 	if managers.raid_menu then
-		managers.raid_menu.menus[name] = {name = name}
+		managers.raid_menu.menus[component_name] = {name = component_name}
 	end
 	if params.class then
         if managers.menu_component then
-            self:CreateComponent(params.created_component or name, params.class)
+            self:CreateComponent(component_name, params.class)
         else
             log("[ERROR] You're building the menu too early! menu component isn't loaded yet.")
         end
     end
     if params.inject_list then
         self:InjectButtons(params.inject_list, params.inject_after, {
-            self:PrepareListButton(params.name_id or params.text, params.localize, self:MakeNextMenuClbk(name), params.flags)
+            self:PrepareListButton(params.name_id or params.text, params.localize, self:MakeNextMenuClbk(component_name), params.flags)
 		}, true)
 	elseif params.inject_menu then
         self:InjectButtons(params.inject_menu, params.inject_after, {
-            self:PrepareButton(params.name_id or params.text, params.localize, function() managers.raid_menu:open_menu(name) end)
+            self:PrepareButton(params.name_id or params.text, params.localize, function() log("OPEN MENU", tostring(component_name)) managers.raid_menu:open_menu(component_name) end)
 		})		
     end
     return params.name
@@ -116,11 +117,12 @@ function RaidMenuHelper:InjectIntoAList(menu_comp, injection_point, buttons, lis
 end
 
 function RaidMenuHelper:CreateComponent(name, clss)
-    local comp = managers.menu_component
+	local comp = managers.menu_component
+	clss._name = name
     comp._active_components[name] = {
         create = function(node)
-            if node then
-                comp[name] = comp[name] or clss:new(comp._ws, comp._fullscreen_ws, node)
+			if node then
+				comp[name] = comp[name] or clss:new(comp._ws, comp._fullscreen_ws, node)
             end
             return comp[name]	
         end, 
@@ -178,9 +180,7 @@ end
 function RaidMenuHelper:LoadMenu(data)
 	if not data.name then
 		log("[BLT][ERROR] Creation of menu at path %s has failed, no menu name given.")
-	end
-	if not data.class then
-		log("[BLT][ERROR] Creation of menu at path %s has failed, no class name given.")
+		return
 	end
 	local clss
 	local get_value
@@ -188,12 +188,17 @@ function RaidMenuHelper:LoadMenu(data)
 		if data.class then
 			data.class = loadstring("return "..tostring(data.class))()
 			clss = data.class
+		else
+			clss = class(BLTMenu)
+			rawset(_G, clss, data.name.."Menu")
 		end
 		if data.get_value and clss then
 			if data.get_value:starts("callback") then
 				get_value = loadstring("return "..tostring(data.get_value))()
 			elseif clss[data.callback] then
 				get_value = callback(clss, clss, data.get_value)
+			elseif type(data.get_value) == "function" then
+				get_value = data.get_value
 			else
 				log(string.format("[BLT][Warning] Get value function given in menu named %s doesn't exist.", tostring(data.name)))
 			end
@@ -206,47 +211,32 @@ function RaidMenuHelper:LoadMenu(data)
 			class = clss,
 			inject_menu = data.inject_menu,
 		})
+		if clss then
+			local ready_items = {}
+			for k, item in ipairs(data.items) do
+				if item.callback then
+					if item.callback:begins("callback") then
+						item.callback = loadstring("return "..tostring(item.callback))
+					elseif clss[item.callback] then
+						item.callback = callback(clss, clss, item.callback)
+					else
+						log(string.format("[BLT][Warning] Callback given to item named %s in menu named %s doesn't exist", tostring(item.name), tostring(data.name)))
+					end
+				end
+				table.insert(ready_items, item)
+			end
+			clss._get_value = get_value
+			clss._items_data = ready_items
+		else
+			log(string.format("[BLT][ERROR] Failed to create menu named %s, invalid class given!", tostring(data.menu.name)))
+		end
 	end
 	if managers.menu_component then
 		load_menu()
 	else
 		Hooks:Add("MenuComponentManagerInitialize", tostring(data.name)..".MenuComponentManagerInitialize", load_menu)		
 	end
-	if clss then
-		local ready_items = {}
-		for k, item in ipairs(data.items) do
-			if item.callback then
-				if item.callback:begins("callback") then
-					item.callback = loadstring("return "..tostring(item.callback))
-				elseif clss[item.callback] then
-					item.callback = callback(clss, clss, item.callback)
-				else
-					log(string.format("[BLT][Warning] Callback given to item named %s in menu named %s doesn't exist", tostring(item.name), tostring(data.name)))
-				end
-			end
-			table.insert(ready_items, item)
-		end
-		function clss:InitMenuData(root)
-			for _, item in ipairs(ready_items) do
-				item.value_name = item.value_name or item.name
-				if item.value_name then
-					if get_value then
-						item.value = get_value(item.value_name)
-					else
-						log("[BLT][Warning] Get value function was not given, cannot set values without it.")
-					end
-				end
-				local type = item.type
-				if self[type] then
-					self[type](self, item)
-				end
-			end
-		end
-	else
-		log(string.format("[BLT][ERROR] Failed to create menu named %s, no class given!", tostring(data.menu.name)))
-	end
 end
-
 
 function RaidMenuHelper:ForEachValue(items, value_func)
 	if value_func then
