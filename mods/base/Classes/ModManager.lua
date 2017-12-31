@@ -50,7 +50,7 @@ function BLTModManager:RegisterHook(source_file, path, file, type, mod)
         local req_script = source_file:lower()
 
 		dest_tbl[req_script] = dest_tbl[req_script] or {}
-		local data = {mod = mod, script = file}
+		local data = {mod = mod, script = hook_file}
 		if req_script ~= "*" then
 			table.insert(dest_tbl[req_script], data)
 		else
@@ -58,7 +58,7 @@ function BLTModManager:RegisterHook(source_file, path, file, type, mod)
 		end
 	else
 		mod = mod or BLT
-        mod:log("[ERROR] Hook file not readable by the lua state! File: %s", file)
+        mod:log("[ERROR] Hook file not readable by the lua state! File: %s", hook_file)
     end
 end
 

@@ -1,8 +1,8 @@
 HooksModule = HooksModule or class(ModuleBase)
 HooksModule.type_name = "hooks"
 
-function HooksModule:init(core_mod, config)
-    if not HooksModule.super.init(self, core_mod, config) then
+function HooksModule:post_init(...)
+    if not HooksModule.super.post_init(self, ...) then
         return false
     end
 
@@ -30,7 +30,7 @@ function HooksModule:Load()
 end
 
 function HooksModule:GetPath()
-    return Path:Combine(self._mod.path, self._config.directory)
+    return Path:Combine(self._mod:GetPath(), self._config.directory)
 end
 
 BLT:RegisterModule(HooksModule.type_name, HooksModule)

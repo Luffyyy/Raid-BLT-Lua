@@ -2,8 +2,8 @@ ClassesModule = ClassesModule or class(ModuleBase)
 
 ClassesModule.type_name = "classes"
 
-function ClassesModule:init(core_mod, config)
-    if not ClassesModule.super.init(self, core_mod, config) then
+function ClassesModule:post_init(...)
+    if not ClassesModule.super.post_init(self, ...) then
         return false
     end
 
@@ -26,7 +26,7 @@ function ClassesModule:Load()
 end
 
 function ClassesModule:GetPath()
-    return Path:Combine(self._mod.path, self._config.directory, "")
+    return Path:Combine(self._mod:GetPath(), self._config.directory)
 end
 
 function ClassesModule:GetInfo(append)

@@ -127,10 +127,12 @@ function BLTMod:Setup()
 end
 
 function BLTMod:AddHooks(data_key, destination, wildcards_destination)
-	for i, hook in ipairs(self._config[data_key] or {}) do
+    local hooks = self._config[data_key] or {}
+    local path = Path:Combine(self:GetPath(), hooks.directory)
+	for i, hook in ipairs(hooks) do
 		local source_file = hook.source_file or hook.hook_id
 		local script = hook.file or hook.script_path
-		BLT.Mods:RegisterHook(source_file, self.path, script, hook.type, self)
+		BLT.Mods:RegisterHook(source_file, path, script, hook.type, self)
 		if source_file == "*" then
 			table.insert(self.registered_hooks.wildcards, script)
 		elseif hook.type == "pre" then

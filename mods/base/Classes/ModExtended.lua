@@ -83,14 +83,6 @@ end
 
 
 function BLTModExtended:PostInitModules(ignored_modules)
-    for _, module in pairs(self._modules) do
-        if (not ignored_modules or not table.contains(ignored_modules, module._name)) then
-            local success, err = pcall(function() module:post_init() end)
-            if not success then
-                self:log("[ERROR] An error occured on the post initialization of %s. Error:\n%s", module._name, tostring(err))
-            end
-        end
-	end
 	local data = self:GetConfig()
 	if data.global_key then
 		self.global = data.global_key
@@ -107,6 +99,14 @@ function BLTModExtended:PostInitModules(ignored_modules)
 			rawset(_G, self.global, self)
 		end
 	end
+    for _, module in pairs(self._modules) do
+        if (not ignored_modules or not table.contains(ignored_modules, module._name)) then
+            local success, err = pcall(function() module:post_init() end)
+            if not success then
+                self:log("[ERROR] An error occured on the post initialization of %s. Error:\n%s", module._name, tostring(err))
+            end
+        end
+    end
 end
 
 function BLTModExtended:Setup()

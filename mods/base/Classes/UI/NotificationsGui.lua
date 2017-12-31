@@ -88,7 +88,6 @@ function BLTNotificationsGui:_setup()
 	self._downloads_panel:bitmap({
 		name = "downloads_line",
 		h = 3,
-		visible = false,
 		color = tweak_data.gui.colors.raid_red
 	}):set_bottom(self._downloads_panel:h())
 

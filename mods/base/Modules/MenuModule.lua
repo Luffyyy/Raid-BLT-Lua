@@ -1,8 +1,8 @@
 MenuModule = MenuModule or class(ModuleBase)
 MenuModule.type_name = "menu"
 
-function MenuModule:init(core_mod, config)
-    if not MenuModule.super.init(self, core_mod, config) then
+function MenuModule:post_init(...)
+    if not MenuModule.super.post_init(self, ...) then
         return false
     end
 
