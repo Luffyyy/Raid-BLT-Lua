@@ -68,6 +68,9 @@ function TextBox:MousePressed(button, x, y)
 		return true
 	end
 	self._textbox:MousePressed(button, x, y)
+	if self:CheckMouseRightClick(button, x,y) then
+		return true
+	end
 	return self._textbox.cantype
 end
 

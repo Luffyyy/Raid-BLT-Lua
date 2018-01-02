@@ -54,7 +54,7 @@ function BLT:Initialize()
 	BLT:Require("Classes/NotificationsManager")
 	BLT:Require("Classes/KeybindsManager")
 	BLT:Require("Classes/PersistScripts")
-	
+
 	BLT:Require("Classes/ModuleBase")
 	BLT:RequireFolder("Modules")
 
@@ -75,6 +75,8 @@ end
 
 function BLT:Setup()
 	BLT:Require("Classes/Utils/Utils")
+	BLT:Require("Classes/CustomPackageManager")
+	BLT:Require("Classes/FileManager")
 
 	log("[BLT] Setup...")
 

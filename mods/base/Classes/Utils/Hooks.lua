@@ -11,6 +11,7 @@ Hooks._posthooks = Hooks._posthooks or {}
 ]]
 function Hooks:RegisterHook(key)
 	self._registered_hooks[key] = self._registered_hooks[key] or {}
+	return key
 end
 
 --[[
@@ -18,7 +19,7 @@ end
 		Functionaly the same as Hooks:RegisterHook
 ]]
 function Hooks:Register(key)
-	self:RegisterHook(key)
+	return self:RegisterHook(key)
 end
 
 --[[

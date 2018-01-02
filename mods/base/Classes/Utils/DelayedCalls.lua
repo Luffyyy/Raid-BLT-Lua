@@ -15,8 +15,8 @@ function DelayedCalls:Update(t, dt)
 		if v ~= nil then
 			v.currentTime = v.currentTime + dt
 			if v.currentTime > v.timeToWait then
-				if v.functionCall then
-					v.functionCall()
+				if v.func then
+					v.func()
 				end
 				v = nil
 			else
@@ -35,12 +35,10 @@ end
 	func, 	Function call to call after the time runs out 
 ]]
 function DelayedCalls:Add(id, time, func)
-	local queuedFunc = {
-		functionCall = func,
-		timeToWait = time,
-		currentTime = 0
-	}
-	self._calls[id] = queuedFunc
+	self._calls[id] = self._calls[id] or {}
+	self._calls[id].func = func
+	self._calls[id].timeToWait = time
+	self._calls[id].currentTime = 0
 end
 
 --[[

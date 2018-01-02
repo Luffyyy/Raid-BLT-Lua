@@ -1,5 +1,5 @@
 HooksModule = HooksModule or class(ModuleBase)
-HooksModule.type_name = "hooks"
+HooksModule.type_name = "Hooks"
 
 function HooksModule:post_init(...)
     if not HooksModule.super.post_init(self, ...) then

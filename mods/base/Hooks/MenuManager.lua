@@ -27,6 +27,18 @@ function MenuCallbackHandler:can_toggle_chat()
 	end
 end
  
+function MenuManager:toggle_menu_state(...)
+    if BLT.Dialogs:DialogOpened() then
+		BLT.Dialogs:CloseLastDialog()
+		if managers.menu:active_menu() and managers.menu:active_menu().renderer then
+			managers.menu:active_menu().renderer:disable_input(0.2)
+		end
+        return
+    else
+        return self.orig.toggle_menu_state(self, ...) 
+    end
+end
+
 core:import("CoreMenuData")
 core:import("CoreMenuLogic")
 core:import("CoreMenuInput")

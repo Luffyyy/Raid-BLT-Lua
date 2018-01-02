@@ -29,7 +29,6 @@ function BaseItem:InitBasicItem()
 	local offset = math.max(self.border_left and self.border_width or 0, self.text_offset)
 	self.title = self.panel:text({
 		name = "title",
-		x = offset,
 		w = self.panel:w() - offset,
 		h = 0,
 		align = self.text_align,
@@ -118,6 +117,7 @@ function BaseItem:WorkParams(params)
 	self:WorkParam("font", tweak_data.menu.pd2_massive_font)
 	self:WorkParam("text_offset", 4)
 	self:WorkParam("border_size", 2)
+	self:WorkParam("no_animating", false)
 	self:WorkParam("last_y_offset")
 	self:WorkParam("accent_color", self.foreground)
 	self:WorkParam("scroll_color", self.accent_color)

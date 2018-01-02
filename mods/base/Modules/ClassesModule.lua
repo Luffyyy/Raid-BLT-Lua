@@ -1,6 +1,6 @@
 ClassesModule = ClassesModule or class(ModuleBase)
 
-ClassesModule.type_name = "classes"
+ClassesModule.type_name = "Classes"
 
 function ClassesModule:post_init(...)
     if not ClassesModule.super.post_init(self, ...) then

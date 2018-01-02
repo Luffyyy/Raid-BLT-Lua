@@ -36,7 +36,10 @@ function RaidMenuHelper:CreateMenu(params)
         else
             log("[ERROR] You're building the menu too early! menu component isn't loaded yet.")
         end
-    end
+	end
+	if params.localize == nil then
+		params.localize = true
+	end
     if params.inject_list then
         self:InjectButtons(params.inject_list, params.inject_after, {
             self:PrepareListButton(text, params.localize, self:MakeNextMenuClbk(component_name), params.flags)
@@ -82,7 +85,7 @@ end
 
 function RaidMenuHelper:PrepareListButton(text, localize, callback_s, flags)
 	return {
-		text = managers.localization:to_upper_text(text),
+		text = localize and managers.localization:to_upper_text(text) or text,
 		callback = callback_s,
 		availability_flags = flags
 	}

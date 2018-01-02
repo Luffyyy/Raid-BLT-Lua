@@ -11,7 +11,7 @@
 		cannot_be_disabled="true"
 		early_init="true"
 	>
-	<auto_updates provider="modworkshop" id="21618" version="1.01" important="true"/>
+	<auto_updates provider="modworkshop" id="21618" version="1.1" important="true"/>
 	<options build_menu="false">
 		<options>
 			<option name="Language" type="string" default_value="English"/>
@@ -60,7 +60,9 @@
 		<hook source_file="lib/managers/menu/menucomponentmanager" file="Classes/UI/NotificationsGui.lua"/>
 		<hook source_file="lib/managers/menu/raid_menu/controls/raidguipanel" file="Hooks/RaidGUIPanel.lua"/>
 		<hook source_file="lib/managers/menu/raid_menu/controls/raidguicontrolkeybind" file="Hooks/RaidGUIControlKeyBind.lua"/>
+	    <hook source_file="core/lib/managers/viewport/environment/coreenvironmentmanager" file="Hooks/EnvironmentManager.lua"/>
 		<hook source_file="core/lib/managers/menu/coremenudata" file="Hooks/CoreMenuData.lua"/>
+		<hook source_file="core/lib/system/coresystem" file="Hooks/CoreSystem.lua"/>
 		<hook source_file="lib/setups/setup" file="Hooks/Setup.lua"/>
 		<hook source_file="lib/setups/gamesetup" file="Hooks/GameSetup.lua"/>
 		<hook source_file="lib/setups/menusetup" file="Hooks/MenuSetup.lua"/>

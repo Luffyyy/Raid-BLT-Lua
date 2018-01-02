@@ -907,9 +907,16 @@ function string.pretty2(str)
     return str:gsub("([^A-Z%W])([A-Z])", "%1 %2"):gsub("([A-Z]+)([A-Z][^A-Z$])", "%1 %2")
 end
 
-function string.CamelCase(s) -- see what I did there
-    return s:pretty(true):gsub("%s", "") 
+function string.upper_first(s)
+	return string.gsub(s, "(%w)(%w*)", function(first_letter, remaining_letters)
+		return string.upper(first_letter) .. remaining_letters
+	end)
 end
+
+function string.CamelCase(s) -- see what I did there
+    return s:gsub("%W", " "):upper_first():gsub("%s", "") 
+end
+
 function string.key(str)
     local ids = Idstring(str)
     local key = ids:key()
@@ -1166,4 +1173,14 @@ end
 
 function mrotation.set_roll(rot, roll)
     return mrotation.set_yaw_pitch_roll(rot, rot:yaw(), rot:pitch(), roll)
+end
+
+Idstring = Idstring or {}
+
+function Idstring:id()
+	return self
+end
+
+function string:id()
+	return Idstring(self)
 end

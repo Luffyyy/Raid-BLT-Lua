@@ -30,6 +30,7 @@ function ListDialog:init(params, menu)
         h = params.h and params.h - self._menu.h or 700,
         items_size = 28,
         auto_foreground = true,
+        no_animating = true,
         auto_align = false,
         background_color = self._menu.background_color,
         accent_color = self._menu.accent_color,

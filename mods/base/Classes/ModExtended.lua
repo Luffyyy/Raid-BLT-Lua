@@ -45,7 +45,7 @@ function BLTModExtended:InitModules()
     for i, module_tbl in ipairs(self._config) do
         if type(module_tbl) == "table" then
             local meta = module_tbl._meta
-            local node_class = BLT.Modules[meta:lower()]
+            local node_class = BLT.Modules[string.CamelCase(meta)]
             if not node_class and module_tbl.force_search then
                 node_class = CoreSerialize.string_to_classtable(module_tbl._meta)
             end

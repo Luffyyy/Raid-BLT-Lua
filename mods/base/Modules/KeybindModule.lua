@@ -1,6 +1,6 @@
 KeybindModule = KeybindModule or class(ModuleBase)
 
-KeybindModule.type_name = "keybinds"
+KeybindModule.type_name = "Keybinds"
 
 function KeybindModule:post_init(...)
     if not KeybindModule.super.post_init(self, ...) then

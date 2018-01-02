@@ -1,7 +1,7 @@
 OptionModule = OptionModule or class(ModuleBase)
 
 --TODO: make build_menu functional.
-OptionModule.type_name = "options"
+OptionModule.type_name = "Options"
 
 function OptionModule:init(core_mod, config)
     self.required_params = table.add(clone(self.required_params), {"options"})

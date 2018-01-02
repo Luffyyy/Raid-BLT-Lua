@@ -1,5 +1,5 @@
 UpdatesModule = UpdatesModule or class(ModuleBase)
-UpdatesModule.type_name = "auto_updates"
+UpdatesModule.type_name = "AutoUpdates"
 UpdatesModule._default_version_file = "version.txt"
 UpdatesModule._always_enabled = true
 

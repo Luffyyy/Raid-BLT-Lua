@@ -154,6 +154,8 @@ function Slider:MousePressed(button, x, y)
                 self:SetValueByPercentage(where)
             end
             return true
+        else
+            return self:CheckMouseRightClick(button, x,y)
         end
     end
 end

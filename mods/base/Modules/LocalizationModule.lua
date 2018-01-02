@@ -1,7 +1,7 @@
 LocalizationModule = LocalizationModule or class(ModuleBase)
 
 --Need a better name for this
-LocalizationModule.type_name = "localization"
+LocalizationModule.type_name = "Localization"
 
 function LocalizationModule:init(core_mod, config)
     if not LocalizationModule.super.init(self, core_mod, config) then

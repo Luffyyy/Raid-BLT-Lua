@@ -1,5 +1,5 @@
 MenuModule = MenuModule or class(ModuleBase)
-MenuModule.type_name = "menu"
+MenuModule.type_name = "Menu"
 
 function MenuModule:post_init(...)
     if not MenuModule.super.post_init(self, ...) then

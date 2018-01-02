@@ -53,6 +53,19 @@ function Item:KeyPressed(o, k)
 	end
 end
 
+function Item:CheckMouseRightClick(button, x, y)
+	if button == Idstring("1") then
+		if self._list then
+			self._list:show()
+			return true
+		elseif self.second_callback then
+			self:RunCallback(self.second_callback)
+			return true
+		end
+	end
+	return false
+end
+
 function Item:MousePressed(button, x, y)
 	if not self.menu_type then
 	    for _, item in pairs(self._adopted_items) do
@@ -68,12 +81,8 @@ function Item:MousePressed(button, x, y)
         if button == Idstring("0") then
             self:RunCallback()
             return true
-        elseif button == Idstring("1") then
-            if self._list then
-				self._list:show()
-			elseif self.second_callback then
-				self:RunCallback(self.second_callback)
-            end
+		else
+			return self:CheckMouseRightClick(button, x,y)
         end
     end
 end
@@ -93,6 +102,7 @@ function Item:SetColor(color)
 	self:_SetText(self.text)
 end
 
+--This is a mess..
 function Item:_SetText(text)
     if self:alive() and self:title_alive() then
         self.text = text
@@ -101,7 +111,7 @@ function Item:_SetText(text)
         local offset = math.max(self.border_left and self.border_width or 0, self.text_offset)
         self.title:set_shape(offset, 0, self.panel:w() - (offset * 2), self.panel:h())
         local _,_,w,h = self.title:text_rect()
-        self.title:set_h(h)
+        self.title:set_h(not self.menu_type and self.h or math.max(self.items_size, h))
         if self.size_by_text then
         	local w = w + (offset * 2) + (self.type_name == "Toggle" and self.items_size or 0)
             self.panel:set_size(math.clamp(w, self.min_width or 0, self.max_width or w), math.clamp(h, self.min_height or 0, self.max_height or h))
@@ -110,9 +120,10 @@ function Item:_SetText(text)
         end
 		if self.SetScrollPanelSize then
             self:SetScrollPanelSize()
-        elseif not self.size_by_text then
+        elseif not self.size_by_text and not self.h then
             self.panel:set_h(math.max(self.items_size * lines, self.items_size, self._textbox and alive(self._textbox.panel) and self._textbox.panel:h() or 0))
-        end
+			self.panel:set_h(math.clamp(self.panel:h(), self.min_height or 0, self.max_height or self.panel:h()))
+		end
         return true
     end
     return false
@@ -130,16 +141,31 @@ function Item:SetText(text)
 	end
 end
 
+local border = {"left", "top", "right", "bottom"}
 function Item:DoHighlight(highlight)
 	local foreground = self:GetForeground(highlight)
-	if self.bg then play_anim(self.bg, {set = {alpha = highlight and self.highlight_bg and self.highlight_bg:visible() and 0 or 1}}) end
-	if self.highlight_bg then play_anim(self.highlight_bg, {set = {alpha = highlight and 1 or 0}}) end
-	if self.title then play_color(self.title, foreground) end
-	if self.border_highlight_color then
-		for _, v in pairs({"left", "top", "right", "bottom"}) do
-			local side = self.panel:child(v)
-			if alive(side) and side:visible() then
-				play_color(side, highlight and self.border_highlight_color or self.border_color or foreground)
+	if self.no_animating then
+		if self.bg then self.bg:set_alpha(highlight and self.highlight_bg and self.highlight_bg:visible() and 0 or 1) end
+		if self.highlight_bg then self.highlight_bg:set_alpha(highlight and 1 or 0) end
+		if self.title then self.title:set_color(foreground) end
+		if self.border_highlight_color then
+			for _, v in pairs(border) do
+				local side = self.panel:child(v)
+				if alive(side) and side:visible() then
+					side:set_color(highlight and self.border_highlight_color or self.border_color or foreground)
+				end
+			end
+		end
+	else
+		if self.bg then play_anim(self.bg, {set = {alpha = highlight and self.highlight_bg and self.highlight_bg:visible() and 0 or 1}}) end
+		if self.highlight_bg then play_anim(self.highlight_bg, {set = {alpha = highlight and 1 or 0}}) end
+		if self.title then play_color(self.title, foreground) end
+		if self.border_highlight_color then
+			for _, v in pairs(border) do
+				local side = self.panel:child(v)
+				if alive(side) and side:visible() then
+					play_color(side, highlight and self.border_highlight_color or self.border_color or foreground)
+				end
 			end
 		end
 	end
