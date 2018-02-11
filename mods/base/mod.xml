@@ -11,7 +11,7 @@
 		cannot_be_disabled="true"
 		early_init="true"
 	>
-	<auto_updates provider="modworkshop" id="21618" version="1.1" important="true"/>
+	<auto_updates provider="modworkshop" id="21618" version="1.2" important="true"/>
 	<options build_menu="false">
 		<options>
 			<option name="Language" type="string" default_value="English"/>
