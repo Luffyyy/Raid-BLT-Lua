@@ -12,7 +12,6 @@ local file = file
 BLT = {}
 BLT.name = "BLT"
 BLT.Base = {}
-BLT.version = 1.0
 BLT.Modules = {}
 BLT.Menus = {}
 BLT.Items = {}
@@ -108,8 +107,8 @@ function BLT:Setup()
 	}
 end
 
-function BLT:GetVersion()
-	return self.version
+function BLT:GetVersion() --Should get replaced by BLTModExtended
+	return 1
 end
 
 function BLT:GetOS()

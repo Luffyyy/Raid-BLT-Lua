@@ -7,18 +7,17 @@ BLTModExtended.path = ""
 BLTModExtended.id = "blt_mod"
 BLTModExtended.name = "Unnamed BLT Mod"
 BLTModExtended.desc = "No description."
-BLTModExtended.version = "1.0"
 BLTModExtended.author = "Unknown"
 BLTModExtended.contact = "N/A"
 BLTModExtended.priority = 0
 
 function BLTModExtended:init(path, ident, data, post_init)
 	if not ident then
-		self:log("BLTModExtendeds can not be created without a mod identifier!")
+		self:log("BLT Mods can not be created without a mod identifier!")
 		return
 	end
 	if not data then
-		self:log("BLTModExtendeds can not be created without mod data!")
+		self:log("BLT Mods can not be created without mod data!")
 		return
 	end
 
@@ -115,6 +114,14 @@ function BLTModExtended:Setup()
 	if not self._early_init then
         self:InitModules()
     end
+end
+
+function BLTModExtended:GetVersion(...)
+    local version = BLTModExtended.super.GetVersion(self, ...)
+    if not version and self.auto_updates and self.auto_updates.version then
+        return self.auto_updates.version
+    end
+    return version
 end
 
 function BLTModExtended:AddHooks(data_key, destination, wildcards_destination)
