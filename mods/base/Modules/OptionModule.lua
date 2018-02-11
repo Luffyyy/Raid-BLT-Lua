@@ -173,27 +173,17 @@ end
 
 --Only for use by the SetValue function
 function OptionModule:_SetValue(tbl, name, value, full_name)
-    if tbl.type == "table" then
-        tbl.value[name] = value
-        if tbl.value_changed then
-            tbl.value_changed(full_name, value)
-        end
-        if self._value_changed then
-            self._value_changed(full_name, value)
-        end
-    else
-        if tbl[name] == nil then
-            BLT:log(string.format("[ERROR] Option of name %q does not exist in mod, %s", name, self._mod.name))
-            return
-        end
-        tbl[name].value = value
+    if tbl[name] == nil then
+        BLT:log(string.format("[ERROR] Option of name %q does not exist in mod, %s", name, self._mod.name))
+        return
+    end
+    tbl[name].value = value
 
-        if tbl[name].value_changed then
-            tbl[name].value_changed(full_name, value)
-        end
-        if self._value_changed then
-            self._value_changed(full_name, value)
-        end
+    if tbl[name].value_changed then
+        tbl[name].value_changed(full_name, value)
+    end
+    if self._value_changed then
+        self._value_changed(full_name, value)
     end
 end
 

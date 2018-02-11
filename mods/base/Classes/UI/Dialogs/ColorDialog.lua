@@ -57,6 +57,7 @@ function ColorDialog:_Show(params)
     self._menu:Slider({
         name = "Alpha",
         text = "Alpha",
+        visible = not params.no_alpha,
         min = 0,
         max = 100,
         callback = callback(self, self, "update_color"),

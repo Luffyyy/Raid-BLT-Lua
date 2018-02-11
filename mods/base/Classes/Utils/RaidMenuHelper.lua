@@ -3,7 +3,7 @@
 RaidMenuHelper = RaidMenuHelper or {}
 function RaidMenuHelper:CreateMenu(params)
 	local name = string.gsub(params.name, "%s", "") --remove spaces from names, it doesn't seem to like them that much.
-	local text = params.text or params.name_id
+	local text = params.text or params.name_id or params.name --:shrug:
 	local component_name = params.component_name or name
 	managers.menu:register_menu_new({
 		name = name,
@@ -32,7 +32,7 @@ function RaidMenuHelper:CreateMenu(params)
 	end
 	if params.class then
         if managers.menu_component then
-            self:CreateComponent(component_name, params.class)
+            self:CreateComponent(component_name, params.class, params.args)
         else
             log("[ERROR] You're building the menu too early! menu component isn't loaded yet.")
         end
@@ -134,13 +134,13 @@ function RaidMenuHelper:InjectIntoAList(menu_comp, injection_point, buttons, lis
 	end
 end
 
-function RaidMenuHelper:CreateComponent(name, clss)
+function RaidMenuHelper:CreateComponent(name, clss, args)
 	local comp = managers.menu_component
 	clss._name = name
     comp._active_components[name] = {
         create = function(node)
 			if node then
-				comp[name] = comp[name] or clss:new(comp._ws, comp._fullscreen_ws, node)
+				comp[name] = comp[name] or clss:new(comp._ws, comp._fullscreen_ws, node, name, args)
             end
             return comp[name]	
         end, 
@@ -265,22 +265,4 @@ function RaidMenuHelper:LoadMenu(data, mod)
 	else
 		Hooks:Add("MenuComponentManagerInitialize", tostring(data.name)..".MenuComponentManagerInitialize", load_menu)		
 	end
-end
-
-function RaidMenuHelper:ForEachValue(items, value_func)
-	if value_func then
-		for _, item in pairs(items) do
-			if BLTMenu:IsItem(item) and item:visible() then
-				value_func(item)
-			end
-		end
-	end
-end
-
-function RaidMenuHelper:ResetValues(items)
-	self:ForEachValue(items, function(item)
-		if item._params.default_value then
-			item:set_value(item._params.default_value)
-		end
-	end)
 end

@@ -36,7 +36,7 @@ function LocalizationModule:LoadLocalization()
 end
 
 function LocalizationModule:RegisterHooks()
-    if managers.localization then
+    if managers and managers.localization then
         self:LoadLocalization()
     else
         Hooks:Add("LocalizationManagerPostInit", self._mod.name .. "_Localization", function(loc)

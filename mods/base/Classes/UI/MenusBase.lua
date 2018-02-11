@@ -1,18 +1,20 @@
 BLTMenu = BLTMenu or class(RaidGuiBase)
 --core functions
-function BLTMenu:init(ws, fullscreen_ws, node, name)
+function BLTMenu:init(ws, fullscreen_ws, node, name, args)
+    self._name = name
     self._ws = ws
     self._fullscreen_ws = fullscreen_ws
     self._fullscreen_panel = self._fullscreen_ws:panel():panel({})
     self._panel = self._ws:panel():panel({})
+    self._all_ctrls = {}
     --do we need a name..? hard without a decomp :/
     BLTMenu.super.init(self, ws, fullscreen_ws, node, name or "")
     self._root_panel.ctrls = self._root_panel.ctrls or {}
     if self.PreInit then
-        self:PreInit(self._root_panel)
+        self:PreInit(self._root_panel, args)
     end
     if self.Init then
-        self:Init(self._root_panel)
+        self:Init(self._root_panel, args)
     end
     if self._items_data then
         for _, item in ipairs(self._items_data) do
@@ -196,7 +198,7 @@ function BLTMenu:BasicItemData(params, no_clone)
     params.h = params.h or 32
     params.x_offset = params.x_offset or self.default_x_offset or 6
     params.y_offset = params.y_offset or self.default_y_offset or 6
-    params.index = params.index or #params.parent.ctrls + 1
+    params.index = params.index or (params.parent.ctrls and #params.parent.ctrls + 1 or nil)
     params.ws = params.ws or self._ws
     return params
 end
@@ -225,7 +227,7 @@ function BLTMenu:CreateSimple(typ, params, create_data)
 		if params.enabled ~= nil and item.set_enabled then
 			item:set_enabled(params.enabled)
         end
-        if parent then
+        if parent.ctrls then
             local insert = item._object and item._object._params and item._object or item
             insert._params.index = data.index
             insert._params.ignore_align = data.ignore_align
@@ -233,6 +235,7 @@ function BLTMenu:CreateSimple(typ, params, create_data)
             insert._params.y_offset = insert._params.y_offset or data.y_offset
             table.insert(parent.ctrls, insert)
         end
+        table.insert(self._all_ctrls, item)
         if self.SortItems then
             self:SortItems(parent)
             self:Align(parent)
@@ -314,6 +317,10 @@ function BLTMenu:MultiChoice(params)
     return item
 end
 
+function BLTMenu:GetCorrectSliderValue(value, min, max)
+    return (value - min) / (max - min) * 100
+end
+
 function BLTMenu:Slider(params)
     params = clone(params)
     local item
@@ -323,8 +330,11 @@ function BLTMenu:Slider(params)
 	params.min_display_value = min
     params.value_format = params.value_format or "%.2f"
     if params.value then
-    	params.value = (params.value - min) / (max - min) * 100
-    end
+    	params.value = self:GetCorrectSliderValue(params.value, min, max)
+	end
+	if params.default_value then
+    	params.default_value = self:GetCorrectSliderValue(params.default_value, min, max)
+	end
     
 	item = BLTMenu.CreateSimple(self, "slider", params, {no_clone = true, text_key = "description", clbk_key = "on_value_change_callback", default_clbk = function(value)
         params.callback(tonumber(item._value_label:text()), item)
@@ -383,9 +393,10 @@ function BLTMenu:ColorButton(params)
     btn_params.callback = function()
         BLT.Dialogs:Color():Show({
             title = btn_params.override_title or btn_params.localize ~= false and managers.localization:text(btn_params.text) or btn_params.text, 
-            color = btn_params.value,
+            color = btn._params.value,
             force = true,
             callback = function(color)
+                btn._params.value = color
                 if alive(preview) then
                     preview:set_color(color)
                 end
@@ -438,6 +449,29 @@ function BLTMenu:KeyBind(params)
     BLTMenu.CreateSimple(self, "keybind", params, {no_clone = true})
 end
 
+function BLTMenu:ForEachValue(items, value_func)
+	if value_func then
+		for _, item in pairs(items) do
+			if item.visible and item:visible() then
+				value_func(item)
+			end
+		end
+	end
+end
+
+function BLTMenu:ResetValues(items)
+	self:ForEachValue(items or self._all_ctrls, function(item)
+		if item._params.default_value then
+			item:set_value(item._params.default_value)
+			item:_on_value_changed()
+		end
+	end)
+end
+
+function BLTMenu:ReloadMenu(menu)
+	managers.raid_menu:on_escape()
+	managers.raid_menu:open_menu(menu or self._name)
+end
 
 --Basically all the shit that was in mods_menu, view_mod and download_manager but instead of fucking repeating it.
 BLTCustomMenu = BLTCustomMenu or class(RaidGuiBase)

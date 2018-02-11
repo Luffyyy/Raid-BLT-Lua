@@ -90,7 +90,7 @@ function BLTMod:SetupCheck()
     mod_blt_version = mod_blt_version and tonumber(mod_blt_version) or nil
     if mod_blt_version and mod_blt_version > BLT:GetVersion() then
         self._blt_outdated = true
-        table.insert(self._errors, {"blt_mod_blt_outdated", mod_blt_version})
+        table.insert(self._errors, {"blt_mod_blt_outdated", math.round_with_precision(mod_blt_version, 4)})
     end
 
     -- Check dependencies are installed for this mod
@@ -113,15 +113,15 @@ function BLTMod:Setup()
 
     -- Keybinds
     if BLT.Keybinds then
-        for i, keybind_data in ipairs(self._config["keybinds"] or {}) do
+        for i, keybind_data in ipairs(self._config.keybinds or {}) do
             BLT.Keybinds:register_keybind(self, keybind_data)
         end
     end
 
     -- Persist Scripts
-    for i, persist_data in ipairs(self._config["persist_scripts"] or {}) do
-        if persist_data and persist_data["global"] and persist_data["script_path"] then
-            self:AddPersistScript(persist_data["global"], persist_data["script_path"])
+    for i, persist_data in ipairs(self._config.persist_scripts or {}) do
+        if persist_data and persist_data.global and persist_data.script_path then
+            self:AddPersistScript(persist_data.global, persist_data.script_path)
         end
     end
 end
@@ -228,12 +228,16 @@ function BLTMod:GetDescription()
     return self.desc
 end
 
-function BLTMod:GetVersion()
-    return self.version
+function BLTMod:GetVersion(noRounding)
+    if tonumber(self.version) and not noRounding then
+        return math.round_with_precision(self.version, 4) --fixes xml fuckup with numbers.
+    else
+        return self.version
+    end
 end
 
 function BLTMod:GetMinBLTVersion()
-    return self.min_blt_version
+    return math.round_with_precision(self.min_blt_version or 1, 4)
 end
 
 function BLTMod:GetAuthor()
