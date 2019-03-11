@@ -13,13 +13,15 @@ function KeybindModule:post_init(...)
 end
 
 function KeybindModule:Load()
-	if not self._config.keybind_id then 
-		self:log("[ERROR] Keybind does not contain a definition for keybind_id!")
-		return
-	end
-	self._config.run_in_menu = self._config.run_in_menu or true
-	self._config.run_in_game = self._config.run_in_game or true
-	BLT.Keybinds:register_keybind(self._mod, self._config)
+    for _, keybind in ipairs(self._config) do
+        if not keybind.keybind_id then
+            self:log("[ERROR] Keybind does not contain a definition for keybind_id!")
+            return
+        end
+        keybind.run_in_menu = keybind.run_in_menu or true
+        keybind.run_in_game = keybind.run_in_game or true
+        BLT.Keybinds:register_keybind(self._mod, keybind)
+    end
 end
 
 BLT:RegisterModule(KeybindModule.type_name, KeybindModule)
