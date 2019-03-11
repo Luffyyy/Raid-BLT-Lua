@@ -64,6 +64,7 @@ UpdatesModule._providers = {
         
                 if json_data:is_nil_or_empty() then
                     BLT:log("[Error] Could not connect to the PaydayMods.com API!")
+                    return
                 end
         
                 local server_data = json.decode(json_data)
