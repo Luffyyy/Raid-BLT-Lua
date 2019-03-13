@@ -1,4 +1,4 @@
-<table 
+<table
 		name="Raid WW2 BLT"
 		global_key = "BLT"
 		merge_global = "true"
@@ -11,7 +11,7 @@
 		cannot_be_disabled="true"
 		early_init="true"
 	>
-	<autoUpdates provider="modworkshop" id="21618" version="1.3" important="true"/>
+	<auto_updates provider="modworkshop" id="21618" version="1.3" important="true"/>
 	<options build_menu="false">
 		<options>
 			<option name="Language" type="string" default_value="English"/>
