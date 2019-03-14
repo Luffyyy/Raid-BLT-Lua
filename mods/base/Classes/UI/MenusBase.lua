@@ -120,51 +120,44 @@ function BLTMenu:_layout()
 end
 
 function BLTMenu:Align(panel)
-    panel = panel or self._root_panel    
-    local controls = panel and panel.ctrls    
-    
+    panel = panel or self._root_panel
+    local controls = panel and panel.ctrls
+
     if not controls then
         return
     end
 
-    local prev_item
-    local last_before_reset
+    local x = 0
+    local y = 0
+    local next_col_x = 0
     for _, item in pairs(controls) do
         if item:visible() and not item._params.ignore_align then
-            if prev_item then
-                self:AlignItem(item, prev_item, last_before_reset)
-            else
-                self:AlignItemFirst(item)
+
+            local x_offset = item._params.x_offset or self.default_x_offset
+            local y_offset = item._params.y_offset or self.default_y_offset
+
+            -- if not first item in column and increasing screen size...
+            if (y > 0) and (y + y_offset + item:h()) > (panel:h() - (panel.is_root_panel and 32 or 0)) then
+                x = next_col_x -- ...shift column and...
+                y = 0 -- ...set to top
             end
-            if prev_item and item:bottom() > (panel:h() - (panel.is_root_panel and 32 or 0)) then
-                if self:AlignItemResetY(item, prev_item) then
-                    last_before_reset = prev_item
-                    prev_item = nil -- reset y pos
-                end
+
+            -- set coords
+            item:set_x(x + x_offset)
+            item:set_y(y + y_offset)
+
+            -- prepare next
+            if item:right() > next_col_x then
+                next_col_x = item:right()
             end
-            prev_item = item
-		end
-	end
+            y = item:bottom()
+
+        end
+    end
 end
 
 function BLTMenu:IsItem(item)
     return item._type == "raid_gui_panel" or item._params.align_item
-end
-
-function BLTMenu:AlignItemFirst(item)
-    item:set_x(item._params.x_offset or self.default_x_offset)
-    item:set_y(item._params.y_offset or self.default_y_offset)
-end
-
-function BLTMenu:AlignItemResetY(item, prev_item)
-    self:AlignItemFirst(item)
-    item:set_x(prev_item:right() + (item._params.x_offset or self.default_x_offset))
-    return true
-end
-
-function BLTMenu:AlignItem(item, prev_item, last_before_reset)
-    item:set_x((last_before_reset and last_before_reset:right() or 0) + (item._params.x_offset or self.default_x_offset))
-    item:set_y(prev_item:bottom() + (item._params.y_offset or self.default_y_offset))
 end
 
 function BLTMenu:Close()
@@ -236,10 +229,8 @@ function BLTMenu:CreateSimple(typ, params, create_data)
             table.insert(parent.ctrls, insert)
         end
         table.insert(self._all_ctrls, item)
-        if self.SortItems then
-            self:SortItems(parent)
-            self:Align(parent)
-        end
+        self:SortItems(parent)
+        self:Align(parent)
         return item
     end
 end
