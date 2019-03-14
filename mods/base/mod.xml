@@ -58,7 +58,6 @@
 		<hook source_file="lib/managers/menu/menucomponentmanager" file="Classes/UI/OptionsMenu.lua"/>
 		<hook source_file="lib/managers/menu/menucomponentmanager" file="Classes/UI/KeybindsMenu.lua"/>
 		<hook source_file="lib/managers/menu/menucomponentmanager" file="Classes/UI/NotificationsGui.lua"/>
-		<hook source_file="lib/managers/menu/raid_menu/controls/raidguipanel" file="Hooks/RaidGUIPanel.lua"/>
 		<hook source_file="lib/managers/menu/raid_menu/controls/raidguicontrolkeybind" file="Hooks/RaidGUIControlKeyBind.lua"/>
 	    <hook source_file="core/lib/managers/viewport/environment/coreenvironmentmanager" file="Hooks/EnvironmentManager.lua"/>
 		<hook source_file="core/lib/managers/menu/coremenudata" file="Hooks/CoreMenuData.lua"/>
