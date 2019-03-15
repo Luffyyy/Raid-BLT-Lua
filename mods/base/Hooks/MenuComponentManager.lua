@@ -32,7 +32,7 @@ function MenuComponentManager:set_active_components(components, node)
 								if btn.inject_type then
 									BLTMenu[btn.inject_type](r, btn)
 								else
-									BLTMenu.Button(r, btn)
+									BLTMenu.MenuButton(r, btn)
 								end
 								if r._layout then
 									r:_layout()

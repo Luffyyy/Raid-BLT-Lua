@@ -1,3 +1,4 @@
+dofile(ModPath .. "Classes/UI/Controls/RaidGUIControlMenuButton.lua")
 BLTMenu = BLTMenu or class(RaidGuiBase)
 --core functions
 function BLTMenu:init(ws, fullscreen_ws, node, name, args)
@@ -68,7 +69,7 @@ function BLTMenu:SetPage(page, tabs)
         local tab = tabs._params.tabs[tabs._selected_item_idx]
         page = tab and tab.callback_param
     end
-    
+
     local parent = tabs._params.parent
     if parent and parent.ctrls then
         for _, item in pairs(parent.ctrls) do
@@ -81,7 +82,7 @@ function BLTMenu:SetPage(page, tabs)
 end
 
 function BLTMenu:GetItem(name, deep, panel)
-    panel = panel or self._root_panel 
+    panel = panel or self._root_panel
     for _, item in pairs(panel.ctrls) do
         if item:name() == name then
             return item
@@ -94,7 +95,7 @@ end
 
 
 function BLTMenu:GetPanel(name, deep, panel)
-    panel = panel or self._root_panel 
+    panel = panel or self._root_panel
     for _, item in pairs(panel.ctrls) do
         if item.ctrls then
             if item:name() == name then
@@ -108,11 +109,11 @@ function BLTMenu:GetPanel(name, deep, panel)
 end
 
 function BLTMenu:HideBackground()
-    managers.raid_menu:hide_background()    
+    managers.raid_menu:hide_background()
 end
 
 function BLTMenu:ShowBackground()
-    managers.raid_menu:show_background()    
+    managers.raid_menu:show_background()
 end
 
 function BLTMenu:_layout()
@@ -173,7 +174,7 @@ function BLTMenu:BasicItemData(params, no_clone)
     if params.upper == nil then
         params.upper = true
     end
-    
+
     params.name = params.name or params.text or "ERROR"
     if params.text == nil and params.localize then
         params.text = (self._mod and self._mod.name or "") .. params.name .. "Text"
@@ -208,7 +209,7 @@ end
 function BLTMenu:CreateSimple(typ, params, create_data)
     create_data = create_data or {}
     local data = BLTMenu.BasicItemData(self, params, create_data.no_clone)
-    local parent = data.parent   
+    local parent = data.parent
     if parent then
         local clbk_key = create_data.clbk_key or "on_click_callback"
         data[clbk_key] = data.callback and (create_data.default_clbk or function(a, item, value)
@@ -216,9 +217,15 @@ function BLTMenu:CreateSimple(typ, params, create_data)
         end)
         local text_key = create_data.text_key or "text"
         data[text_key] = create_data.text_key ~= false and data.text or ""
-        local item = parent[typ](parent, data)        
-		if params.enabled ~= nil and item.set_enabled then
-			item:set_enabled(params.enabled)
+        local item
+        if type(typ) == "table" then
+            item = typ:new(parent, data)
+            parent:_add_control(item)
+        else
+            item = parent[typ](parent, data)
+        end
+        if params.enabled ~= nil and item.set_enabled then
+            item:set_enabled(params.enabled)
         end
         if parent.ctrls then
             local insert = item._object and item._object._params and item._object or item
@@ -257,6 +264,10 @@ function BLTMenu:LongRoundedButton(params)
     return BLTMenu.CreateSimple(self, "long_tertiary_button", params)
 end
 
+function BLTMenu:MenuButton(params)
+    return BLTMenu.CreateSimple(self, RaidGUIControlMenuButton, params)
+end
+
 function BLTMenu:CreateSimpleLabel(typ, params)
     params = clone(params)
     params.callback = nil
@@ -277,7 +288,7 @@ function BLTMenu:Title(params)
 end
 
 function BLTMenu:SubTitle(params)
-    return BLTMenu.CreateSimpleLabel(self, "label_subtitle", params)    
+    return BLTMenu.CreateSimpleLabel(self, "label_subtitle", params)
 end
 
 function BLTMenu:Toggle(params)
@@ -318,16 +329,16 @@ function BLTMenu:Slider(params)
     local max = params.max or 100
     local min = params.min or 0
     params.max_display_value = max
-	params.min_display_value = min
+    params.min_display_value = min
     params.value_format = params.value_format or "%.2f"
     if params.value then
-    	params.value = self:GetCorrectSliderValue(params.value, min, max)
-	end
-	if params.default_value then
-    	params.default_value = self:GetCorrectSliderValue(params.default_value, min, max)
-	end
-    
-	item = BLTMenu.CreateSimple(self, "slider", params, {no_clone = true, text_key = "description", clbk_key = "on_value_change_callback", default_clbk = function(value)
+        params.value = self:GetCorrectSliderValue(params.value, min, max)
+    end
+    if params.default_value then
+        params.default_value = self:GetCorrectSliderValue(params.default_value, min, max)
+    end
+
+    item = BLTMenu.CreateSimple(self, "slider", params, {no_clone = true, text_key = "description", clbk_key = "on_value_change_callback", default_clbk = function(value)
         params.callback(tonumber(item._value_label:text()), item)
     end})
     return item
@@ -360,7 +371,7 @@ function BLTMenu:Tabs(params)
         end
     end
 
-    local item    
+    local item
     item = BLTMenu.CreateSimple(self, "tabs", params, {no_clone = true, text_key = false, default_clbk = function(tab_selected)
         params.callback(tab_selected, item)
     end})
@@ -370,20 +381,20 @@ end
 function BLTMenu:Panel(params)
     params = clone(params)
     local item
-	params.callback = nil
-	params.text = nil
+    params.callback = nil
+    params.text = nil
     item = BLTMenu.CreateSimple(self, "panel", params, {no_clone = true, text_key = false})
     item.ctrls = item.ctrls or {}
     return item
 end
 
 function BLTMenu:ColorButton(params)
-	local preview
+    local preview
     local btn_params = clone(params)
     local btn
     btn_params.callback = function()
         BLT.Dialogs:Color():Show({
-            title = btn_params.override_title or btn_params.localize ~= false and managers.localization:text(btn_params.text) or btn_params.text, 
+            title = btn_params.override_title or btn_params.localize ~= false and managers.localization:text(btn_params.text) or btn_params.text,
             color = btn._params.value,
             force = true,
             callback = function(color)
@@ -399,17 +410,17 @@ function BLTMenu:ColorButton(params)
     end
     btn = BLTMenu.Button(self, btn_params)
     preview = btn._object_text:parent():bitmap({
-		name = "preview",
-		w = 24,
+        name = "preview",
+        w = 24,
         h = 24,
         x = -26,
         rotation = 360,
         texture = "ui/atlas/raid_atlas_menu",
         texture_rect = {765, 679, 33, 33},
-		color = params.value
+        color = params.value
     })
     preview:set_center_y(preview:parent():h() / 2)
-	return btn
+    return btn
 end
 
 function BLTMenu:KeyBind(params)
@@ -441,27 +452,27 @@ function BLTMenu:KeyBind(params)
 end
 
 function BLTMenu:ForEachValue(items, value_func)
-	if value_func then
-		for _, item in pairs(items) do
-			if item.visible and item:visible() then
-				value_func(item)
-			end
-		end
-	end
+    if value_func then
+        for _, item in pairs(items) do
+            if item.visible and item:visible() then
+                value_func(item)
+            end
+        end
+    end
 end
 
 function BLTMenu:ResetValues(items)
-	self:ForEachValue(items or self._all_ctrls, function(item)
-		if item._params.default_value then
-			item:set_value(item._params.default_value)
-			item:_on_value_changed()
-		end
-	end)
+    self:ForEachValue(items or self._all_ctrls, function(item)
+        if item._params.default_value then
+            item:set_value(item._params.default_value)
+            item:_on_value_changed()
+        end
+    end)
 end
 
 function BLTMenu:ReloadMenu(menu)
-	managers.raid_menu:on_escape()
-	managers.raid_menu:open_menu(menu or self._name)
+    managers.raid_menu:on_escape()
+    managers.raid_menu:open_menu(menu or self._name)
 end
 
 --Basically all the shit that was in mods_menu, view_mod and download_manager but instead of fucking repeating it.
@@ -472,7 +483,7 @@ function BLTCustomMenu:init(ws, fullscreen_ws, node, name)
     self._fullscreen_panel = self._fullscreen_ws:panel():panel({})
     self._panel = self._ws:panel():panel({layer = 20})
     self._init_layer = self._ws:panel():layer()
-    
+
     self._data = node:parameters().menu_component_data or {}
     self._buttons = {}
     self:_setup()
@@ -487,35 +498,35 @@ function BLTCustomMenu:close()
 end
 
 function BLTCustomMenu:mouse_pressed(o, button, x, y)
-	BLTCustomMenu.super.mouse_pressed(self, o, button, x, y)
-	local result = false 
-	
-	for _, item in ipairs(self._buttons) do 
-	   if item:inside(x, y) then 
-		    if item.mouse_clicked then 
-		        result = item:mouse_clicked(button, x, y) 
-		    end 
-            break 
-	    end 
-	end 
-	
-	if button == Idstring("0") then 
-		for _, item in ipairs(self._buttons) do
-			if item:inside(x, y) then
-				if item:parameters().callback then
-					item:parameters().callback()
-				end
-				managers.menu_component:post_event("menu_enter")
-				return true
-			end
-		end
+    BLTCustomMenu.super.mouse_pressed(self, o, button, x, y)
+    local result = false
+
+    for _, item in ipairs(self._buttons) do
+    if item:inside(x, y) then
+            if item.mouse_clicked then
+                result = item:mouse_clicked(button, x, y)
+            end
+            break
+        end
     end
-    
+
+    if button == Idstring("0") then
+        for _, item in ipairs(self._buttons) do
+            if item:inside(x, y) then
+                if item:parameters().callback then
+                    item:parameters().callback()
+                end
+                managers.menu_component:post_event("menu_enter")
+                return true
+            end
+        end
+    end
+
     if alive(self._scroll) then
         return self._scroll:mouse_pressed(o, button, x, y)
     end
 
-	return result
+    return result
 end
 
 function BLTCustomMenu:mouse_moved(o, x, y)
@@ -542,7 +553,7 @@ function BLTCustomMenu:mouse_moved(o, x, y)
 
     return used, pointer
 end
-    
+
 function BLTCustomMenu:mouse_clicked(o, button, x, y)
     if managers.menu_scene and managers.menu_scene.input_focus and managers.menu_scene:input_focus() then
         return false
@@ -556,42 +567,42 @@ function BLTCustomMenu:mouse_clicked(o, button, x, y)
 end
 
 function BLTCustomMenu:mouse_released(o, button, x, y)
-	if managers.menu_scene and managers.menu_scene.input_focus and managers.menu_scene:input_focus() then
-		return false
+    if managers.menu_scene and managers.menu_scene.input_focus and managers.menu_scene:input_focus() then
+        return false
     end
-    
+
     BLTCustomMenu.super.mouse_released(self, o, button, x, y)
-	if alive(self._scroll) then
-		return self._scroll:mouse_released(button, x, y)
-	end
+    if alive(self._scroll) then
+        return self._scroll:mouse_released(button, x, y)
+    end
 end
 
 function BLTCustomMenu:mouse_wheel_up(x, y)
-	if alive(self._scroll) then
-		self._scroll:scroll(x, y, 1)
-	end
+    if alive(self._scroll) then
+        self._scroll:scroll(x, y, 1)
+    end
 end
 
 function BLTCustomMenu:mouse_wheel_down(x, y)
-	if alive(self._scroll) then
-		self._scroll:scroll(x, y, -1)
-	end
+    if alive(self._scroll) then
+        self._scroll:scroll(x, y, -1)
+    end
 end
 
 function BLTCustomMenu:make_fine_text(text)
     if not alive(text) then
         return
     end
-	local x,y,w,h = text:text_rect()
-	text:set_size(w, h)
-	text:set_position(math.round(text:x()), math.round(text:y()))
+    local x,y,w,h = text:text_rect()
+    text:set_size(w, h)
+    text:set_position(math.round(text:x()), math.round(text:y()))
 end
 
 -------------------------------------------------------------------------------
 -- Adds a back button to a menu
 
 Hooks:Add("MenuComponentManagerInitialize", "RaidBackButton.MenuComponentManagerInitialize", function(self)
-	self._active_components.raid_back_button = {create = callback(self, self, "create_raid_back_button"), close = callback(self, self, "remove_raid_back_button")}
+    self._active_components.raid_back_button = {create = callback(self, self, "create_raid_back_button"), close = callback(self, self, "remove_raid_back_button")}
 end)
 
 function MenuComponentManager:remove_raid_back_button(node)
@@ -599,8 +610,8 @@ function MenuComponentManager:remove_raid_back_button(node)
 end
 
 function MenuComponentManager:create_raid_back_button(node)
-	if not node then
-		return
+    if not node then
+        return
     end
     RaidGuiBase:set_legend({
         controller = {"menu_legend_back"},

@@ -1,0 +1,106 @@
+
+require("lib/managers/menu/raid_menu/controls/raidguicontrol")
+require("lib/managers/menu/raid_menu/controls/raidguicontrolbutton")
+
+RaidGUIControlMenuButton = RaidGUIControlMenuButton or class(RaidGUIControlButton)
+
+RaidGUIControlMenuButton.TEXT_PADDING = 16
+RaidGUIControlMenuButton.TEXT_COLOR = tweak_data.gui.colors.raid_grey
+RaidGUIControlMenuButton.TEXT_COLOR_DISABLED = tweak_data.gui.colors.raid_dark_grey
+RaidGUIControlMenuButton.TEXT_HIGHLIGHT_COLOR = tweak_data.gui.colors.raid_white
+RaidGUIControlMenuButton.SIDELINE_COLOR = tweak_data.gui.colors.raid_red
+RaidGUIControlMenuButton.SIDELINE_W = 3
+
+function RaidGUIControlMenuButton:init(parent, params)
+    params.text_padding = RaidGUIControlMenuButton.SIDELINE_W + RaidGUIControlMenuButton.TEXT_PADDING + (params.text_padding or 0)
+    params.font_size = params.font_size or tweak_data.gui.font_sizes.small
+    params.color = params.color or RaidGUIControlMenuButton.TEXT_COLOR
+    params.color_disabled = params.color_disabled or RaidGUIControlMenuButton.TEXT_COLOR_DISABLED
+    params.highlight_color = params.highlight_color or RaidGUIControlMenuButton.TEXT_HIGHLIGHT_COLOR
+    RaidGUIControlMenuButton.super.init(self, parent, params)
+    self._object_text:set_color(self._params.color)
+    self._sideline = self._object:rect({
+        y = 0,
+        w = RaidGUIControlMenuButton.SIDELINE_W,
+        alpha = 0,
+        x = 0,
+        name = "menu_button_highlight_" .. self._name,
+        h = self._object:h(),
+        color = self._params.sideline_color or RaidGUIControlMenuButton.SIDELINE_COLOR
+    })
+end
+
+function RaidGUIControlMenuButton:highlight_on()
+    if not self._enabled then
+        return
+    end
+    RaidGUIControlMenuButton.super.highlight_on(self)
+    self._object_text:set_color(self._params.color)
+    self._object:stop()
+    self._object:animate(callback(self, self, "_animate_highlight_on"))
+end
+
+function RaidGUIControlMenuButton:highlight_off()
+    if not self._enabled then
+        return
+    end
+    RaidGUIControlMenuButton.super.highlight_off(self)
+    self._object_text:set_color(self._params.highlight_color)
+    self._object:stop()
+    self._object:animate(callback(self, self, "_animate_highlight_off"))
+end
+
+function RaidGUIControlMenuButton:_animate_highlight_on()
+    local starting_alpha = self._sideline:alpha()
+    local duration = 0.2
+    local t = duration - (1 - starting_alpha) * duration
+    while duration > t do
+        local dt = coroutine.yield()
+        t = t + dt
+        local alpha = Easing.quartic_out(t, 0, 1, duration)
+        self._sideline:set_alpha(alpha)
+        local description_r = Easing.quartic_out(t, self._params.color.r, self._params.highlight_color.r - self._params.color.r, duration)
+        local description_g = Easing.quartic_out(t, self._params.color.g, self._params.highlight_color.g - self._params.color.g, duration)
+        local description_b = Easing.quartic_out(t, self._params.color.b, self._params.highlight_color.b - self._params.color.b, duration)
+        self._object_text:set_color(Color(description_r, description_g, description_b))
+    end
+    self._sideline:set_alpha(1)
+    self._object_text:set_color(self._params.highlight_color)
+end
+
+function RaidGUIControlMenuButton:_animate_highlight_off()
+    -- ...this too.
+    local starting_alpha = self._sideline:alpha()
+    local duration = 0.2
+    local t = duration - starting_alpha * duration
+    while duration > t do
+        local dt = coroutine.yield()
+        t = t + dt
+        local alpha = Easing.quartic_out(t, 1, -1, duration)
+        self._sideline:set_alpha(alpha)
+        local description_r = Easing.quartic_out(t, self._params.highlight_color.r, self._params.color.r - self._params.highlight_color.r, duration)
+        local description_g = Easing.quartic_out(t, self._params.highlight_color.g, self._params.color.g - self._params.highlight_color.g, duration)
+        local description_b = Easing.quartic_out(t, self._params.highlight_color.b, self._params.color.b - self._params.highlight_color.b, duration)
+        self._object_text:set_color(Color(description_r, description_g, description_b))
+    end
+    self._sideline:set_alpha(0)
+    self._object_text:set_color(self._params.color)
+end
+
+function RaidGUIControlMenuButton:enable()
+    RaidGUIControlMenuButton.super.enable(self)
+    self._object_text:set_color(self._params.color)
+end
+
+function RaidGUIControlMenuButton:disable()
+    RaidGUIControlMenuButton.super.disable(self)
+    self._object_text:set_color(self._params.color_disabled)
+end
+
+function RaidGUIControlMenuButton:_animate_press()
+    -- do nothing
+end
+
+function RaidGUIControlMenuButton:_animate_release()
+    -- do nothing
+end
