@@ -50,7 +50,7 @@ function RaidMenuHelper:CreateMenu(params)
 		if menu and menu.class then
 			menu.class._items_data = menu.class._items_data or {}
 			table.insert(menu.class._items_data, table.merge({
-				type = "Button",
+				type = "MenuButton",
 				name = params.name.."Button",
 				text = text,
 				localize = params.localize,
