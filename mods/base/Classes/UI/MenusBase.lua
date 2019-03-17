@@ -1,4 +1,9 @@
-dofile(ModPath .. "Classes/UI/Controls/RaidGUIControlMenuButton.lua")
+require("lib/managers/menu/raid_menu/controls/raidguicontrol")
+require("lib/managers/menu/raid_menu/controls/raidguicontrolbutton")
+
+dofile(ModPath .. "Classes/UI/Controls/BLTGUIControlButton.lua")
+dofile(ModPath .. "Classes/UI/Controls/BLTGUIControlMenuButton.lua")
+
 BLTMenu = BLTMenu or class(RaidGuiBase)
 --core functions
 function BLTMenu:init(ws, fullscreen_ws, node, name, args)
@@ -245,7 +250,7 @@ end
 --Item creation functions
 
 function BLTMenu:Button(params)
-    return BLTMenu.CreateSimple(self, "button", params)
+    return BLTMenu.CreateSimple(self, BLTGUIControlButton, params)
 end
 
 function BLTMenu:LongRoundedButton2(params)
@@ -265,7 +270,7 @@ function BLTMenu:LongRoundedButton(params)
 end
 
 function BLTMenu:MenuButton(params)
-    return BLTMenu.CreateSimple(self, RaidGUIControlMenuButton, params)
+    return BLTMenu.CreateSimple(self, BLTGUIControlMenuButton, params)
 end
 
 function BLTMenu:CreateSimpleLabel(typ, params)

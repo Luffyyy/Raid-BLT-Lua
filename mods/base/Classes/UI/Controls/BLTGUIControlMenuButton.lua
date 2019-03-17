@@ -1,56 +1,53 @@
 
-require("lib/managers/menu/raid_menu/controls/raidguicontrol")
-require("lib/managers/menu/raid_menu/controls/raidguicontrolbutton")
+BLTGUIControlMenuButton = BLTGUIControlMenuButton or class(BLTGUIControlButton)
 
-RaidGUIControlMenuButton = RaidGUIControlMenuButton or class(RaidGUIControlButton)
+BLTGUIControlMenuButton.TEXT_PADDING = 16
+BLTGUIControlMenuButton.TEXT_COLOR = tweak_data.gui.colors.raid_grey
+BLTGUIControlMenuButton.TEXT_COLOR_DISABLED = tweak_data.gui.colors.raid_dark_grey
+BLTGUIControlMenuButton.TEXT_HIGHLIGHT_COLOR = tweak_data.gui.colors.raid_white
+BLTGUIControlMenuButton.SIDELINE_COLOR = tweak_data.gui.colors.raid_red
+BLTGUIControlMenuButton.SIDELINE_W = 3
 
-RaidGUIControlMenuButton.TEXT_PADDING = 16
-RaidGUIControlMenuButton.TEXT_COLOR = tweak_data.gui.colors.raid_grey
-RaidGUIControlMenuButton.TEXT_COLOR_DISABLED = tweak_data.gui.colors.raid_dark_grey
-RaidGUIControlMenuButton.TEXT_HIGHLIGHT_COLOR = tweak_data.gui.colors.raid_white
-RaidGUIControlMenuButton.SIDELINE_COLOR = tweak_data.gui.colors.raid_red
-RaidGUIControlMenuButton.SIDELINE_W = 3
-
-function RaidGUIControlMenuButton:init(parent, params)
-    params.text_padding = RaidGUIControlMenuButton.SIDELINE_W + RaidGUIControlMenuButton.TEXT_PADDING + (params.text_padding or 0)
+function BLTGUIControlMenuButton:init(parent, params)
+    params.text_padding = BLTGUIControlMenuButton.SIDELINE_W + BLTGUIControlMenuButton.TEXT_PADDING + (params.text_padding or 0)
     params.font_size = params.font_size or tweak_data.gui.font_sizes.small
-    params.color = params.color or RaidGUIControlMenuButton.TEXT_COLOR
-    params.color_disabled = params.color_disabled or RaidGUIControlMenuButton.TEXT_COLOR_DISABLED
-    params.highlight_color = params.highlight_color or RaidGUIControlMenuButton.TEXT_HIGHLIGHT_COLOR
-    RaidGUIControlMenuButton.super.init(self, parent, params)
+    params.color = params.color or BLTGUIControlMenuButton.TEXT_COLOR
+    params.color_disabled = params.color_disabled or BLTGUIControlMenuButton.TEXT_COLOR_DISABLED
+    params.highlight_color = params.highlight_color or BLTGUIControlMenuButton.TEXT_HIGHLIGHT_COLOR
+    BLTGUIControlMenuButton.super.init(self, parent, params)
     self._object_text:set_color(self._params.color)
     self._sideline = self._object:rect({
         y = 0,
-        w = RaidGUIControlMenuButton.SIDELINE_W,
+        w = BLTGUIControlMenuButton.SIDELINE_W,
         alpha = 0,
         x = 0,
         name = "menu_button_highlight_" .. self._name,
         h = self._object:h(),
-        color = self._params.sideline_color or RaidGUIControlMenuButton.SIDELINE_COLOR
+        color = self._params.sideline_color or BLTGUIControlMenuButton.SIDELINE_COLOR
     })
 end
 
-function RaidGUIControlMenuButton:highlight_on()
+function BLTGUIControlMenuButton:highlight_on()
     if not self._enabled then
         return
     end
-    RaidGUIControlMenuButton.super.highlight_on(self)
+    BLTGUIControlMenuButton.super.highlight_on(self)
     self._object_text:set_color(self._params.color)
     self._object:stop()
     self._object:animate(callback(self, self, "_animate_highlight_on"))
 end
 
-function RaidGUIControlMenuButton:highlight_off()
+function BLTGUIControlMenuButton:highlight_off()
     if not self._enabled then
         return
     end
-    RaidGUIControlMenuButton.super.highlight_off(self)
+    BLTGUIControlMenuButton.super.highlight_off(self)
     self._object_text:set_color(self._params.highlight_color)
     self._object:stop()
     self._object:animate(callback(self, self, "_animate_highlight_off"))
 end
 
-function RaidGUIControlMenuButton:_animate_highlight_on()
+function BLTGUIControlMenuButton:_animate_highlight_on()
     local starting_alpha = self._sideline:alpha()
     local duration = 0.2
     local t = duration - (1 - starting_alpha) * duration
@@ -68,8 +65,7 @@ function RaidGUIControlMenuButton:_animate_highlight_on()
     self._object_text:set_color(self._params.highlight_color)
 end
 
-function RaidGUIControlMenuButton:_animate_highlight_off()
-    -- ...this too.
+function BLTGUIControlMenuButton:_animate_highlight_off()
     local starting_alpha = self._sideline:alpha()
     local duration = 0.2
     local t = duration - starting_alpha * duration
@@ -87,20 +83,12 @@ function RaidGUIControlMenuButton:_animate_highlight_off()
     self._object_text:set_color(self._params.color)
 end
 
-function RaidGUIControlMenuButton:enable()
-    RaidGUIControlMenuButton.super.enable(self)
+function BLTGUIControlMenuButton:enable()
+    BLTGUIControlMenuButton.super.enable(self)
     self._object_text:set_color(self._params.color)
 end
 
-function RaidGUIControlMenuButton:disable()
-    RaidGUIControlMenuButton.super.disable(self)
+function BLTGUIControlMenuButton:disable()
+    BLTGUIControlMenuButton.super.disable(self)
     self._object_text:set_color(self._params.color_disabled)
-end
-
-function RaidGUIControlMenuButton:_animate_press()
-    -- do nothing
-end
-
-function RaidGUIControlMenuButton:_animate_release()
-    -- do nothing
 end
