@@ -193,7 +193,7 @@ function BLTMenu:BasicItemData(params, no_clone, typ)
     params.parent = params.parent or self._root_panel
     params.is_blt = true
     params.ignore_align = not not params.ignore_align
-    params.w = params.w or 512 + (typ == "slider" and 0 or 64)
+    params.w = params.w or 512 + (typ == "slider" and 64 or 0)
     params.h = params.h or 32
     params.x_offset = params.x_offset or self.default_x_offset or 6
     params.y_offset = params.y_offset or self.default_y_offset or 6
