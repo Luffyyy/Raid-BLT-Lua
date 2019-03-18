@@ -154,7 +154,7 @@ function BLTMenu:Align(panel)
 
             -- prepare next
             if item:right() > next_col_x then
-                next_col_x = item:right()
+                next_col_x = item:right() + (item._is_slider and 0 or 64)
             end
             y = item:bottom()
 
@@ -170,7 +170,7 @@ function BLTMenu:Close()
 end
 
 --Parameters that all items have
-function BLTMenu:BasicItemData(params, no_clone)
+function BLTMenu:BasicItemData(params, no_clone, typ)
     params = no_clone and params or clone(params)
 
     if params.localize == nil then
@@ -193,7 +193,7 @@ function BLTMenu:BasicItemData(params, no_clone)
     params.parent = params.parent or self._root_panel
     params.is_blt = true
     params.ignore_align = not not params.ignore_align
-    params.w = params.w or 512
+    params.w = params.w or 512 + (typ == "slider" and 0 or 64)
     params.h = params.h or 32
     params.x_offset = params.x_offset or self.default_x_offset or 6
     params.y_offset = params.y_offset or self.default_y_offset or 6
@@ -213,7 +213,7 @@ end
 
 function BLTMenu:CreateSimple(typ, params, create_data)
     create_data = create_data or {}
-    local data = BLTMenu.BasicItemData(self, params, create_data.no_clone)
+    local data = BLTMenu.BasicItemData(self, params, create_data.no_clone, typ)
     local parent = data.parent
     if parent then
         local clbk_key = create_data.clbk_key or "on_click_callback"
@@ -346,6 +346,7 @@ function BLTMenu:Slider(params)
     item = BLTMenu.CreateSimple(self, "slider", params, {no_clone = true, text_key = "description", clbk_key = "on_value_change_callback", default_clbk = function(value)
         params.callback(tonumber(item._value_label:text()), item)
     end})
+    item._is_slider = true
     return item
 end
 
