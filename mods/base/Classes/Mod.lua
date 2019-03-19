@@ -57,7 +57,7 @@ function BLTMod:init(path, ident, data)
 				hash_file = data.hash_file,
 				manual_check = data.disallow_update, -- I think
 				install_directory = data.load_dir or "mods/",
-				folder_names = {data.install_folder}
+				folder_name = data.install_folder
 			})
 			table.insert(self._modules, update)
 		end
