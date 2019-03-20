@@ -311,15 +311,10 @@ function BLTMenu:MultiChoice(params)
     item = BLTMenu.CreateSimple(self, "stepper", params, {no_clone = true, text_key = "description", clbk_key = "on_item_selected_callback", default_clbk = function(value)
         params.callback(value, item)
     end})
-    if params.selected ~= nil then
-        for i, v in ipairs(params.data_source_callback()) do
-            if i == params.selected then
-                item:select_item_by_value(v.value)
-                break
-            end
-        end
-    elseif params.value ~= nil then
-        item:select_item_by_value(params.value)
+    -- if params.selected was passed, the game already did the selection in RaidGUIControlStepper:init()
+    -- if not, but params.value, we have to do it now...
+    if params.selected == nil and params.value ~= nil then
+        item:set_value_and_render(params.value, true) -- set value, skip animation
     end
     return item
 end
