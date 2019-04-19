@@ -29,7 +29,7 @@ function LocalizationManager:text(str, macros, ...)
 		for k in return_str:gmatch("%$([^;%s]+);") do
 			local lookup = "$" .. k .. ";"
 			local replacement = type(macros) == "table" and macros[k]
-				or self._default_macros and self._default_macros[lookup]
+				or self._default_macros and self._default_macros[k]
 			if replacement then
 				return_str = return_str:gsub(lookup, replacement, 1, true)
 			end
