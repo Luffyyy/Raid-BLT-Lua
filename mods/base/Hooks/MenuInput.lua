@@ -50,3 +50,21 @@ function MenuInput:update(...)
         up(self, ...)
     end
 end
+
+function MenuInput:activate_mouse(position, controller_activated)
+	if controller_activated and managers.controller:get_default_wrapper_type() ~= "pc" and managers.controller:get_default_wrapper_type() ~= "steam" then
+		return true
+	end
+
+	self._mouse_active = true
+	local data = {
+		mouse_move = callback(self, self, "mouse_moved"),
+		mouse_press = callback(self, self, "mouse_pressed"),
+		mouse_release = callback(self, self, "mouse_released"),
+		mouse_click = callback(self, self, "mouse_clicked"),
+		mouse_double_click = callback(self, self, "mouse_double_click"),
+		id = self._menu_name
+	}
+
+	managers.mouse_pointer:use_mouse(data, position)
+end
