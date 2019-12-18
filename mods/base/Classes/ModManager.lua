@@ -10,7 +10,7 @@ function BLTModManager:Mods()
 end
 
 function BLTModManager:GetMod(id)
-	for _, mod in ipairs(self:Mods()) do
+	for _, mod in pairs(self:Mods()) do
 		if mod:GetId() == id then
 			return mod
 		end
@@ -43,7 +43,9 @@ function BLTModManager:IsExcludedDirectory(directory)
 end
 
 function BLTModManager:RegisterHook(source_file, path, file, type, mod)
-    path = path .. "/"
+	if path:byte(-1) ~= 47 then -- /
+		path = path .. "/"
+	end
     local hook_file = Path:Combine(path, file)
     local dest_tbl = type == "pre" and BLT.hook_tables.pre or BLT.hook_tables.post
     if dest_tbl and FileIO:Exists(hook_file) then
