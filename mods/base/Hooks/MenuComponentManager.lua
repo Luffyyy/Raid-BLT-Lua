@@ -85,3 +85,19 @@ function MenuComponentManager:update(t, dt)
 	Hooks:Call("MenuComponentManagerUpdate", self, t, dt)
 	return ret
 end
+
+-- Backported from PD2
+function MenuComponentManager:special_btn_released(...)
+	for _, component in pairs(self._active_components) do
+		if component.component_object and component.component_object.special_btn_released then
+			local handled = component.component_object:special_btn_released(...)
+			if handled then
+				return true
+			end
+		end
+	end
+
+	if self._game_chat_gui and self._game_chat_gui:input_focus() == true then
+		return true
+	end
+end
