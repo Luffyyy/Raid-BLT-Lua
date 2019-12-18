@@ -10,15 +10,13 @@ tweak_data.menu.pd2_small_font = "ui/fonts/pf_din_text_comp_pro_medium_18_mf"
 --Allow mods to hook to these classes
 local function pre_require(path)
 	local path_lower = path:lower()
-	BLT:RunHookTable(BLT.hook_tables.pre, path_lower)
+	BLT:RunHookTable(BLT.hook_tables.pre[path_lower], path_lower)
 end
 
 local function post_require(path)
 	local path_lower = path:lower()
-	BLT:RunHookTable(BLT.hook_tables.post, path_lower)
-	for k, v in ipairs(BLT.hook_tables.wildcards) do
-		BLT:RunHookFile(path, v.mod_path, v.script)
-	end	
+	BLT:RunHookTable(BLT.hook_tables.post[path_lower], path_lower)
+	BLT:RunHookTable(BLT.hook_tables.wildcards, path_lower)
 end
 
 pre_require("lib/managers/menu/ScrollablePanel")

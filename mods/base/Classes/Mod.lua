@@ -108,8 +108,9 @@ function BLTMod:Setup()
     end
 
     -- Hooks data
-    self:AddHooks("hooks", BLT.hook_tables.post, BLT.hook_tables.wildcards)
-    self:AddHooks("pre_hooks", BLT.hook_tables.pre, BLT.hook_tables.wildcards)
+    local hook_tables = BLT.hook_tables
+    self:AddHooks("hooks", hook_tables.post, hook_tables.wildcards)
+    self:AddHooks("pre_hooks", hook_tables.pre, hook_tables.wildcards)
 
     -- Keybinds
     if BLT.Keybinds then

@@ -115,12 +115,13 @@ function BLT:GetOS()
 	return os.getenv("HOME") == nil and "windows" or "linux"
 end
 
-function BLT:RunHookTable(hooks_table, path)
-	if not hooks_table or not hooks_table[path] then
+function BLT:RunHookTable(hooks, path)
+	if not hooks then
 		return false
 	end
-	for i, hook_data in pairs(hooks_table[path]) do
-		self:RunHookFile(path, hook_data)
+
+	for i = 1, #hooks do
+		self:RunHookFile(path, hooks[i])
 	end
 end
 
@@ -149,13 +150,11 @@ function BLT:OverrideRequire()
 		local path_lower = path:lower()
 		local require_result = nil
 
-		self:RunHookTable(self.hook_tables.pre, path_lower)
+		self:RunHookTable(self.hook_tables.pre[path_lower], path_lower)
 		require_result = self.require(...)
-		self:RunHookTable(self.hook_tables.post, path_lower)
+		self:RunHookTable(self.hook_tables.post[path_lower], path_lower)
 
-		for k, v in ipairs(self.hook_tables.wildcards) do
-			self:RunHookFile(path, v.mod_path, v.script)
-		end
+		self:RunHookTable(self.hook_tables.wildcards, path_lower)
 
 		return require_result
 	end

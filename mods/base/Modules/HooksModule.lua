@@ -13,17 +13,18 @@ end
 
 function HooksModule:Load()
     local path = self:GetPath()
+    local registered_mod_hooks = self._mod.registered_hooks
     for _, hook in ipairs(self._config) do
         if hook._meta == "hook" then
             local source_file = hook.source_file or hook.hook_id
             local script = hook.file or hook.script_path
             BLT.Mods:RegisterHook(source_file, path, script, hook.type, self._mod)
             if source_file == "*" then
-                table.insert(self._mod.registered_hooks.wildcards, script)
+                table.insert(registered_mod_hooks.wildcards, script)
             elseif hook.type == "pre" then
-                table.insert(self._mod.registered_hooks.pre, {source_file, script})
+                table.insert(registered_mod_hooks.pre, {source_file, script})
             else
-                table.insert(self._mod.registered_hooks.post, {source_file, script})
+                table.insert(registered_mod_hooks.post, {source_file, script})
             end
         end
     end
