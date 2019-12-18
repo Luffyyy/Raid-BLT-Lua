@@ -364,14 +364,17 @@ function BLTMod:AreDependenciesAvailable(pick_errors)
 end
 
 function BLTMod:GetDeveloperInfo()
-    local str = ""
+    local result = {}
     local append = function(...)
         for i, s in ipairs({...}) do
-            str = str .. (i > 1 and "    " or "") .. tostring(s)
+            if i > 1 then
+                table.insert(result, "    ")
+            end
+            table.insert(result, tostring(s))
         end
-        str = str .. "\n"
-	end
-	
+        table.insert(result, "\n")
+    end
+
 
     local hooks = self:GetHooks() or {}
     local prehooks = self:GetPreHooks() or {}
@@ -445,9 +448,19 @@ function BLTMod:GetDeveloperInfo()
         for _, script in ipairs(persists) do
             append("", script.global, "->", script.file)
         end
-	end
+    end
+    
+    local keybinds = self._config.keybinds
+    if not keybinds or #keybinds == 0 then
+        append("Keybinds: None")
+    else
+        append("Keybinds:")
+        for i, data in ipairs(keybinds) do
+            append("", string.format("%s (%s)", tostring(data.name), data.keybind_id or "?"), "->", data.script_path)
+        end
+    end
 
-	return str
+	return table.concat(result)
 end
 
 function BLTMod:GetRealFilePath(path, lookup_tbl)
