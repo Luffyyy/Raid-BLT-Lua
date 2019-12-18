@@ -30,8 +30,22 @@ end
 	func, 	The function to call with the hook 
 ]]
 function Hooks:AddHook(key, id, func)
-	self._registered_hooks[key] = self._registered_hooks[key] or {}
-	self._registered_hooks[key][id] = self._registered_hooks[key][id] or func
+	if type(func) ~= "function" then
+		log(string.format("[Hooks] Error: Hook '%s' is not a function.", tostring(id)))
+		return
+	end
+
+	if self._registered_hooks[key] == nil then
+		self._registered_hooks[key] = {}
+	else
+		for _, v in pairs(self._registered_hooks[key]) do
+			if v.id == id then
+				return false
+			end
+		end
+	end
+
+	table.insert(self._registered_hooks[key], {id = id, func = func})
 end
 
 --[[
@@ -60,8 +74,14 @@ function Hooks:Unregister(key)
 end
 
 function Hooks:RemoveHook(key, id)
-	if self._registered_hooks[key] then
-		self._registered_hooks[key][id] = nil
+	local hooks = self._registered_hooks[key]
+	if hooks then
+		for i, v in pairs(hooks) do
+			if v.id == id then
+				table.remove(hooks, i)
+				break
+			end
+		end
 	end
 end
 
@@ -71,12 +91,14 @@ end
 	id, Removes the function call and prevents it from being called
 ]]
 function Hooks:Remove(id)
-	for k, v in pairs(self._registered_hooks) do
-		if type(v) == "table" then
-			for hook_id, func in pairs(v) do
-				if hook_id == id then
-					v[hook_id] = nil
-				end
+	for _, hooks in pairs(self._registered_hooks) do
+		for i, v in pairs(hooks) do
+			if v.id == id then
+				table.remove(hooks, i)
+
+				-- NOTE: While it's supposed to be globally unique, this is not guaranteed, so
+				-- remove all matching hooks.
+				break
 			end
 		end
 	end
@@ -92,11 +114,9 @@ function Hooks:Call(key, ...)
 	if not self._registered_hooks[key] then
 		return
 	end
-	
-	for id, func in pairs(self._registered_hooks[key]) do
-		if type(func) == "function" then
-			func(...)
-		end
+
+	for _, v in ipairs(self._registered_hooks[key]) do
+		v.func(...)
 	end
 end
 
@@ -112,12 +132,10 @@ function Hooks:ReturnCall(key, ...)
 		return
 	end
 
-	for id, func in pairs(self._registered_hooks[key]) do
-		if type(func) == "function" then
-			local ret = {v.func(...)} --this should be better :)
-			if ret[1] ~= nil then
-				return unpack(ret)
-			end
+	for _, v in ipairs(self._registered_hooks[key]) do
+		local ret = {v.func(...)}
+		if ret[1] ~= nil then
+			return unpack(ret)
 		end
 	end
 end
@@ -131,16 +149,16 @@ end
 	pre_call, 	The function to be called before the func on object
 ]]
 function Hooks:PreHook(object, func, id, pre_call)
-	if not object then
-		self:_PrePostHookError(func)
+	if not object or type(pre_call) ~= "function" then
+		self:_PrePostHookError(func, id)
 		return
 	end
 
-	if object and self._prehooks[object] == nil then
+	if self._prehooks[object] == nil then
 		self._prehooks[object] = {}
 	end
 
-	if object and self._prehooks[object][func] == nil then
+	if self._prehooks[object][func] == nil then
 		self._prehooks[object][func] = {
 			original = object[func],
 			overrides = {}
@@ -151,9 +169,7 @@ function Hooks:PreHook(object, func, id, pre_call)
 			local r, _r
 
 			for k, v in ipairs(hooked_func.overrides) do
-				if v.func then
-					_r = v.func(...)
-				end
+				_r = v.func(...)
 				if _r then
 					r = _r
 				end
@@ -166,11 +182,11 @@ function Hooks:PreHook(object, func, id, pre_call)
 
 			return r
 		end
-	end
-
-	for k, v in pairs(self._prehooks[object][func].overrides) do
-		if v.id == id then
-			return
+	else
+		for k, v in pairs(self._prehooks[object][func].overrides) do
+			if v.id == id then
+				return
+			end
 		end
 	end
 
@@ -189,8 +205,8 @@ end
 function Hooks:RemovePreHook(id)
 	for object_i, object in pairs(self._prehooks) do
 		for func_i, func in pairs(object) do
-			for override_i, override in ipairs(func.overrides) do
-				if override and override.id == id then
+			for override_i, override in pairs(func.overrides) do
+				if override.id == id then
 					table.remove(func.overrides, override_i)
 				end
 			end
@@ -207,16 +223,16 @@ end
 	post_call, 	The function to be called after the func on object
 ]]
 function Hooks:PostHook(object, func, id, post_call)
-	if not object then
-		self:_PrePostHookError(func)
+	if not object or type(post_call) ~= "function" then
+		self:_PrePostHookError(func, id)
 		return
 	end
 
-	if object and self._posthooks[object] == nil then
+	if self._posthooks[object] == nil then
 		self._posthooks[object] = {}
 	end
 
-	if object and self._posthooks[object][func] == nil then
+	if self._posthooks[object][func] == nil then
 		self._posthooks[object][func] = {
 			original = object[func],
 			overrides = {}
@@ -232,9 +248,7 @@ function Hooks:PostHook(object, func, id, post_call)
 			end
 
 			for k, v in ipairs(hooked_func.overrides) do
-				if v.func then
-					_r = v.func(...)
-				end
+				_r = v.func(...)
 				if _r then
 					r = _r
 				end
@@ -242,12 +256,11 @@ function Hooks:PostHook(object, func, id, post_call)
 
 			return r
 		end
-
-	end
-
-	for k, v in pairs(self._posthooks[object][func].overrides) do
-		if v.id == id then
-			return
+	else
+		for k, v in pairs(self._posthooks[object][func].overrides) do
+			if v.id == id then
+				return
+			end
 		end
 	end
 
@@ -266,8 +279,8 @@ end
 function Hooks:RemovePostHook(id)
 	for object_i, object in pairs(self._posthooks) do
 		for func_i, func in pairs(object) do
-			for override_i, override in ipairs(func.overrides) do
-				if override and override.id == id then
+			for override_i, override in pairs(func.overrides) do
+				if override.id == id then
 					table.remove(func.overrides, override_i)
 				end
 			end
@@ -276,22 +289,23 @@ function Hooks:RemovePostHook(id)
 
 end
 
-function Hooks:_PrePostHookError(func)
-	log(string.format("[Hooks] Error: Could not hook function '%s'", tostring(func)))
-	log(debug.traceback())
+function Hooks:_PrePostHookError(func, id)
+	log(string.format("[Hooks] Error: Could not hook function '%s' (%s)", tostring(func), tostring(id)))
 end
+
 
 --TODO: Write what the functions do
 
 function Hooks:RemovePostHookWithObject(object, id)
     local hooks = self._posthooks[object]
     if not hooks then
-        BLT:log("[Error] No post hooks for object '%s' while trying to remove id '%s'", tostring(object), tostring(id))
+        log(string.format("[Hooks] Error: No post hooks for object '%s' while trying to remove id '%s'", tostring(object), tostring(id)))
         return
-    end
+	end
+
     for func_i, func in pairs(hooks) do
-        for override_i, override in ipairs(func.overrides) do
-            if override and override.id == id then
+        for override_i, override in pairs(func.overrides) do
+            if override.id == id then
                 table.remove(func.overrides, override_i)
             end
         end
@@ -301,12 +315,13 @@ end
 function Hooks:RemovePreHookWithObject(object, id)
     local hooks = self._prehooks[object]
     if not hooks then
-        BLT:log("[Error] No pre hooks for object '%s' while trying to remove id '%s'", tostring(object), tostring(id))
+        log(string.format("[Hooks] Error: No pre hooks for object '%s' while trying to remove id '%s'", tostring(object), tostring(id)))
         return
-    end
+	end
+
     for func_i, func in pairs(hooks) do
-        for override_i, override in ipairs(func.overrides) do
-            if override and override.id == id then
+        for override_i, override in pairs(func.overrides) do
+            if override.id == id then
                 table.remove(func.overrides, override_i)
             end
         end
