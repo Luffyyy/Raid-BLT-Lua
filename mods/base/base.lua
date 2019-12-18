@@ -131,7 +131,7 @@ function BLT:RunHookFile(path, hook_data)
 	if hook_data.mod then
 		rawset(_G, BLTModManager.Constants.mod_global, hook_data.mod)
 	end
-	dofile(hook_data.script)
+	dofile(hook_data.script, hook_data.mod)
 end
 
 function BLT:OverrideRequire()

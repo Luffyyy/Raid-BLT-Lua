@@ -17,7 +17,10 @@ function ClassesModule:Load()
         if type(c) == "table" and c._meta == "class" then
             local class_file = Path:Combine(path, c.file)
             if FileIO:Exists(class_file) then
-                dofile(class_file)
+                rawset(_G, BLTModManager.Constants.required_script_global, class_file)
+                rawset(_G, BLTModManager.Constants.mod_path_global, self:GetPath() or false)
+                rawset(_G, BLTModManager.Constants.mod_global, self._mod)
+                dofile(class_file, self._mod)
             else
                 BLT:log("[ERROR] Class file not readable by the lua state! File: %s", class_file)
             end
