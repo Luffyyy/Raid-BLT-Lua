@@ -1,3 +1,5 @@
+local ModPath = ModPath
+
 require("lib/managers/menu/raid_menu/controls/raidguicontrol")
 require("lib/managers/menu/raid_menu/controls/raidguicontrolbutton")
 
@@ -503,7 +505,7 @@ function BLTCustomMenu:mouse_pressed(o, button, x, y)
     local result = false
 
     for _, item in ipairs(self._buttons) do
-    if item:inside(x, y) then
+        if item:inside(x, y) then
             if item.mouse_clicked then
                 result = item:mouse_clicked(button, x, y)
             end
