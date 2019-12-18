@@ -3,6 +3,12 @@ CloneClass(RaidGuiControlKeyBind)
 Hooks:RegisterHook("CustomizeControllerOnKeySet")
 function RaidGuiControlKeyBind:activate_customize_controller(...)
 	self._skip_first_activate_key = true
+
+	-- NOTE: This isn't the prettiest way to do this, but there's no easy way to check
+	-- if we're binding a key otherwise...
+	local node_gui = managers.menu:active_menu().renderer:active_node_gui()
+	node_gui._listening_to_input = true
+
 	return RaidGuiControlKeyBind.orig.activate_customize_controller(self, ...)
 end
 
@@ -31,17 +37,9 @@ function RaidGuiControlKeyBind:_key_press(text, key, input_id, ...)
 		return
 	end
 
-	if input_id ~= "mouse" or not Input:mouse():button_name_str(key) then
-	end
-
-	local key_name = "" .. Input:keyboard():button_name_str(key)
+	local key_name = "" .. (input_id == "mouse" and Input:mouse():button_name_str(key) or Input:keyboard():button_name_str(key))
 	if not no_add and input_id == "mouse" then
 		key_name = "mouse " .. key_name or key_name
-	end
-	if key == Idstring("mouse wheel up") then
-		key_name = "mouse wheel up"
-	elseif key == Idstring("mouse wheel down") then
-		key_name = "mouse wheel down"
 	end
 
 	local forbidden_btns = {
@@ -81,6 +79,7 @@ function RaidGuiControlKeyBind:_key_press(text, key, input_id, ...)
 			category = "normal"
 		}
 	end
+
 	local button_category = button_data.category
 	local connections = managers.controller:get_settings(managers.controller:get_default_wrapper_type()):get_connection_map()
 	for _, name in ipairs(MenuCustomizeControllerCreator.controls_info_by_category(button_category)) do
@@ -151,4 +150,11 @@ function RaidGuiControlKeyBind:_key_press(text, key, input_id, ...)
 
 	managers.controller:rebind_connections()
 	self:_end_customize_controller(text)
+end
+
+function RaidGuiControlKeyBind:_end_customize_controller(...)
+	local node_gui = managers.menu:active_menu().renderer:active_node_gui()
+	node_gui._listening_to_input = false
+
+	return RaidGuiControlKeyBind.orig._end_customize_controller(self, ...)
 end
