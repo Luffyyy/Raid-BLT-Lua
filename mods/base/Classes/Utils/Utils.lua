@@ -1103,6 +1103,20 @@ function table.script_merge(base_tbl, new_tbl)
     end
 end
 
+function table.get(t, ...)
+	if not t then
+		return nil
+	end
+	local v, keys = t, { ... }
+	for i = 1, #keys do
+		v = v[keys[i]]
+		if v == nil then
+			break
+		end
+	end
+	return v
+end
+
 Color = Color or {}
 
 --If only Color supported alpha for hex :P
