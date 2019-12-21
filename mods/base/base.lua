@@ -33,6 +33,8 @@ end
 
 -- BLT base functions
 function BLT:Initialize()
+	-- Create environment holders
+	self._env_mt = { __index = _G, __newindex = _G }
 	BLT:Require("Classes/Utils/UtilsCore")
 	BLT:Require("Classes/Utils/UtilsIO")
 	BLT:Require("Classes/Utils/Utils")
@@ -126,12 +128,30 @@ function BLT:RunHookTable(hooks, path)
 end
 
 function BLT:RunHookFile(path, hook_data)
+	local mod = hook_data.mod
 	rawset(_G, BLTModManager.Constants.required_script_global, path or false)
-	rawset(_G, BLTModManager.Constants.mod_path_global, hook_data.mod:GetPath() or false)
-	if hook_data.mod then
-		rawset(_G, BLTModManager.Constants.mod_global, hook_data.mod)
+	rawset(_G, BLTModManager.Constants.mod_path_global, mod:GetPath() or false)
+	rawset(_G, BLTModManager.Constants.mod_global, mod)
+
+	if rawget(_G, "loadfile") then
+		-- Run hook files in a separate environment to protect the mod vars
+		local env = setmetatable({
+			[BLTModManager.Constants.required_script_global] = path or false,
+			[BLTModManager.Constants.mod_path_global] = mod:GetPath() or false,
+			[BLTModManager.Constants.mod_global] = mod
+		}, BLT._env_mt)
+
+		local f = _G.loadfile(hook_data.script, nil, nil, true) -- direct env is not supported; log errors via BLT
+		if f then
+			f = setfenv(f, env)
+			f(hook_data.mod)
+		end
+	else
+		self:log("WARNING: No 'loadfile' function available. Falling back to 'dofile'.")
+
+		-- fall back to dofile
+		dofile(hook_data.script)
 	end
-	dofile(hook_data.script, hook_data.mod)
 end
 
 function BLT:OverrideRequire()
@@ -140,10 +160,9 @@ function BLT:OverrideRequire()
 	end
 
 	-- Cache original require function
-	self.require = self.require or _G.require
+	self._require = self._require or _G.require
 
 	-- Override require function to run hooks
-
 	self.new_require = function(...)
 		local args = {...}
 		local path = args[1]
@@ -151,7 +170,7 @@ function BLT:OverrideRequire()
 		local require_result = nil
 
 		self:RunHookTable(self.hook_tables.pre[path_lower], path_lower)
-		require_result = self.require(...)
+		require_result = self._require(...)
 		self:RunHookTable(self.hook_tables.post[path_lower], path_lower)
 
 		self:RunHookTable(self.hook_tables.wildcards, path_lower)
