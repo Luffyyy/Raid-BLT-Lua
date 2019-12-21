@@ -11,6 +11,7 @@ local file = file
 -- BLT Global table
 BLT = {}
 BLT.name = "BLT"
+BLT.logname = "BLT"
 BLT.Base = {}
 BLT.Modules = {}
 BLT.Menus = {}
@@ -34,7 +35,9 @@ end
 -- BLT base functions
 function BLT:Initialize()
 	-- Create environment holders
+	self._envs = {}
 	self._env_mt = { __index = _G, __newindex = _G }
+
 	BLT:Require("Classes/Utils/UtilsCore")
 	BLT:Require("Classes/Utils/UtilsIO")
 	BLT:Require("Classes/Utils/Utils")
@@ -71,15 +74,17 @@ function BLT:Initialize()
 end
 
 function BLT:log(...)
-	BLTMod.log(self, ...)
-end
+	local env = self._envs[#self._envs] or getfenv(2)
+	local mod = table.get(env, "CurrentMod") or self
+	return BLTMod.log(mod, ...)
+ end
 
 function BLT:Setup()
 	BLT:Require("Classes/Utils/Utils")
 	BLT:Require("Classes/CustomPackageManager")
 	BLT:Require("Classes/FileManager")
 
-	log("[BLT] Setup...")
+	self:log("Setup...")
 
 	-- Setup modules
 	self.Logs = BLTLogs:new()
@@ -143,8 +148,10 @@ function BLT:RunHookFile(path, hook_data)
 
 		local f = _G.loadfile(hook_data.script, nil, nil, true) -- direct env is not supported; log errors via BLT
 		if f then
+			table.insert(self._envs, env)
 			f = setfenv(f, env)
 			f(hook_data.mod)
+			table.remove(self._envs)
 		end
 	else
 		self:log("WARNING: No 'loadfile' function available. Falling back to 'dofile'.")
@@ -187,7 +194,7 @@ function BLT:OverrideRequire()
 end
 
 function BLT:FindMods()
-	log("[BLT] Loading mods for state: " .. tostring(_G))
+	self:log("Loading mods for state: " .. tostring(_G))
 	
 	local mods_list = {}
 	self:LoadMods(BLTModManager.Constants.mods_directory, mods_list)
@@ -213,7 +220,7 @@ function BLT:LoadMods(path, mods_list)
 			-- Attempt to read the mod defintion file
 			local file = io.open(mod_defintion)
 			if file then
-				log("[BLT] Loading mod: " .. tostring(directory))
+				self:log("Loading mod: " .. tostring(directory))
 				-- Read the file contents
 				local mod_content = FileIO:ConvertScriptData(file:read("*all"), is_json and "json" or "custom_xml")
 				file:close()
@@ -225,10 +232,10 @@ function BLT:LoadMods(path, mods_list)
 						table.insert(mods_list, BLTModExtended:new(path, directory, mod_content, true))
 					end
 				else
-					log("[BLT] An error occured while loading mod.txt from: " .. tostring(mod_path))
+					self:log("An error occured while loading mod.txt from: " .. tostring(mod_path))
 				end
 			elseif path == BLTModManager.Constants.mods_directory then --mod overrides is an optional directory.
-				log("[BLT] Could not read or find mod definition in " .. tostring(directory))
+				self:log("Could not read or find mod definition in " .. tostring(directory))
 			end
 		end
 	end
@@ -246,13 +253,13 @@ end
 function BLT:RegisterModule(key, module)
 	local t = type(key)
 	if t ~= "string" and t ~= "table" then
-		self:log("[ERROR] BLT:RegisterModule parameter #1, string or table expected got %s", key and type(key) or "nil")
+		self:log("[ERROR] BLT:RegisterModule parameter #1, string or table expected got %s", t)
 		return
 	end
 
 	if not self.Modules[key] then
 		self:log("Registered module with key %s", key)
-		if type(key) == "table" then
+		if t == "table" then
 			for _, alt_key in pairs(key) do
 				self.Modules[alt_key] = module
 			end

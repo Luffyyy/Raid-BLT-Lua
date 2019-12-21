@@ -5,6 +5,7 @@ BLTMod._enabled = true
 BLTMod.path = ""
 BLTMod.id = "blt_mod"
 BLTMod.name = "None"
+BLTMod.logname = "None"
 BLTMod.desc = "Empty"
 BLTMod.author = "Unknown"
 BLTMod.contact = "N/A"
@@ -71,6 +72,7 @@ function BLTMod:InitParams(path, ident, data)
 	self.path = string.format("%s%s/", path, ident)
 	self.save_path = data.save_path or "saves/"
     self.name = data.name or self.id
+    self.logname = data.logname or self.name
     self.desc = data.description or BLTMod.desc
     self.version = data.version
     self.min_blt_version = data.min_blt_version
@@ -174,7 +176,7 @@ function BLTMod:Errors()
 end
 
 function BLTMod:log(str, ...)
-    log("[" .. self.name .. "] " .. string.format(str, ...))
+    log("[" .. self.logname .. "] " .. string.format(str, ...))
 end
 
 function BLTMod:LastError()
