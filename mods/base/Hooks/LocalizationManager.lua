@@ -14,7 +14,7 @@ function LocalizationManager:text(str, macros, ...)
 			-- If the first macro is not using a trailing semicolon, then log the string. Checking
 			-- all macros would be a performance waste.
 			if return_str:byte(j + 1) ~= 59 then
-				log("[BLT] The use of macros without a trailing semicolon is deprecated in " .. tostring(str))
+				BLT:Log(LogLevel.WARN, "BLTLocalization", debug.traceback("The use of macros without a trailing semicolon is deprecated in " .. tostring(str)))
 			end
 
 			-- Look for macros defined as either $FORMAT or $FORMAT; (i.e. make the trailing semicolon optional)

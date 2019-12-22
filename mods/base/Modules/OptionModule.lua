@@ -64,8 +64,7 @@ function OptionModule:Load()
     local data = json.decode_or_nil(file:read("*all"))
 
     if not data then
-        BLT:log("[ERROR] Unable to load save file for mod, " .. self._mod.name)
-        BLT:log(tostring(data))
+        self:Log(LogLevel.ERROR, "Load", "Unable to load save file", data)
 
         --Save the corrupted file incase the option values should be recovered
         local corrupted_file = io.open(self.SavePath .. self.FileName .. "_corrupted", "w+")
@@ -174,7 +173,7 @@ end
 --Only for use by the SetValue function
 function OptionModule:_SetValue(tbl, name, value, full_name)
     if tbl[name] == nil then
-        BLT:log(string.format("[ERROR] Option of name %q does not exist in mod, %s", name, self._mod.name))
+        self:LogF(LogLevel.ERROR, "SetValue", "Option with name '%s' does not exist", name)
         return
     end
     tbl[name].value = value
@@ -196,7 +195,7 @@ function OptionModule:SetValue(name, value)
         local tbl = self._storage
         for _, part in pairs(string_split) do
             if tbl[part] == nil then
-                BLT:log(string.format("[ERROR] Option Group of name %q does not exist in mod, %s", name, self._mod.name))
+                self:LogF(LogLevel.ERROR, "SetValue", "Option Group with name '%s' does not exist", name)
                 return
             end
             tbl = tbl[part]
@@ -220,7 +219,7 @@ function OptionModule:GetOption(name)
         for _, part in pairs(string_split) do
             if tbl[part] == nil then
                 if tbl.type ~= "table" then
-                    BLT:log(string.format("[ERROR] Option of name %q does not exist in mod, %s", name, self._mod.name))
+                    self:LogF(LogLevel.ERROR, "GetOption", "Option with name '%s' does not exist", name)
                 end
                 return
             end
@@ -359,7 +358,7 @@ function OptionModule:CreateMultiChoice(menu, option_tbl, option_path)
     option_path = option_path == "" and option_tbl.name or option_path .. "/" .. option_tbl.name
     local options = self:GetParameter(option_tbl, "values")
     if not options then
-        BLT:log("[ERROR] Unable to get an option table for option " .. option_tbl.name)
+        self:Log(LogLevel.ERROR, "CreateMultiChoice", "Unable to get an option table for option", option_tbl.name)
         return
     end
     local enabled = not self:GetParameter(option_tbl, "disabled")
@@ -466,7 +465,7 @@ function OptionModule:CreateOption(menu, option_tbl, option_path)
     elseif option_tbl.type == "rotation" then
         self:CreateRotation(menu, option_tbl, option_path)
     else
-        BLT:log("[ERROR] No supported type for option " .. tostring(option_tbl.name) .. " in mod " .. self._mod.name)
+        self:Log(LogLevel.ERROR, "CreateOption", "No supported type for option", option_tbl.name)
     end
 end
 

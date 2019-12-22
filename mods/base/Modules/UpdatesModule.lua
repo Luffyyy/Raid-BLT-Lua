@@ -60,21 +60,22 @@ UpdatesModule._providers = {
         end,
         check_func = function(self)
             dohttpreq(self._mod:GetRealFilePath(self.provider.check_url, self), function(json_data, http_id)
+                local self = self
                 self._requesting_updates = false
         
                 if json_data:is_nil_or_empty() then
-                    BLT:log("[Error] Could not connect to the PaydayMods.com API!")
+                    self:Log(LogLevel.WARN, "UpdateCheck", "Could not connect to the PaydayMods.com API!")
                     return
                 end
         
                 local server_data = json.decode(json_data)
                 if server_data then
                     for _, data in pairs(server_data) do
-                        BLT:log("[Updates] Received update data for '%s'", data.ident)
+                        self:LogF(LogLevel.INFO, "UpdateCheck", "Received update data for '%s'.", data.ident)
                         if data.ident == self.id then
                             self._server_hash = data.hash
                             local local_hash = self.provider.get_hash(self)
-                            BLT:log("[Updates] Comparing hash data:\nServer: %s\n Local: %s", data.hash, local_hash)
+                            self:LogF(LogLevel.DEBUG, "UpdateCheck", "Comparing hash data:\nServer: '%s'\n Local: '%s'.", data.hash, local_hash)
                             if data.hash then
                                 if data.hash ~= local_hash then
                                     self:PrepareForUpdate()
@@ -85,7 +86,7 @@ UpdatesModule._providers = {
                         return
                     end
                 end
-                BLT:log("[ERROR] Paydaymods did not return a result for id %s", tostring(self.id))
+                self:LogF(LogLevel.WARN, "UpdateCheck", "Paydaymods did not return a result for id '%s'.", tostring(self.id))
             end)
         end
     }
@@ -103,7 +104,7 @@ function UpdatesModule:init(core_mod, config)
         if self._providers[self._config.provider] then
             self.provider = self._providers[self._config.provider]
         else
-            self:log("[ERROR] No provider information for provider: %s", self._config.provider)
+            self:LogF(LogLevel.ERROR, "Setup", "No provider information for provider '%s'.", self._config.provider)
             return
         end
     elseif self._config.custom_provider then
@@ -112,7 +113,7 @@ function UpdatesModule:init(core_mod, config)
         if provider_details.download_file_func then provider_details.download_file_func = self._mod:StringToCallback(provider_details.download_file_func, self) end
         self.provider = provider_details
     else
-        self:log("[ERROR] No provider can be found for mod assets")
+        self:Log(LogLevel.ERROR, "Setup", "No provider can be found for mod assets.")
         return
     end
 
@@ -128,9 +129,9 @@ function UpdatesModule:init(core_mod, config)
     self._mod.auto_updates_module = self
     self:RetrieveCurrentVersion()
 
-    if not self._config.manual_check then
-        self:RegisterAutoUpdateCheckHook()
-    end
+    -- if not self._config.manual_check then
+    --     self:RegisterAutoUpdateCheckHook()
+    -- end
 
     return true
 end
@@ -185,7 +186,8 @@ function UpdatesModule:_CheckVersion(force)
     local version_url = self._mod:GetRealFilePath(self.provider.version_api_url, self)
     local loc = managers.localization
     dohttpreq(version_url, function(data, id)
-        self:log("Received version '%s' from the server(local is %s)", tostring(data), tostring(self.version))
+        local self = self
+        self:LogF(LogLevel.INFO, "CheckVersion", "Received version '%s' from the server (local is '%s').", data, tostring(self.version))
         if data then
             self._new_version = data
             if self._new_version and self._new_version ~= self.version then
@@ -194,7 +196,7 @@ function UpdatesModule:_CheckVersion(force)
                 self:ShowNoChangePrompt()
             end
         else
-            self:log("[ERROR] Unable to parse string '%s' as a version number", data)
+            self:LogF(LogLevel.ERROR, "CheckVersion", "Unable to parse string '%s' as a version number.", data)
         end
     end)
 end
@@ -238,7 +240,7 @@ end
 
 function UpdatesModule:_DownloadAssets(data)
     local download_url = self._mod:GetRealFilePath(self.provider.download_url, data or self)
-    self:log("Downloading assets from url: %s", download_url)
+    self:LogF(LogLevel.INFO, "Downloading assets from url '%s'.", download_url)
     local mods_menu = BLT.ModsMenu
     dohttpreq(download_url, callback(self, self, "StoreDownloadedAssets", false), callback(mods_menu, mods_menu, "SetModProgress", self._mod))                
 end
@@ -256,10 +258,10 @@ function UpdatesModule:StoreDownloadedAssets(config, data, id)
         end
         wait(1)
         
-        BLT:log("[INFO] Finished downloading assets")
+        self:Log(LogLevel.INFO, "DownloadAssets", "Finished downloading assets.")
 
         if string.is_nil_or_empty(data) then
-            BLT:log("[ERROR] Assets download failed, received data was invalid")
+            self:Log(LogLevel.ERROR, "DownloadAssets", "Assets download failed, received data was invalid.")
             if config.failed then
                 config.failed()
             else
@@ -275,7 +277,7 @@ function UpdatesModule:StoreDownloadedAssets(config, data, id)
             file:write(data)
             file:close()
         else
-            self:log("[ERROR] An error occured while trying to store the downloaded asset data")
+            self:Log(LogLevel.ERROR, "DownloadAssets", "An error occured while trying to store the downloaded asset data.")
             return
         end
         

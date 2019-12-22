@@ -23,7 +23,7 @@ function C:RegisterPackage(id, directory, config)
     end
     id = id:key()
     if self.custom_packages[id] then
-        BLT:log("[ERROR] Package with ID '%s' already exists! Returning...", id)
+        BLT:LogF(LogLevel.ERROR, "PackageManager", "Package with ID '%s' already exists! Returning...", tostring(id))
         return false
     end
 
@@ -62,7 +62,7 @@ end
 
 function C:LoadPackageConfig(directory, config)
     if not SystemFS then
-        BLT:log("[ERROR] SystemFS does not exist! Custom Packages cannot function without this! Do you have an outdated game version?")
+        BLT:Log(LogLevel.ERROR, "PackageManager", "SystemFS does not exist! Custom Packages cannot function without this! Do you have an outdated game version?")
         return
     end
     if config.load_clbk and not config.load_clbk() then
@@ -94,10 +94,10 @@ function C:LoadPackageConfig(directory, config)
                             end
                         end
                     else
-                        BLT:log("[ERROR] File does not exist! %s", tostring(file_path))
+                        BLT:LogF(LogLevel.ERROR, "PackageManager", "File '%s' does not exist!", tostring(file_path))
                     end
                 else
-                    BLT:log("[ERROR] Node in %s does not contain a definition for both type and path", tostring(directory))
+                    BLT:LogF(LogLevel.ERROR, "PackageManager", "Node in '%s' does not contain a definition for both type and path.", tostring(directory))
                 end                
             end
         end
@@ -110,7 +110,7 @@ end
 
 
 function C:UnloadPackageConfig(config)
-    BLT:log("Unloading added files")
+    BLT:Log(LogLevel.INFO, "PackageManager", "Unloading added files")
     for i, child in ipairs(config) do
         if type(child) == "table" then
             local typ = child._meta
@@ -128,7 +128,7 @@ function C:UnloadPackageConfig(config)
             elseif typ == "unit_load" or typ == "add" then
                 self:UnloadPackageConfig(child)
             else
-                BLT:log("[ERROR] Some node does not contain a definition for both type and path")
+                BLT:Log(LogLevel.ERROR, "PackageManager", "Some node does not contain a definition for both type and path.")
             end
         end
     end

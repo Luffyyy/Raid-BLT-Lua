@@ -1,5 +1,7 @@
 -- BLT Mod / PD2 mod format.
 BLTMod = BLTMod or class()
+
+local BLTMod = BLTMod
 BLTMod.enabled = true
 BLTMod._enabled = true
 BLTMod.path = ""
@@ -10,14 +12,21 @@ BLTMod.desc = "Empty"
 BLTMod.author = "Unknown"
 BLTMod.contact = "N/A"
 BLTMod.priority = 0
+BLTMod.LOG_LEVEL = LogLevel.ALL
+BLTMod.LogPrefixes = BLT.LogPrefixes
 
 function BLTMod:init(path, ident, data)
+    -- Use most recent log data
+    self.LOG_LEVEL = BLT.LOG_LEVEL
+    self.LogPrefixes = BLT.LogPrefixes
+
+    -- Check module data
     if not ident then
-        self:log("BLTMods can not be created without a mod identifier!")
+        self:Log(LogLevel.ERROR, "ModInit", "BLTMods can not be created without a mod identifier!")
         return
     end
     if not data then
-        self:log("BLTMods can not be created without mod data!")
+        self:Log(LogLevel.ERROR, "ModInit", "BLTMods can not be created without mod data!")
         return
     end
 
@@ -65,6 +74,9 @@ function BLTMod:init(path, ident, data)
 	end
 end
 
+function BLTMod:PostInit()
+end
+
 function BLTMod:InitParams(path, ident, data)
     self._config = data
     self.id = ident
@@ -72,7 +84,7 @@ function BLTMod:InitParams(path, ident, data)
 	self.path = string.format("%s%s/", path, ident)
 	self.save_path = data.save_path or "saves/"
     self.name = data.name or self.id
-    self.logname = data.logname or self.name
+    self.logname = data.log_name or self.name
     self.desc = data.description or BLTMod.desc
     self.version = data.version
     self.min_blt_version = data.min_blt_version
@@ -81,7 +93,13 @@ function BLTMod:InitParams(path, ident, data)
     self.priority = tonumber(data.priority) or 0
     self.dependencies = data.dependencies or {}
     self.image_path = data.image or nil
-	self.registered_hooks = {post = {}, pre = {}, wildcards = {}}
+    self.registered_hooks = {post = {}, pre = {}, wildcards = {}}
+    if data.log_level then
+        local log_level = tonumber(data.log_level) or 0
+        if log_level >= 0 and log_level <= LogLevel.ALL then
+            self.LOG_LEVEL = log_level
+        end
+    end
 end
 
 function BLTMod:SetupCheck()
@@ -102,7 +120,7 @@ function BLTMod:SetupCheck()
 end
 
 function BLTMod:Setup()
-    print("[BLT] Setting up mod: ", self:GetId())
+    BLT:_Log(LogLevel.INFO, "ModSetup", "Setting up mod:", self:GetId())
 
     self:SetupCheck()
     if not self:IsEnabled() then
@@ -175,8 +193,56 @@ function BLTMod:Errors()
     end
 end
 
-function BLTMod:log(str, ...)
-    log("[" .. self.logname .. "] " .. string.format(str, ...))
+function BLTMod:_Log(lvl, category, str)
+    category = " [" .. self.logname .. ">" .. category .. "] "
+    if category and self.log_categories then
+    else
+        category = " [" .. self.logname .. "] "
+    end
+
+    log(self.LogPrefixes[lvl] .. category .. str)
+end
+
+function BLTMod:LogF(lvl, category, formatstr, ...)
+    if lvl > self.LOG_LEVEL then
+		return
+    end
+
+    return BLTMod._Log(self, lvl, category, string.format(formatstr, ...))
+end
+
+function BLTMod:LogC(lvl, category, ...)
+    if lvl > self.LOG_LEVEL then
+		return
+    end
+
+    local str = {...}
+
+    -- Explicitly convert arguments to string
+    for i = 1, #str do
+        str[i] = tostring(str[i])
+    end
+
+    return BLTMod._Log(self, lvl, category, table.concat(str, " "))
+end
+
+function BLTMod:Log(lvl, category, ...)
+    return BLTMod.LogC(self, lvl, category, ...)
+end
+
+function BLTMod:log(lvl, category, ...)
+    local max_lvl = self.LOG_LEVEL
+    if type(lvl) ~= "number" then
+        -- old format
+        if LogLevel.WARN <= max_lvl then
+            self:_Log(LogLevel.WARN, "DEPRECATED", "The BLTMod:log() function has been deprecated. Please use BLTMod:Log(lvl, cat, ...)")
+        elseif LogLevel.INFO <= max_lvl then
+            return BLTMod.LogF(self, LogLevel.INFO, "None", lvl, category, ...)
+        end
+        return
+    end
+
+    return BLTMod.LogC(self, lvl, category, ...)
 end
 
 function BLTMod:LastError()

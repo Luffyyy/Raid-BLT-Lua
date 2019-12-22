@@ -13,7 +13,7 @@ function ModuleBase:init(core_mod, config)
 
     for _, param in pairs(self.required_params) do
         if Utils:StringToTable(param, self._config, true) == nil then
-            self:log("[ERROR] Parameter '%s' is required!", param)
+            self:LogF(LogLevel.ERROR, "Parameter '%s' is required!", param)
             return false
         end
     end
@@ -37,15 +37,31 @@ function ModuleBase:post_init()
     return true
 end
 
-function ModuleBase:log(str, ...)
-    self._mod:log(string.format("[%s] ", self._name) .. str, ...)
+function ModuleBase:Log(lvl, cat, ...)
+    cat = "<" .. cat .. ">"
+    return self._mod:Log(lvl, self._name, cat, ...)
 end
+
+function ModuleBase:LogF(lvl, cat, ...)
+    cat = "<" .. cat .. ">"
+    return self._mod:LogF(lvl, self._name, cat, ...)
+end
+
+function ModuleBase:LogC(lvl, cat, ...)
+    cat = "<" .. cat .. ">"
+    return self._mod:LogC(lvl, self._name, cat, ...)
+end
+
+function ModuleBase:log(...)
+    return self._mod:log(...)
+end
+
 
 ItemModuleBase = ItemModuleBase or class(ModuleBase)
 ItemModuleBase.type_name = "ItemModuleBase"
 ItemModuleBase.required_params = {"id"}
 ItemModuleBase.clean_table = {}
-ItemModuleBase.defaults = {global_value= "mod", dlc= "mod"}
+ItemModuleBase.defaults = {global_value="mod", dlc="mod"}
 ItemModuleBase._loose = true
 local remove_last = function(str)
     local tbl = string.split(str, "%.")

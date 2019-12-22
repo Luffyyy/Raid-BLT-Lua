@@ -155,7 +155,7 @@ function BLTModsMenu:AddMod(mod, type)
         local orig_color = color
         color = Utils:normalize_string_value(mod._config.color)
         if type_name(color) ~= "Color" then
-            mod:log("[ERROR] The color defined is not a valid color!")
+            mod:LogF(LogLevel.ERROR, "BLTModsMenu", "The color '%s' is not a valid color!", tostring(color))
             color = orig_color
         end
     end
@@ -165,7 +165,7 @@ function BLTModsMenu:AddMod(mod, type)
         label = mod,
         w = s - 1,
         h = s - 1,
-        index = name == "Raid WW2 BLT" and 1 or nil,
+        index = mod:GetId() == "base" and 1 or nil,
         scrollbar = false,
         auto_align = false,
         accent_color = concol,

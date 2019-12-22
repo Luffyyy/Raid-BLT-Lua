@@ -33,17 +33,17 @@ function fm:Process(ids_ext, ids_path, name_mt)
 		for id, mdata in pairs(mods) do
 			if not mdata.clbk or mdata.clbk() then
 				if mdata.mode and not self.process_modes[mdata.mode] then
-					BLT:log("[ERROR] The process mode '%s' does not exist! Skipping...", data.mode)
+					BLT:LogF(LogLevel.ERROR, "FileManager", "The process mode '%s' does not exist! Skipping...", data.mode)
 				else
 					local to_replace = (not mdata.mode or mdata.mode == "replace")
 					if to_replace and #mods > 1 then
-						BLT:log("[WARNING] Script Mod with ID:'%s', Path:'%s.%s' may potentially overwrite changes from other mods! Continuing...", tostring(data.id), k_path, k_ext)
+						BLT:LogF(LogLevel.WARN, "FileManager", "Script Mod with ID:'%s', Path:'%s.%s' may potentially overwrite changes from other mods! Continuing...", tostring(data.id), k_path, k_ext)
 					end
 					local new_data = FileIO:ReadScriptDataFrom(mdata.file, mdata.type)
 					if new_data then
                         if ids_ext == Idstring("nav_data") then
                             Utils:RemoveMetas(new_data)
-                        elseif (ids_ext == Idstring("continents") or ids_ext == Idstring("mission")) and mdata.type=="custom_xml" then
+                        elseif (ids_ext == Idstring("continents") or ids_ext == Idstring("mission")) and mdata.type == "custom_xml" then
                             Utils:RemoveAllNumberIndexes(new_data, true)
                         end
 
@@ -53,9 +53,9 @@ function fm:Process(ids_ext, ids_path, name_mt)
 							fm.process_modes[mdata.mode](data, new_data)
 						end
 					elseif FileIO:Exists(mdata.file) then
-						BLT:log("[ERROR] Failed reading file '%s', are you trying to load a file with different format?", mdata.file)
+						BLT:LogF(LogLevel.ERROR, "FileManager", "Failed reading file '%s', are you trying to load a file with different format?", mdata.file)
 					else
-						BLT:log("[ERROR] The file '%s' does not exist!", mdata.file)
+						BLT:LogF(LogLevel.ERROR, "FileManager", "The file '%s' does not exist!", mdata.file)
 					end
 				end
 			end
@@ -69,7 +69,7 @@ end
 
 function fm:AddFile(ext, path, file)
 	if not DB.create_entry then
-		BLT:log("[ERROR] Cannot add files!")
+		BLT:Log(LogLevel.ERROR, "FileManager", "Cannot add files!")
 		return
 	end
 	--Add check for supported file types (or unsupported) to give warning
@@ -100,11 +100,11 @@ function fm:ScriptReplaceFile(ext, path, file, options)
 	local ids_path = path:id()
 
     if options ~= nil and type(options) ~= "table" then
-        BLT:log("[ERROR] %s:ReplaceScriptData parameter 5, expected table, got %s", self.Name, tostring(type(extra_data)))
+        BLT:LogF(LogLevel.ERROR, "FileManager", "%s:ReplaceScriptData parameter 5, expected table, got %s.", self.Name, type(options))
         return
     end
     if not FileIO:Exists(file) then
-        BLT:log("[ERROR] Lua state is unable to read file '%s'!", file)
+        BLT:LogF(LogLevel.ERROR, "FileManager", "Lua state is unable to read file '%s'!", file)
         return
     end
 
@@ -130,9 +130,9 @@ end
 local _LoadAsset = function(ids_ext, ids_path, file_path)
 	if not managers.dyn_resource:has_resource(ids_ext, ids_path, managers.dyn_resource.DYN_RESOURCES_PACKAGE) then
 		if file_path then
-			BLT:log("loaded file %s", tostring(file_path))
+			BLT:LogF(LogLevel.DEBUG, "FileManager", "Loaded file %s.", file_path)
 		else
-			BLT:log("loaded file %s.%s", ids_path:key(), ids_ext:key())
+			BLT:LogF(LogLevel.DEBUG, "FileManager", "Loaded file %s.%s.", ids_path:key(), ids_ext:key())
 		end
         managers.dyn_resource:load(ids_ext, ids_path, managers.dyn_resource.DYN_RESOURCES_PACKAGE)
     end
@@ -141,9 +141,9 @@ end
 local _UnLoadAsset = function(ids_ext, ids_path, file_path)
     if managers.dyn_resource:has_resource(ids_ext, ids_path, managers.dyn_resource.DYN_RESOURCES_PACKAGE) then
 		if file_path then
-			BLT:log("unloaded file %s", tostring(file_path))
+			BLT:LogF(LogLevel.DEBUG, "FileManager", "Unloaded file %s.", file_path)
 		else
-			BLT:log("unloaded file %s.%s", ids_path:key(), ids_ext:key())
+			BLT:LogF(LogLevel.DEBUG, "FileManager", "Unloaded file %s.%s.", ids_path:key(), ids_ext:key())
 		end
         managers.dyn_resource:unload(ids_ext, ids_path, managers.dyn_resource.DYN_RESOURCES_PACKAGE)
     end

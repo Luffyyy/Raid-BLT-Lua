@@ -552,7 +552,7 @@ end
 function Menu:ConfigureItem(item, menu)
     item = clone(item)
     if type(item) ~= "table" then
-        log(tostring(debug.traceback()))
+        BLT:Log(LogLevel.ERROR, "BLTMenu", debug.traceback("Item is not a table"))
         return
     end
     local inherit = NotNil(item.inherit, self)
@@ -569,7 +569,7 @@ function Menu:ConfigureItem(item, menu)
         if wanted_item then
             item.index = wanted_item:Index() + (split[1] == "After" and 1 or split[1] == "Before" and -1 or 0)
         else
-            BLT:log("Could not create index from string, %s, %s", tostring(item.index), tostring(item))
+            BLT:LogF(LogLevel.ERROR, "BLTMenu", "Could not create index from string, %s, %s.", tostring(item.index), tostring(item))
             item.index = nil
         end
     end

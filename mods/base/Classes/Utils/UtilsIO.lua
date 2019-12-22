@@ -15,21 +15,15 @@ function io.file_is_readable(fname)
 
 end
 
-function io.remove_directory_and_files(path, verbose)
-
-	local vlog = function(str)
-		if verbose then
-			log(str)
-		end
-	end
+function io.remove_directory_and_files(path)
 
 	if not path then
-		log("[Error] paramater #1 to io.remove_directory_and_files, string expected, recieved " .. tostring(path))
+		BLT:Log(LogLevel.ERROR, "UtilsIO", "Paramater #1 to io.remove_directory_and_files, string expected, received", path)
 		return false
 	end
 
 	if not file.DirectoryExists(path) then
-		log("[Error] Directory does not exist: " .. path)
+		BLT:LogF(LogLevel.ERROR, "UtilsIO", "Directory '%s' does not exist.", path)
 		return false
 	end
 
@@ -37,11 +31,11 @@ function io.remove_directory_and_files(path, verbose)
 	if dirs then
 		for k, v in pairs(dirs) do
 			local child_path = path .. v .. "/"
-			vlog("Removing directory: " .. child_path)
+			BLT:Log(LogLevel.VERBOSE, "UtilsIO", "Removing directory", child_path)
 			io.remove_directory_and_files(child_path, verbose)
 			local r = file.RemoveDirectory(child_path)
 			if not r then
-				log("[Error] Could not remove directory: " .. child_path)
+				BLT:Log(LogLevel.ERROR, "UtilsIO", "Could not remove directory", child_path)
 				return false
 			end
 		end
@@ -51,19 +45,19 @@ function io.remove_directory_and_files(path, verbose)
 	if files then
 		for k, v in pairs(files) do
 			local file_path = path .. v
-			vlog("Removing files: " .. file_path)
+			BLT:Log(LogLevel.VERBOSE, "UtilsIO", "Removing files at", file_path)
 			local r, error_str = os.remove(file_path)
 			if not r then
-				log("[Error] Could not remove file: " .. file_path .. ", " .. error_str)
+				BLT:Log(LogLevel.ERROR, "UtilsIO", "Could not remove file: " .. file_path .. ", " .. error_str)
 				return false
 			end
 		end
 	end
 
-	vlog("Removing directory: " .. path)
+	BLT:Log(LogLevel.VERBOSE, "UtilsIO", "Removing directory", path)
 	local r = file.RemoveDirectory(path)
 	if not r then
-		log("[Error] Could not remove directory: " .. path)
+		BLT:Log(LogLevel.ERROR, "UtilsIO", "Could not remove directory", path)
 		return false
 	end
 
@@ -86,12 +80,12 @@ function io.save_as_json(data, path)
 			file:close()
 			return true
 		else
-			log(string.format("[Error] Could not save to file '%s', data may be lost!", path))
+			BLT:LogF(LogLevel.ERROR, "UtilsIO", "Could not save to file '%s', data may be lost!", tostring(path))
 			return false
 		end
 
 	else
-		log(string.format("[Warning] Attempting to save empty data table to '%s', skipping...", path))
+		BLT:LogF(LogLevel.WARN, "UtilsIO", "Attempting to save empty data table to '%s', skipping...", tostring(path))
 		return true
 	end
 
@@ -105,7 +99,7 @@ function io.load_as_json(path)
 		file:close()
 		return json.decode(file_contents)
 	else
-		log(string.format("[] Could not load file '%s', no data loaded...", path))
+		BLT:LogF(LogLevel.ERROR, "UtilsIO", "Could not load file '%s', no data loaded...", tostring(path))
 		return nil
 	end
 
@@ -134,7 +128,7 @@ function FileIO:WriteTo(path, data, flags)
 	 	file:close()
 	 	return true
 	else
-		log("[FileIO][ERROR] Failed opening file at path " .. tostring(path))
+		BLT:Log(LogLevel.ERROR, "FileIO", "Failed opening file at path", path)
 		return false
 	end
 end
@@ -146,7 +140,7 @@ function FileIO:ReadFrom(path, flags, method)
 	 	file:close()
 	 	return data
 	else
-		log("[FileIO][ERROR] Failed opening file at path " .. tostring(path))
+		BLT:Log(LogLevel.ERROR, "FileIO", "Failed opening file at path", tostring(path))
 		return false
 	end
 end
@@ -162,7 +156,7 @@ function FileIO:ReadConfig(path, tbl)
 		end
 		return config
 	else
-		log("[FileIO][ERROR] Config at %s doesn't exist!", tostring(path))
+		BLT:LogF(LogLevel.ERROR, "FileIO", "Config at %s doesn't exist!", tostring(path))
 	end
 end
 
@@ -281,9 +275,9 @@ end
 function FileIO:CopyFilesToAsync(copy_data, callback)
 	SystemFS:copy_files_async(copy_data, callback or function(success, message)
 		if success then
-			log("[FileIO] Done copying files")
+			BLT:Log(LogLevel.INFO, "FileIO", "Done copying files")
 		else
-			log("[FileIO] Something went wrong when files")
+			BLT:Log(LogLevel.WARN, "FileIO", "Something went wrong when files")
 		end
 	end)	
 end

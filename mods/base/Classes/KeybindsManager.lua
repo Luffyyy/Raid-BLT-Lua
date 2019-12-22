@@ -1,5 +1,7 @@
 
 BLTKeybind = BLTKeybind or class()
+
+local BLTKeybind = BLTKeybind
 BLTKeybind.StateMenu = 1
 BLTKeybind.StateGame = 2
 BLTKeybind.StatePausedGame = 3
@@ -34,18 +36,14 @@ function BLTKeybind:Id()
 end
 
 function BLTKeybind:SetKey(key, force)
-	if force then
-		self:_SetKey(force, key)
-	else
-		self:_SetKey("pc", key)
-	end
+	self:_SetKey(force or "pc", key)
 end
 
 function BLTKeybind:_SetKey(idx, key)
 	if not idx then
 		return false
 	end
-	log(string.format("[Keybind] Bound %s to %s", tostring(self:Id()), tostring(key)))
+	BLT:LogF(LogLevel.INFO, "BLTKeybind", "Bound %s to %s", tostring(self:Id()), tostring(key))
 	self._key[idx] = key
 	
 	BLT.Options:GetValue("Keybinds")[self:Id()] = self:Keys()
@@ -151,6 +149,8 @@ end
 --------------------------------------------------------------------------------
 
 BLTKeybindsManager = BLTKeybindsManager or class()
+local BLTKeybindsManager = BLTKeybindsManager
+
 function BLTKeybindsManager:init()
 	self._keybinds = {}
 	self._potential_keybinds = {}
@@ -159,7 +159,7 @@ end
 function BLTKeybindsManager:register_keybind(mod, parameters)
 	local bind = BLTKeybind:new(mod, parameters)
 	table.insert(self._keybinds, bind)
-	log("[Keybind] Registered keybind " .. tostring(bind))
+	mod:Log(LogLevel.INFO, "BLTKeybindsManager", "Registered keybind", bind)
 
 	-- Check through the potential keybinds for the added bind and restore it's key
 	for i, bind_data in ipairs(self._potential_keybinds) do

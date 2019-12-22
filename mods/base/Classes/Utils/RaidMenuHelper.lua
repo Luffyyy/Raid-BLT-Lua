@@ -34,7 +34,7 @@ function RaidMenuHelper:CreateMenu(params)
         if managers.menu_component then
             self:CreateComponent(component_name, params.class, params.args)
         else
-            log("[ERROR] You're building the menu too early! menu component isn't loaded yet.")
+            BLT:Log(LogLevel.ERROR, "BLTMenuHelper", "You're building the menu too early! menu component isn't loaded yet.")
         end
 	end
 	if params.localize == nil then
@@ -130,7 +130,7 @@ function RaidMenuHelper:InjectIntoAList(menu_comp, injection_point, buttons, lis
 		table.insert(list._injected_to_data_source, {buttons = buttons, point = injection_point})
 		list:refresh_data()
 	else
-		log("[ERROR] Menu component given has no list, cannot inject into this menu.")
+		BLT:Log(LogLevel.ERROR, "BLTMenuHelper", "Menu component given has no list, cannot inject into this menu.")
 	end
 end
 
@@ -166,22 +166,23 @@ function RaidMenuHelper:LoadJson(path)
 	if file then
 		local data = json.decode(file:read("*all"))
 		if data then
-			self:LoadMenu(data)
+			self:LoadMenu(data, path)
 		end
 		file:close()
 	else
-		log(string.format("[BLT][ERROR] Failed reading json file at path %s", tostring(path)))
+		BLT:Log(LogLevel.ERROR, "BLTMenuHelper", "Failed reading json file at path", path)
 	end
 end
 
 function RaidMenuHelper:LoadXML(path)
 	local file = io.open(path, "r")
 	if file then
-		self:ConvertXMLData(ScriptSerializer:from_custom_xml(file:read("*all")))
-		self:LoadMenu(data)
+		local data = ScriptSerializer:from_custom_xml(file:read("*all"))
+		self:ConvertXMLData(data)
+		self:LoadMenu(data, path)
 		file:close()
 	else
-		log(string.format("[BLT][ERROR] Failed reading XML file at path %s", tostring(path)))
+		BLT:Log(LogLevel.ERROR, "BLTMenuHelper", "Failed reading XML file at path", path)
 	end
 end
 
@@ -197,9 +198,9 @@ function RaidMenuHelper:ConvertXMLData(data)
 	end
 end
 
-function RaidMenuHelper:LoadMenu(data, mod)
+function RaidMenuHelper:LoadMenu(data, path, mod)
 	if not data.name then
-		log("[BLT][ERROR] Creation of menu at path %s has failed, no menu name given.")
+		BLT:LogF(LogLevel.ERROR, "BLTMenuHelper", "Creation of menu at path '%s' has failed, no menu name given.", tostring(path))
 		return
 	end
 	local clss
@@ -220,7 +221,7 @@ function RaidMenuHelper:LoadMenu(data, mod)
 			elseif type(data.get_value) == "function" then
 				get_value = data.get_value
 			else
-				log(string.format("[BLT][Warning] Get value function given in menu named %s doesn't exist.", tostring(data.name)))
+				BLT:LogF(LogLevel.WARN, "BLTMenuHelper", "Get value function given in menu named '%s' doesn't exist.", tostring(data.name))
 			end
 		end
 		RaidMenuHelper:CreateMenu({
@@ -240,7 +241,7 @@ function RaidMenuHelper:LoadMenu(data, mod)
 						item.inject_menu = item.inject_menu or data.name
 						item.get_value = item.get_value or data.get_value
 						item.localize = NotNil(item.localize, data.localize)
-						self:LoadMenu(item)
+						self:LoadMenu(item, path, mod)
 					else
 						if item.callback then
 							if item.callback:begins("callback") then
@@ -248,7 +249,7 @@ function RaidMenuHelper:LoadMenu(data, mod)
 							elseif clss[item.callback] then
 								item.callback = callback(clss, clss, item.callback)
 							else
-								log(string.format("[BLT][Warning] Callback given to item named %s in menu named %s doesn't exist", tostring(item.name), tostring(data.name)))
+								BLT:LogF(LogLevel.ERROR, "BLTMenuHelper", "Callback given to item named '%s' in menu named '%s' doesn't exist.", tostring(item.name), tostring(data.name))
 							end
 						end
 						table.insert(clss._items_data, item)
@@ -257,7 +258,7 @@ function RaidMenuHelper:LoadMenu(data, mod)
 			end
 			clss._get_value = get_value
 		else
-			log(string.format("[BLT][ERROR] Failed to create menu named %s, invalid class given!", tostring(data.menu.name)))
+			BLT:LogF(LogLevel.ERROR, "BLTMenuHelper", "Failed to create menu named '%s', invalid class given!", tostring(data.menu.name))
 		end
 	end
 	if managers and managers.menu_component then

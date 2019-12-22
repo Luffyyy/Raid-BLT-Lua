@@ -31,7 +31,7 @@ end
 ]]
 function Hooks:AddHook(key, id, func)
 	if type(func) ~= "function" then
-		log(string.format("[Hooks] Error: Hook '%s' is not a function.", tostring(id)))
+		BLT:LogF(LogLevel.ERROR, "BLTHook", "Hook '%s' is not a function.", tostring(id))
 		return
 	end
 
@@ -290,7 +290,7 @@ function Hooks:RemovePostHook(id)
 end
 
 function Hooks:_PrePostHookError(func, id)
-	log(string.format("[Hooks] Error: Could not hook function '%s' (%s)", tostring(func), tostring(id)))
+	BLT:LogF(LogLevel.ERROR, "BLTHook", "Could not hook function '%s' (%s).", tostring(func), tostring(id))
 end
 
 
@@ -299,7 +299,7 @@ end
 function Hooks:RemovePostHookWithObject(object, id)
     local hooks = self._posthooks[object]
     if not hooks then
-        log(string.format("[Hooks] Error: No post hooks for object '%s' while trying to remove id '%s'", tostring(object), tostring(id)))
+        BLT:LogF(LogLevel.ERROR, "BLTHook", "No post hooks for object '%s' while trying to remove id '%s'.", tostring(object), tostring(id))
         return
 	end
 
@@ -315,7 +315,7 @@ end
 function Hooks:RemovePreHookWithObject(object, id)
     local hooks = self._prehooks[object]
     if not hooks then
-        log(string.format("[Hooks] Error: No pre hooks for object '%s' while trying to remove id '%s'", tostring(object), tostring(id)))
+        BLT:LogF(LogLevel.ERROR, "BLTHook", "No pre hooks for object '%s' while trying to remove id '%s'.", tostring(object), tostring(id))
         return
 	end
 

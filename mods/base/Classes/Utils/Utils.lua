@@ -310,7 +310,7 @@ end
 
 function Utils:CheckParamValidty(func_name, vari, var, desired_type, allow_nil)
     if (var == nil and not allow_nil) or type(var) ~= desired_type then
-        log(string.format("[%s] Parameter #%s, expected %s, got %s", func_name, vari, desired_type, tostring(var and type(var) or nil)))
+        BLT:LogF(LogLevel.WARN, "Utils:CheckParamValidity", "[%s] Parameter #%s, expected %s, got %s.", func_name, vari, desired_type, type(var))
         return false
     end
 
@@ -358,7 +358,7 @@ function Utils:StringToTable(global_tbl_name, global_tbl, silent)
             global_tbl = rawget(global_tbl, str)
             if not global_tbl then
                 if not silent then
-                    BLT:log("[ERROR] Key " .. str .. " does not exist in the current global table.")
+                    BLT:LogF(LogLevel.ERROR, "Utils:StringToTable", "Key '%s' does not exist in the current global table.", str)
                 end
                 return nil
             end
@@ -367,7 +367,7 @@ function Utils:StringToTable(global_tbl_name, global_tbl, silent)
         global_tbl = rawget(global_tbl, global_tbl_name)
         if not global_tbl then
             if not silent then
-                BLT:log("[ERROR] Key " .. global_tbl_name .. " does not exist in the current global table.")
+                BLT:LogF(LogLevel.ERROR, "Utils:StringToTable", "Key '%s' does not exist in the current global table.", global_tbl_name)
             end
             return nil
         end
@@ -652,7 +652,7 @@ function SafeClbk(func, ...)
         local p = {...}
         local success, ret = pcall(function() ret = func(unpack(params), unpack(p)) end)
         if not success then
-            BLT:log("[Safe Callback Error] %s", tostring(ret and ret.code or ""))
+            BLT:Log(LogLevel.ERROR, "Safe Callback", ret and ret.code or "")
             return nil
         end
         return ret
@@ -662,7 +662,7 @@ end
 function ClassClbk(clss, func, ...)
     local f = clss[func]
     if not f then
-        BLT:log("[Callback Error] Function named %s was not found in the given class", tostring(func))
+        BLT:LogF(LogLevel.ERROR, "Callback", "Function named '%s' was not found in the given class.", tostring(func))
         return function() end
     end
     return SimpleClbk(f, clss, ...)
@@ -1012,7 +1012,7 @@ function table.search(tbl, search_term)
                 local term_split = string.split(term, "=")
                 search_keys.params[term_split[1]] = assert(loadstring("return " .. term_split[2]))()
 				if not search_keys.params[term_split[1]] then
-					BLT:log(string.format("[ERROR] An error occured while trying to parse the value %s", term_split[2]))
+					BLT:Log(LogLevel.ERROR, "Util", "An error occured while trying to parse the value", term_split[2])
 				end
             elseif not search_keys._meta then
                 search_keys._meta = term
@@ -1068,7 +1068,7 @@ function table.custom_insert(tbl, add_tbl, pos_phrase)
 		local i, _ = table.search(tbl, phrase_split[2])
 
 		if not i then
-			BLT:log(string.format("[ERROR] Could not find table for relative placement. %s", pos_phrase))
+			BLT:Log(LogLevel.ERROR, "Util", "Could not find table for relative placement.", pos_phrase)
 			table.insert(tbl, add_tbl)
 		else
 			i = phrase_split[1] == "after" and i + 1 or i
@@ -1122,7 +1122,7 @@ Color = Color or {}
 --If only Color supported alpha for hex :P
 function Color:from_hex(hex)
     if not hex or type(hex) ~= "string" then
-        log(debug.traceback())
+        BLT:Log(LogLevel.ERROR, "Util", debug.traceback("Input is not hexadecimal color"))
         return Color()
     end
     if hex:match("#") then

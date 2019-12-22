@@ -5,11 +5,9 @@ end
 
 -- Localise globals
 local _G = _G
-local io = io
-local file = file
 
 -- BLT Global table
-BLT = {}
+local BLT = {}
 BLT.name = "BLT"
 BLT.logname = "BLT"
 BLT.Base = {}
@@ -18,6 +16,27 @@ BLT.Menus = {}
 BLT.Items = {}
 BLT.Updaters = {}
 BLT.PausedUpdaters = {}
+BLT.DEBUG_MODE = false
+_G.BLT = BLT
+
+-- Logging
+_G.LogLevel = {
+	NONE = 0,
+	ERROR = 1,
+	WARN = 2,
+	INFO = 3,
+	VERBOSE = 4,
+	DEBUG = 5,
+	ALL = 6
+}
+
+BLT.LOG_LEVEL = _G.LogLevel.VERBOSE
+
+BLT.LogPrefixes = {}
+for key, lvl in pairs(_G.LogLevel) do
+	BLT.LogPrefixes[lvl] = key:upper() .. ":"
+end
+BLT.LogPrefixes[LogLevel.WARN] = "WARNING:"
 
 -- Load modules
 BLT.path = "mods/base/"
@@ -62,6 +81,13 @@ function BLT:Initialize()
 	BLT:Require("Classes/ModuleBase")
 	BLT:RequireFolder("Modules")
 
+	-- Check for developer mode
+	if BLT.DEBUG_MODE or FileIO:Exists("mods/developer.txt") then
+		BLT.DEBUG_MODE = true
+		BLT.LOG_LEVEL = _G.LogLevel.ALL
+		self:_Log(LogLevel.DEBUG, "BLTSetup", "DEBUG MODE ON")
+	end
+
 	-- Create hook tables
 	self.hook_tables = {
 		pre = {},
@@ -73,18 +99,12 @@ function BLT:Initialize()
 	self:OverrideRequire()
 end
 
-function BLT:log(...)
-	local env = self._envs[#self._envs] or getfenv(2)
-	local mod = table.get(env, "CurrentMod") or self
-	return BLTMod.log(mod, ...)
- end
-
 function BLT:Setup()
 	BLT:Require("Classes/Utils/Utils")
 	BLT:Require("Classes/CustomPackageManager")
 	BLT:Require("Classes/FileManager")
 
-	self:log("Setup...")
+	self:_Log(LogLevel.INFO, "BLTSetup", "Setup...")
 
 	-- Setup modules
 	self.Logs = BLTLogs:new()
@@ -95,8 +115,8 @@ function BLT:Setup()
 	self.PersistScripts = BLTPersistScripts:new()
 
 	Global.blt_checked_updates = Global.blt_checked_updates or {}
+
 	local C = self.Mods.Constants
-	
 	rawset(_G, C.logs_path_global, C.mods_directory .. C.logs_directory)
 	rawset(_G, C.save_path_global, C.mods_directory .. C.saves_directory)
 
@@ -114,6 +134,7 @@ function BLT:Setup()
 	}
 end
 
+-- Info
 function BLT:GetVersion() --Should get replaced by BLTModExtended
 	return 1
 end
@@ -122,6 +143,7 @@ function BLT:GetOS()
 	return os.getenv("HOME") == nil and "windows" or "linux"
 end
 
+-- BLT Mod loading
 function BLT:RunHookTable(hooks, path)
 	if not hooks then
 		return false
@@ -132,29 +154,50 @@ function BLT:RunHookTable(hooks, path)
 	end
 end
 
+function BLT:_UpdateGlobalEnv(vars)
+	for k, v in pairs(vars) do
+		if k:byte(1) ~= 95 then -- ignore "private" vars that start with _
+			rawset(_G, k, v)
+		end
+	end
+end
+
 function BLT:RunHookFile(path, hook_data)
+	local C = BLTModManager.Constants
+
 	local mod = hook_data.mod
-	rawset(_G, BLTModManager.Constants.required_script_global, path or false)
-	rawset(_G, BLTModManager.Constants.mod_path_global, mod:GetPath() or false)
-	rawset(_G, BLTModManager.Constants.mod_global, mod)
+	local env = setmetatable({
+		_M = mod,
+		[C.required_script_global] = path or false,
+		[C.mod_path_global] = mod:GetPath() or false,
+		[C.mod_global] = mod
+	}, BLT._env_mt)
+
+	-- Set global variables related to the current hook and mod
+	self:_UpdateGlobalEnv(env)
+
+	--mod:LogF(LogLevel.DEBUG, "BLTSetup", "Running hook file '%s' (from mod %s) for path '%s'.", hook_data.script, mod:GetId(), path)
 
 	if rawget(_G, "loadfile") then
 		-- Run hook files in a separate environment to protect the mod vars
-		local env = setmetatable({
-			[BLTModManager.Constants.required_script_global] = path or false,
-			[BLTModManager.Constants.mod_path_global] = mod:GetPath() or false,
-			[BLTModManager.Constants.mod_global] = mod
-		}, BLT._env_mt)
-
 		local f = _G.loadfile(hook_data.script, nil, nil, true) -- direct env is not supported; log errors via BLT
 		if f then
 			table.insert(self._envs, env)
+
+			-- run hook
 			f = setfenv(f, env)
 			f(hook_data.mod)
+
 			table.remove(self._envs)
+
+			-- update globals
+			local new_env = self._envs[#self._envs]
+			if new_env then
+				self:_UpdateGlobalEnv(new_env)
+			end
 		end
 	else
-		self:log("WARNING: No 'loadfile' function available. Falling back to 'dofile'.")
+		self:_Log(LogLevel.DEBUG, "BLTSetup", "No 'loadfile' function available. Falling back to 'dofile'.")
 
 		-- fall back to dofile
 		dofile(hook_data.script)
@@ -194,17 +237,19 @@ function BLT:OverrideRequire()
 end
 
 function BLT:FindMods()
-	self:log("Loading mods for state: " .. tostring(_G))
+	self:_Log(LogLevel.INFO, "BLTSetup", "Loading mods for state:", _G)
 	
 	local mods_list = {}
-	self:LoadMods(BLTModManager.Constants.mods_directory, mods_list)
-	self:LoadMods(BLTModManager.Constants.mod_overrides_directory, mods_list)
-	self:LoadMods(BLTModManager.Constants.maps_directory, mods_list)
+	local C = BLTModManager.Constants
+	self:LoadMods(C.mods_directory, mods_list)
+	self:LoadMods(C.mod_overrides_directory, mods_list)
+	self:LoadMods(C.maps_directory, mods_list)
 	return mods_list
 end
 
 function BLT:LoadMods(path, mods_list)
 	-- Get all folders in mods directory
+	local C = self.Mods.Constants
 	local folders = FileIO:GetFolders(path) or {}
 	for _, directory in pairs(folders) do
 		-- Check if this directory is excluded from being checked for mods (logs, saves, etc.)
@@ -220,22 +265,35 @@ function BLT:LoadMods(path, mods_list)
 			-- Attempt to read the mod defintion file
 			local file = io.open(mod_defintion)
 			if file then
-				self:log("Loading mod: " .. tostring(directory))
+				self:_Log(LogLevel.INFO, "BLTSetup", "Loading mod:", directory)
+
 				-- Read the file contents
 				local mod_content = FileIO:ConvertScriptData(file:read("*all"), is_json and "json" or "custom_xml")
 				file:close()
+
 				-- Create a BLT mod from the loaded data
 				if mod_content then
+					local mod
 					if is_json then
-						table.insert(mods_list, BLTMod:new(path, directory, mod_content))
+						mod = BLTMod:new(path, directory, mod_content)
 					else
-						table.insert(mods_list, BLTModExtended:new(path, directory, mod_content, true))
+						mod = BLTModExtended:new(path, directory, mod_content, true)
 					end
+
+					-- Set global variables related to the current mod
+					self:_UpdateGlobalEnv({
+						_M = mod,
+						[C.mod_path_global] = mod:GetPath() or false,
+						[C.mod_global] = mod
+					})
+
+					mod:PostInit()
+					table.insert(mods_list, mod)
 				else
-					self:log("An error occured while loading mod.txt from: " .. tostring(mod_path))
+					self:_Log(LogLevel.ERROR, "BLTSetup", "An error occured while loading mod.txt from:", mod_path)
 				end
 			elseif path == BLTModManager.Constants.mods_directory then --mod overrides is an optional directory.
-				self:log("Could not read or find mod definition in " .. tostring(directory))
+				self:_Log(LogLevel.WARN, "BLTSetup", "Could not read or find mod definition in", directory)
 			end
 		end
 	end
@@ -253,12 +311,12 @@ end
 function BLT:RegisterModule(key, module)
 	local t = type(key)
 	if t ~= "string" and t ~= "table" then
-		self:log("[ERROR] BLT:RegisterModule parameter #1, string or table expected got %s", t)
+		self:LogF(LogLevel.ERROR, "BLT:RegisterModule parameter #1, string or table expected got %s.", t)
 		return
 	end
 
 	if not self.Modules[key] then
-		self:log("Registered module with key %s", key)
+		self:LogF(LogLevel.INFO, "RegisterMod", "Registered module with key '%s'.", tostring(key))
 		if t == "table" then
 			for _, alt_key in pairs(key) do
 				self.Modules[alt_key] = module
@@ -267,10 +325,11 @@ function BLT:RegisterModule(key, module)
 			self.Modules[key] = module
 		end
 	else
-		self:log("[ERROR] Module with key %s already exists", key)
+		self:LogF(LogLevel.ERROR, "RegisterMod", "Module with key '%s' already exists.", tostring(key))
 	end
 end
 
+-- Updaters
 function BLT:Update(t, dt)
 	self.Dialogs:Update()
 	for id, clbk in pairs(self.Updaters) do
@@ -296,6 +355,39 @@ end
 function BLT:RemoveUpdater(id)
 	self.Updaters[id] = nil
 	self.PausedUpdaters[id] = nil
+end
+
+-- Logging functions
+function BLT:_get_mod(depth)
+	local env = self._envs[#self._envs] or getfenv(depth or 2)
+	local mod = table.get(env, "CurrentMod") or self
+	return mod
+end
+
+function BLT:_Log(...)
+	return BLTMod.Log(self, ...)
+end
+
+function BLT:Log(...)
+	local mod = self:_get_mod(3)
+	return BLTMod.Log(mod, ...)
+end
+
+function BLT:LogF(...)
+	local mod = self:_get_mod(3)
+	return BLTMod.LogF(mod, ...)
+end
+
+function BLT:LogC(...)
+	local mod = self:_get_mod(3)
+	return BLTMod.LogC(mod, ...)
+end
+
+function BLT:log(...)
+	self:_Log(LogLevel.WARN, "DEPRECATED", "The BLT:log() function has been deprecated. Please use BLT:Log(lvl, cat, ...)")
+
+	local mod = self:_get_mod(3)
+	return BLTMod.log(mod, ...)
 end
 
 -- Perform startup

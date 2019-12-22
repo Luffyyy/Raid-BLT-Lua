@@ -153,7 +153,7 @@ function json._decode(s, startPos)
       if f then
         res = f()
       else
-        log("[ERROR] Attempted to loadstring " .. tostring(res) .. " but failed.")
+        BLT:LogF(LogLevel.ERROR, "JSON", "Attempted to loadstring '%s' but failed.", tostring(res))
       end
     end
     return res, start_pos

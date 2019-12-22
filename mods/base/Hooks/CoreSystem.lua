@@ -3,7 +3,7 @@ function overwrite_meta_function(tbl, func_name, new_func)
 	local meta_table = getmetatable(tbl)
 
 	if not meta_table[func_name] then
-		BLT:log(string.format("[ERROR] Function with name '%s' could not be found in the meta table!", func_name))
+		BLT:LogF(LogLevel.ERROR, "BLTFileManager", "Function with name '%s' could not be found in the meta table!", func_name)
 		return
 	end
 

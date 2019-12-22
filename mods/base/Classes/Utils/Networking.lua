@@ -131,7 +131,7 @@ Hooks:Add("ChatManagerOnReceiveMessage", "ChatManagerOnReceiveMessage_Network", 
 	name = name:gsub("%%", "%%%%")
 	message = message:gsub("%%", "%%%%")
 	local s = string.format("[%s] %s: %s", channel_id, name, message)
-	log(s)
+	BLT:Log(LogLevel.DEBUG, "BLTNetworking", "Received data:", s)
 
 	local senderID = nil
 	if LN:IsMultiplayer() then

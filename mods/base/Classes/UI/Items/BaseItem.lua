@@ -216,7 +216,7 @@ function BaseItem:TryRendering()
 		self.panel:set_visible(visible)
 		self.should_render = visible
 		if self.debug then
-			BLT:log("Item %s has been set to rendering=%s", tostring(self), tostring(visible))
+			BLT:LogF(LogLevel.DEBUG, "BLTBaseItem", "Item %s has been set to rendering=%s.", tostring(self), tostring(visible))
 		end
 	end
 	return visible
@@ -320,7 +320,7 @@ end
 
 function BaseItem:SetPositionByString(pos)
 	if not pos then
-		BLT:log("[ERROR] Position for item %s in parent %s is nil!", tostring(self.name), tostring(self.parent.name))
+		BLT:LogF(LogLevel.ERROR, "BLTBaseItem", "Position for item %s in parent %s is nil!", tostring(self.name), tostring(self.parent.name))
 		return
 	end
     local pos_panel = self.parent_panel

@@ -1,6 +1,7 @@
 <table
 		name="Raid WW2 BLT"
 		global_key = "BLT"
+		log_name = "BLT"
 		merge_global = "true"
 		priority="1001"
 		image="blt.png"

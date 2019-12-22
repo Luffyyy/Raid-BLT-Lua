@@ -1,6 +1,8 @@
 
 -- BLT Mod / New mod format
 BLTModExtended = BLTModExtended or class(BLTMod)
+
+local BLTModExtended = BLTModExtended
 BLTModExtended.enabled = true
 BLTModExtended._enabled = true
 BLTModExtended.path = ""
@@ -12,12 +14,17 @@ BLTModExtended.contact = "N/A"
 BLTModExtended.priority = 0
 
 function BLTModExtended:init(path, ident, data, post_init)
+	-- Use most recent log data
+	self.LOG_LEVEL = BLT.LOG_LEVEL
+	self.LogPrefixes = BLT.LogPrefixes
+
+	-- Check module data
 	if not ident then
-		self:log("BLT Mods can not be created without a mod identifier!")
+		self:Log(LogLevel.ERROR, "BLTModSetup", "BLTMods can not be created without a mod identifier!")
 		return
 	end
 	if not data then
-		self:log("BLT Mods can not be created without mod data!")
+		self:Log(LogLevel.ERROR, "BLTModSetup", "BLTMods can not be created without mod data!")
 		return
 	end
 
@@ -30,6 +37,9 @@ function BLTModExtended:init(path, ident, data, post_init)
 	self._auto_post_init = NotNil(data.auto_post_init, post_init)
 
 	self.color = data.color
+end
+
+function BLTModExtended:PostInit()
     if self._early_init then
         self:InitModules()
     end
@@ -53,11 +63,11 @@ function BLTModExtended:InitModules()
                     local success, node_obj, valid = pcall(function() return node_class:new(self, module_tbl) end)
                     if success then
                         if valid == false then
-                            self:log("Module with name %s does not contain a valid config. See above for details", node_obj._name)
+                            self:LogF(LogLevel.WARN, "BLTModSetup", "Module with name '%s' does not contain a valid config. See above for details.", tostring(node_obj._name))
                         else
                             if not node_obj._loose or node_obj._name ~= node_obj.type_name then
                                 if self[node_obj._name] then
-                                    self:log("The name of module: %s already exists in the mod table, please make sure this is a unique name!", node_obj._name)
+                                    self:LogF(LogLevel.WARN, "BLTModSetup", "A module named '%s' already exists in the mod table, please make sure this is a unique name!", tostring(node_obj._name))
                                 end
 
                                 self[node_obj._name] = node_obj
@@ -65,12 +75,12 @@ function BLTModExtended:InitModules()
                             table.insert(self._modules, node_obj)
                         end
                     else
-                        self:log("[ERROR] An error occured on initilization of module: %s. Error:\n%s", module_tbl._meta, tostring(node_obj))
+                        self:LogF(LogLevel.ERROR, "BLTModSetup", "An error occured on initilization of module: %s. Error:\n%s", tostring(module_tbl._meta), tostring(node_obj))
                         table.insert(self._errors, "blt_module_failed_load")
                     end
                 end
             elseif not self._config.ignore_errors then
-                self:log("[ERROR] Unable to find module with key %s", module_tbl._meta)
+                self:LogF(LogLevel.ERROR, "BLTModSetup", "Unable to find module with key '%s'.", tostring(module_tbl._meta))
             end
         end
     end
@@ -102,14 +112,14 @@ function BLTModExtended:PostInitModules(ignored_modules)
         if (not ignored_modules or not table.contains(ignored_modules, module._name)) then
             local success, err = pcall(function() module:post_init() end)
             if not success then
-                self:log("[ERROR] An error occured on the post initialization of %s. Error:\n%s", module._name, tostring(err))
+                self:LogF(LogLevel.ERROR, "BLTModSetup", "An error occured on the post initialization of %s. Error:\n%s", module._name, tostring(err))
             end
         end
     end
 end
 
 function BLTModExtended:Setup()
-	print("[BLT] Setting up mod: ", self:GetId())
+	BLT:_Log(LogLevel.INFO, "BLTModSetup", "Setting up mod:", self:GetId())
 	self:SetupCheck()
 	if not self._early_init then
         self:InitModules()
