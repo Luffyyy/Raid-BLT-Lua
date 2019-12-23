@@ -61,24 +61,21 @@ function OptionModule:Load()
     local file = io.open(self.SavePath .. self.FileName, 'r')
 
     --pcall for json decoding
-    local data = json.decode_or_nil(file:read("*all"))
+    local success, data = pcall(function() return json.decode(file:read("*all")) end)
+    file:close()
 
-    if not data then
+    if not success then
         self:Log(LogLevel.ERROR, "Load", "Unable to load save file", data)
 
         --Save the corrupted file incase the option values should be recovered
         local corrupted_file = io.open(self.SavePath .. self.FileName .. "_corrupted", "w+")
         corrupted_file:write(file:read("*all"))
-
         corrupted_file:close()
 
         --Save the Options file with the current option values
         self:Save()
         return
     end
-
-    --Close the file handle
-    file:close()
 
     --Merge the loaded options with the existing options
     self:ApplyValues(self._storage, data)

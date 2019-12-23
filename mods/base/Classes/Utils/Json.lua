@@ -11,7 +11,7 @@
 -- This module exposes two functions:
 --   json.encode(o)
 --     Returns the table / string / boolean / number / nil / json.null value as a JSON-encoded string.
---   json._decode(json_string)
+--   json.decode(json_string)
 --     Returns a Lua object populated with the data encoded in the JSON string json_string.
 --
 -- REQUIREMENTS:
@@ -34,14 +34,16 @@
 -- Imports and dependencies
 -----------------------------------------------------------------------------
 local math = require('math')
-local string = require("string")
-local table = require("table")
+local string = require('string')
+local table = require('table')
+local get_type_name = get_type_name or type
 
 -----------------------------------------------------------------------------
 -- Module declaration
 -----------------------------------------------------------------------------
-_G.json = {}             -- Global namespace
+local json = {}             -- Public namespace
 local json_private = {}     -- Private namespace
+_G.json = json              -- Global namespace
 
 -- Public functions
 
@@ -53,24 +55,27 @@ local decode_scanNumber
 local decode_scanObject
 local decode_scanString
 local decode_scanWhitespace
+local decode_scanFunctionCall
 local encodeString
 local isArray
 local isEncodable
 
-local function begins(s, beginning)
-  if s and beginning then
-		return s:sub(1, #beginning) == beginning
-	end
+-- Functions to parse when encountered in strings
+local specialFunctions = {
+  ['Vector3'] = true,  -- allow expressions (calculations on the result)
+  ['Rotation'] = true, -- ,,
+  ['Color'] = true,    -- ,,
+  --['callback'] = false -- no expressions allowed
+}
 
-	return false
-end
+
 -----------------------------------------------------------------------------
 -- PUBLIC FUNCTIONS
 -----------------------------------------------------------------------------
 --- Encodes an arbitrary Lua object / variable.
 -- @param v The Lua object / variable to be JSON encoded.
 -- @return String containing the JSON encoding in internal Lua string format (i.e. not unicode)
-function json.encode (v)
+function json.encode(v)
   -- Handle nil values
   if v==nil then
     return "null"
@@ -79,7 +84,7 @@ function json.encode (v)
   local vtype = get_type_name(v)
 
   -- Handle strings 
-  if vtype=='string' or vtype=='Vector3' or vtype=='Rotation' or vtype=='Color' or vtype=='callback' then
+  if vtype=='string' or specialFunctions[vtype] ~= nil then
     return '"' .. json_private.encodeString(v) .. '"'	    -- Need to handle encoding in string
   end
 
@@ -126,8 +131,8 @@ end
 -- @param Lua object, number The object that was scanned, as a Lua table / string / number / boolean or nil,
 -- and the position of the first character after
 -- the scanned JSON object.
-function json._decode(s, startPos)
-  startPos = startPos and startPos or 1
+function json.decode(s, startPos)
+  startPos = startPos or 1
   startPos = decode_scanWhitespace(s,startPos)
   assert(startPos<=string.len(s), 'Unterminated JSON encoded object found at position in [' .. s .. ']')
   local curChar = string.sub(s,startPos,startPos)
@@ -146,20 +151,10 @@ function json._decode(s, startPos)
 
   -- String
   if curChar==[["]] or curChar==[[']] then
-    local res, start_pos = decode_scanString(s,startPos)
-    --might not be the best way of doing this
-    if begins(res, "Color(") or begins(res, "callback(") or begins(res, "Vector3(") or begins(res, "Rotation(") then
-      local f = loadstring("return " ..res)
-      if f then
-        res = f()
-      else
-        BLT:LogF(LogLevel.ERROR, "JSON", "Attempted to loadstring '%s' but failed.", tostring(res))
-      end
-    end
-    return res, start_pos
+    return decode_scanString(s,startPos)
   end
   if string.sub(s,startPos,startPos+1)=='/*' then
-    return decode(s, decode_scanComment(s,startPos))
+    return json.decode(s, decode_scanComment(s,startPos))
   end
   -- Otherwise, it must be a constant
   return decode_scanConstant(s,startPos)
@@ -193,13 +188,18 @@ function decode_scanArray(s,startPos)
     assert(startPos<=stringLen,'JSON String ended unexpectedly scanning array.')
     local curChar = string.sub(s,startPos,startPos)
     if (curChar==']') then
-      return array, startPos+1
+      return array,startPos+1
     end
     if (curChar==',') then
       startPos = decode_scanWhitespace(s,startPos+1)
+      -- Ignore trailing commas
+      local nextChar = string.sub(s,startPos,startPos)
+      if (nextChar==']') then
+        return array,startPos+1
+      end
     end
     assert(startPos<=stringLen, 'JSON String ended unexpectedly scanning array.')
-    object, startPos = json._decode(s,startPos)
+    object, startPos = json.decode(s,startPos)
     table.insert(array,object)
   until false
 end
@@ -209,7 +209,7 @@ end
 -- @param string s The JSON string to scan.
 -- @param int startPos The starting position of the comment
 function decode_scanComment(s, startPos)
-  assert(string.sub(s,startPos,startPos+1)=='/*', "decode_scanComment called but comment does not start at position " .. startPos)
+  --assert(string.sub(s,startPos,startPos+1)=='/*', "decode_scanComment called but comment does not start at position " .. startPos)
   local endPos = string.find(s,'*/',startPos+2)
   assert(endPos~=nil, "Unterminated comment in string at " .. startPos)
   return endPos+2  
@@ -225,12 +225,12 @@ function decode_scanConstant(s, startPos)
   local consts = { ["true"] = true, ["false"] = false, ["null"] = nil }
   local constNames = {"true","false","null"}
 
-  for i,k in pairs(constNames) do
+  for _,k in pairs(constNames) do
     if string.sub(s,startPos, startPos + string.len(k) -1)==k then
       return consts[k], startPos + string.len(k)
     end
   end
---  assert(nil, 'Failed to scan constant from string ' .. s .. ' at starting position ' .. startPos)
+  assert(nil, 'Failed to scan constant from string ' .. s .. ' at starting position ' .. startPos)
 end
 
 --- Scans a number from the JSON encoded string.
@@ -274,18 +274,22 @@ function decode_scanObject(s,startPos)
     local curChar = string.sub(s,startPos,startPos)
     if (curChar=='}') then
       return object,startPos+1
-    end
-    if (curChar==',') then
+    elseif (curChar==',') then
       startPos = decode_scanWhitespace(s,startPos+1)
+      -- Ignore trailing commas
+      local nextChar = string.sub(s,startPos,startPos)
+      if (nextChar=='}') then
+        return object,startPos+1
+      end
     end
     assert(startPos<=stringLen, 'JSON string ended unexpectedly scanning object.')
     -- Scan the key
-    local k, newstartPos = json._decode(s,startPos)
+    local k, newstartPos = json.decode(s,startPos)
     if(newstartPos) then
       startPos = newstartPos
       key = k
     elseif curChar==',' then
-      return object,startPos+1 
+      return object,startPos+1
     end
     assert(startPos<=stringLen, 'JSON string ended unexpectedly searching for value of key ' .. key)
     startPos = decode_scanWhitespace(s,startPos)
@@ -293,7 +297,7 @@ function decode_scanObject(s,startPos)
     assert(string.sub(s,startPos,startPos)==':','JSON object key-value assignment mal-formed at ' .. startPos)
     startPos = decode_scanWhitespace(s,startPos+1)
     assert(startPos<=stringLen, 'JSON string ended unexpectedly searching for value of key ' .. key)
-    value, startPos = json._decode(s,startPos)
+    value, startPos = json.decode(s,startPos)
     object[key]=value
   until false	-- infinite loop while key-value pairs are found
 end
@@ -314,6 +318,43 @@ setmetatable(escapeSequences, {__index = function(t,k)
 end})
 -- END SoniEx2
 
+--- Scans a JSON string for special lua function calls defined above.
+-- Returns the result of the function call or the input when
+-- the input string is not in the list.
+-- @param s The string begin scanned.
+-- @param nextPos The index of the next character to parse.
+-- @return obj, int The evaluated output value and the position of the next character to scan.
+function decode_scanFunctionCall(s,nextPos)
+  local stringLen = string.len(s)
+  if stringLen == 0 then
+    return s, nextPos
+  end
+  local psPos = string.find(s, '(', 1, true)
+  if not psPos then
+    return s, nextPos
+  end
+  local funcName = string.sub(s, 1, psPos-1)
+  local allowExpression = specialFunctions[funcName]
+  if allowExpression == nil then
+    return s, nextPos
+  end
+  local pePos = string.find(s, ')', psPos + 1, true)
+  if not psPos then
+    assert(nil, "Invalid function call '" .. s .. "' at position ".. nextPos - stringLen .. ' : ' .. nextPos)
+  end
+  if not allowExpression and pePos < stringLen and decode_scanWhitespace(s,pePos) < stringLen then
+    -- Only checks if the first ) is the last character in the string
+    assert(nil, 'Expressions are not allowed for function ' .. funcName .. ' at position ' .. nextPos - stringLen .. ' : ' .. nextPos)
+  end
+  local f, err = loadstring("return " ..s)
+  if f then
+    s = f()
+  else
+    assert(nil, "Failed to execute function " .. err)
+  end
+  return s, nextPos
+end
+
 --- Scans a JSON string from the opening inverted comma or single quote to the
 -- end of the string.
 -- Returns the string extracted as a Lua string,
@@ -321,7 +362,7 @@ end})
 -- (after the closing inverted comma or single quote).
 -- @param s The string being scanned.
 -- @param startPos The starting position of the scan.
--- @return string, int The extracted string as a Lua string, and the next character to parse.
+-- @return string, int The extracted string as a Lua string and the position of the next character to scan.
 function decode_scanString(s,startPos)
   assert(startPos, 'decode_scanString(..) called without start position')
   local startChar = string.sub(s,startPos,startPos)
@@ -365,7 +406,7 @@ function decode_scanString(s,startPos)
   end
   table.insert(t,string.sub(j, j+1))
   assert(string.find(s, startChar, j+1), "String decoding failed: missing closing " .. startChar .. " at position " .. j .. "(for string at position " .. startPos .. ")")
-  return table.concat(t,""), j+2
+  return decode_scanFunctionCall(table.concat(t,""), j+2)
   -- END SoniEx2
 end
 
@@ -442,21 +483,7 @@ end
 -- @return boolean True if the object should be JSON encoded, false if it should be ignored.
 function isEncodable(o)
 	local t = get_type_name(o)
-	return (t=='string' or t=='boolean' or t=='number' or t=='nil' or t=='table' or t=='Vector3' or t=='Rotation' or t=='Color' or t=='callback') or (t=='function' and o==null) 
+	return (t=='string' or t=='boolean' or t=='number' or t=='nil' or t=='table' or specialFunctions[t]~=nil) or (t=='function' and o==null)
 end
 
-function json.decode(data)
-	local value = nil
-	local passed = pcall(function()
-		value = json._decode(data)
-	end)
-	return value or {}
-end
-
-function json.decode_or_nil(data)
-	local value = nil
-	local passed = pcall(function()
-		value = json._decode(data)
-	end)
-	return value
-end
+return json

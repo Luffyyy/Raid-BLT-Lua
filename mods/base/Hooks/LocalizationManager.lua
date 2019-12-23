@@ -55,10 +55,13 @@ function LocalizationManager:load_localization_file(file_path, overwrite)
 
 	local file = io.open(file_path, "r")
 	if file then
-		local file_contents = file:read("*all")
+		local success, data = pcall(function() return json.decode(file:read("*all")) end)
 		file:close()
-
-		local contents = json.decode(file_contents)
-		self:add_localized_strings(contents, overwrite)
+		if success then
+			self:add_localized_strings(data, overwrite)
+			return true
+		end
+		BLT:LogF(LogLevel.ERROR, "BLTMenuHelper", "Failed parsing json file at path '%s': %s", path, data)
 	end
+	return false
 end

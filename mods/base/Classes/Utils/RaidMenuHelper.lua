@@ -164,26 +164,30 @@ end
 function RaidMenuHelper:LoadJson(path)
 	local file = io.open(path, "r")
 	if file then
-		local data = json.decode(file:read("*all"))
-		if data then
-			self:LoadMenu(data, path)
-		end
+		local success, data = pcall(function() return json.decode(file:read("*all")) end)
 		file:close()
+		if success then
+			self:LoadMenu(data, path)
+			return true
+		end
+		BLT:LogF(LogLevel.ERROR, "BLTMenuHelper", "Failed parsing json file at path '%s': %s", path, data)
 	else
-		BLT:Log(LogLevel.ERROR, "BLTMenuHelper", "Failed reading json file at path", path)
+		BLT:LogF(LogLevel.ERROR, "BLTMenuHelper", "Failed reading json file at path '%s'.")
 	end
+	return false
 end
 
 function RaidMenuHelper:LoadXML(path)
 	local file = io.open(path, "r")
 	if file then
 		local data = ScriptSerializer:from_custom_xml(file:read("*all"))
+		file:close()
 		self:ConvertXMLData(data)
 		self:LoadMenu(data, path)
-		file:close()
 	else
-		BLT:Log(LogLevel.ERROR, "BLTMenuHelper", "Failed reading XML file at path", path)
+		BLT:LogF(LogLevel.ERROR, "BLTMenuHelper", "Failed reading XML file at path '%s'", path)
 	end
+	return false
 end
 
 function RaidMenuHelper:ConvertXMLData(data)

@@ -67,9 +67,9 @@ UpdatesModule._providers = {
                     self:Log(LogLevel.WARN, "UpdateCheck", "Could not connect to the PaydayMods.com API!")
                     return
                 end
-        
-                local server_data = json.decode(json_data)
-                if server_data then
+
+                local success, server_data = pcall(function() return json.decode(json_data) end)
+                if success and type(server_data) == "table" then
                     for _, data in pairs(server_data) do
                         self:LogF(LogLevel.INFO, "UpdateCheck", "Received update data for '%s'.", data.ident)
                         if data.ident == self.id then
@@ -86,7 +86,7 @@ UpdatesModule._providers = {
                         return
                     end
                 end
-                self:LogF(LogLevel.WARN, "UpdateCheck", "Paydaymods did not return a result for id '%s'.", tostring(self.id))
+                self:LogF(LogLevel.WARN, "UpdateCheck", "Paydaymods did not return a valid result for id '%s'.", tostring(self.id))
             end)
         end
     }

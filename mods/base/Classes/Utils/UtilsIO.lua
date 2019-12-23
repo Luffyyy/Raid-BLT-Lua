@@ -95,9 +95,13 @@ function io.load_as_json(path)
 
 	local file = io.open(path, "r")
 	if file then
-		local file_contents = file:read("*all")
+		local success, data = pcall(function() return json.decode(file:read("*all")) end)
 		file:close()
-		return json.decode(file_contents)
+		if success then
+			return data
+		end
+		BLT:LogF(LogLevel.ERROR, "BLTMenuHelper", "Failed parsing json file at path '%s': %s", path, data)
+		return
 	else
 		BLT:LogF(LogLevel.ERROR, "UtilsIO", "Could not load file '%s', no data loaded...", tostring(path))
 		return nil
