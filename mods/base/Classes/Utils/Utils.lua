@@ -349,6 +349,37 @@ function Utils:normalize_string_value(value)
 	return value
 end
 
+function Utils:StringToColor(str)
+    if type(str) ~= "string" then
+        return
+    end
+    if str:find("%s*Color%s*%(") == 1 then
+        local success, result = pcall(function() return loadstring("return " .. str)() end)
+        if success and type_name(result) == "Color" then
+            return result
+        end
+        return false, result
+    end
+    local parts = str:split(" ")
+    if parts[1]:find("%s*[0-9]") == 1 then
+        local cp = {}
+        local divisor = 1
+        for i = 1, 3 do
+            local c = tonumber(parts[i] or 0)
+            cp[i] = c
+            if c > 1 then
+                divisor = 255
+            end
+        end
+        if divisor > 1 then
+            for i, val in pairs(cp) do
+                cp[i] = val / divisor
+            end
+        end
+        return Color(unpack(parts))
+    end
+end
+
 function Utils:StringToTable(global_tbl_name, global_tbl, silent)
     local global_tbl = global_tbl or _G
     if string.find(global_tbl_name, "%.") then

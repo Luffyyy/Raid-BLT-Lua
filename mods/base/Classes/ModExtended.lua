@@ -35,8 +35,6 @@ function BLTModExtended:init(path, ident, data, post_init)
 
 	self._early_init = data.early_init
 	self._auto_post_init = NotNil(data.auto_post_init, post_init)
-
-	self.color = data.color
 end
 
 function BLTModExtended:PostInit()

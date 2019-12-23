@@ -151,14 +151,12 @@ function BLTModsMenu:AddMod(mod, type)
     local blt_mod = type == "normal"
     local color = blt_mod and Color("3f4756") or type == "custom" and Color(0, 0.25, 1) or Color(0.1, 0.6, 0.1)
     local s = (self._list:ItemsWidth() / 5) - self._list:Offset()[1]
-    if mod._config.color then
-        local orig_color = color
-        color = Utils:normalize_string_value(mod._config.color)
-        if type_name(color) ~= "Color" then
-            mod:LogF(LogLevel.ERROR, "BLTModsMenu", "The color '%s' is not a valid color!", tostring(color))
-            color = orig_color
-        end
+
+    local color_override = mod:GetColor()
+    if color_override then
+        color = color_override
     end
+
     local concol = color:contrast():with_alpha(0.1)
     local mod_item = self._list:Menu({
         name = name,

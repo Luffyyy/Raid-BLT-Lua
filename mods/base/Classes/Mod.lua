@@ -33,28 +33,7 @@ function BLTMod:init(path, ident, data)
     self._errors = {}
 
     -- Mod information
-	self:InitParams(path, ident, data)
-
-    -- Parse color info
-    -- Stored as a table until first requested due to Color not existing yet
-    if data.color and type(data.color) == "string" then
-        local colors = string.split(data.color, " ")
-        local cp = {}
-        local divisor = 1
-        for i = 1, 3 do
-            local c = tonumber(colors[i] or 0)
-            table.insert(cp, c)
-            if c > 1 then
-                divisor = 255
-            end
-        end
-        if divisor > 1 then
-            for i, val in ipairs(cp) do
-                cp[i] = val / divisor
-            end
-        end
-        self.color = cp
-    end
+    self:InitParams(path, ident, data)
 
 	-- Updates data
 	if self._config.updates then
@@ -323,10 +302,16 @@ end
 
 function BLTMod:GetColor()
     if not self.color then
-        return tweak_data.gui.colors.raid_list_background
-    end
-    if type(self.color) == "table" then
-        self.color = Color(unpack(self.color))
+        if self._config.color then
+            local color, err = Utils:StringToColor(self._config.color)
+            if color then
+                self.color = color
+                return color
+            end
+            self:LogF(LogLevel.WARN, "BLTModsMenu", "The color '%s' is not valid! %s, %s", tostring(self._config.color), tostring(err), tostring(color))
+            self._config.color = false
+        end
+        return
     end
     return self.color
 end
