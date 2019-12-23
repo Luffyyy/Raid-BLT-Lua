@@ -25,9 +25,12 @@
 --          Introduced decode ability to ignore /**/ comments in the JSON string.
 --   0.9.10 Fix to array encoding / decoding to correctly manage nil/null values in arrays.
 --
--- MODIFIED BY:
--- Luffy, Added code to ignore last comma in an object and some code from BeardLib's
--- json script(modified by Simon W) to support objects like: color, vector3, rotation and callback.
+-- MODIFICATIONS:
+--   2019-12-23, dorentuz:
+--     Fixed and improved comment decoding; both single and multi-line comments are allowed.
+--     Arrays and objects may have a single trailing comma.
+--     Added missing object var.
+--     Added a modified version of Luffy's BLT object support (Color, Vector3, Rotation), without callback.
 -----------------------------------------------------------------------------
 
 -----------------------------------------------------------------------------
@@ -50,12 +53,13 @@ _G.json = json              -- Global namespace
 -- Private functions
 local decode_scanArray
 local decode_scanComment
+local decode_scanCommentWhitespace
 local decode_scanConstant
+local decode_scanFunctionCall
 local decode_scanNumber
 local decode_scanObject
 local decode_scanString
 local decode_scanWhitespace
-local decode_scanFunctionCall
 local encodeString
 local isArray
 local isEncodable
@@ -133,7 +137,7 @@ end
 -- the scanned JSON object.
 function json.decode(s, startPos)
   startPos = startPos or 1
-  startPos = decode_scanWhitespace(s,startPos)
+  startPos = decode_scanCommentWhitespace(s,startPos)
   assert(startPos<=string.len(s), 'Unterminated JSON encoded object found at position in [' .. s .. ']')
   local curChar = string.sub(s,startPos,startPos)
   -- Object
@@ -148,13 +152,9 @@ function json.decode(s, startPos)
   if string.find("+-0123456789.e", curChar, 1, true) then
     return decode_scanNumber(s,startPos)
   end
-
   -- String
   if curChar==[["]] or curChar==[[']] then
     return decode_scanString(s,startPos)
-  end
-  if string.sub(s,startPos,startPos+1)=='/*' then
-    return json.decode(s, decode_scanComment(s,startPos))
   end
   -- Otherwise, it must be a constant
   return decode_scanConstant(s,startPos)
@@ -184,18 +184,17 @@ function decode_scanArray(s,startPos)
   startPos = startPos + 1
   -- Infinite loop for array elements
   repeat
-    startPos = decode_scanWhitespace(s,startPos)
+    startPos = decode_scanCommentWhitespace(s,startPos)
     assert(startPos<=stringLen,'JSON String ended unexpectedly scanning array.')
     local curChar = string.sub(s,startPos,startPos)
     if (curChar==']') then
-      return array,startPos+1
-    end
-    if (curChar==',') then
-      startPos = decode_scanWhitespace(s,startPos+1)
-      -- Ignore trailing commas
+      return array, startPos + 1
+    elseif (curChar==',') then
+      startPos = decode_scanCommentWhitespace(s,startPos+1)
+      -- Ignore trailing comma
       local nextChar = string.sub(s,startPos,startPos)
       if (nextChar==']') then
-        return array,startPos+1
+        return array, startPos + 1
       end
     end
     assert(startPos<=stringLen, 'JSON String ended unexpectedly scanning array.')
@@ -209,10 +208,29 @@ end
 -- @param string s The JSON string to scan.
 -- @param int startPos The starting position of the comment
 function decode_scanComment(s, startPos)
-  --assert(string.sub(s,startPos,startPos+1)=='/*', "decode_scanComment called but comment does not start at position " .. startPos)
-  local endPos = string.find(s,'*/',startPos+2)
-  assert(endPos~=nil, "Unterminated comment in string at " .. startPos)
-  return endPos+2  
+  local nextChars=string.sub(s,startPos,startPos+1)
+  if (nextChars=='/*') then
+    local endPos = string.find(s,'*/',startPos+2)
+    assert(endPos~=nil, "Unterminated comment in string at " .. startPos)
+    return endPos+2
+  elseif (nextChars=='//') then
+    local endPos = string.find(s,'\n',startPos+2)
+    return endPos and endPos+1 or string.len(s)
+  end
+  return startPos
+end
+
+--- Scans comment and whitespaces and discards these.
+-- Returns the position of the next character following the ignored sequence.
+-- @param string s The JSON string to scan.
+-- @param int startPos The starting position of the sequence to scan.
+function decode_scanCommentWhitespace(s, startPos)
+  startPos = decode_scanWhitespace(s, startPos)
+  local newPos = decode_scanComment(s, startPos)
+  if newPos>startPos then
+    startPos = decode_scanWhitespace(s, newPos)
+  end
+  return startPos
 end
 
 --- Scans for given constants: true, false or null
@@ -232,91 +250,6 @@ function decode_scanConstant(s, startPos)
   end
   assert(nil, 'Failed to scan constant from string ' .. s .. ' at starting position ' .. startPos)
 end
-
---- Scans a number from the JSON encoded string.
--- (in fact, also is able to scan numeric +- eqns, which is not
--- in the JSON spec.)
--- Returns the number, and the position of the next character
--- after the number.
--- @param s The string being scanned.
--- @param startPos The position at which to start scanning.
--- @return number, int The extracted number and the position of the next character to scan.
-function decode_scanNumber(s,startPos)
-  local endPos = startPos+1
-  local stringLen = string.len(s)
-  local acceptableChars = "+-0123456789.e"
-  while (string.find(acceptableChars, string.sub(s,endPos,endPos), 1, true)
-	and endPos<=stringLen
-	) do
-    endPos = endPos + 1
-  end
-  local stringValue = 'return ' .. string.sub(s,startPos, endPos-1)
-  local stringEval = loadstring(stringValue)
-  assert(stringEval, 'Failed to scan number [ ' .. stringValue .. '] in JSON string at position ' .. startPos .. ' : ' .. endPos)
-  return stringEval(), endPos
-end
-
---- Scans a JSON object into a Lua object.
--- startPos begins at the start of the object.
--- Returns the object and the next starting position.
--- @param s The string being scanned.
--- @param startPos The starting position of the scan.
--- @return table, int The scanned object as a table and the position of the next character to scan.
-function decode_scanObject(s,startPos)
-  local object = {}
-  local stringLen = string.len(s)
-  local key, value
-  assert(string.sub(s,startPos,startPos)=='{','decode_scanObject called but object does not start at position ' .. startPos .. ' in string:\n' .. s)
-  startPos = startPos + 1
-  repeat
-    startPos = decode_scanWhitespace(s,startPos)
-    assert(startPos<=stringLen, 'JSON string ended unexpectedly while scanning object.')
-    local curChar = string.sub(s,startPos,startPos)
-    if (curChar=='}') then
-      return object,startPos+1
-    elseif (curChar==',') then
-      startPos = decode_scanWhitespace(s,startPos+1)
-      -- Ignore trailing commas
-      local nextChar = string.sub(s,startPos,startPos)
-      if (nextChar=='}') then
-        return object,startPos+1
-      end
-    end
-    assert(startPos<=stringLen, 'JSON string ended unexpectedly scanning object.')
-    -- Scan the key
-    local k, newstartPos = json.decode(s,startPos)
-    if(newstartPos) then
-      startPos = newstartPos
-      key = k
-    elseif curChar==',' then
-      return object,startPos+1
-    end
-    assert(startPos<=stringLen, 'JSON string ended unexpectedly searching for value of key ' .. key)
-    startPos = decode_scanWhitespace(s,startPos)
-    assert(startPos<=stringLen, 'JSON string ended unexpectedly searching for value of key ' .. key)
-    assert(string.sub(s,startPos,startPos)==':','JSON object key-value assignment mal-formed at ' .. startPos)
-    startPos = decode_scanWhitespace(s,startPos+1)
-    assert(startPos<=stringLen, 'JSON string ended unexpectedly searching for value of key ' .. key)
-    value, startPos = json.decode(s,startPos)
-    object[key]=value
-  until false	-- infinite loop while key-value pairs are found
-end
-
--- START SoniEx2
--- Initialize some things used by decode_scanString
--- You know, for efficiency
-local escapeSequences = {
-  ["\\t"] = "\t",
-  ["\\f"] = "\f",
-  ["\\r"] = "\r",
-  ["\\n"] = "\n",
-  ["\\b"] = "\b"
-}
-setmetatable(escapeSequences, {__index = function(t,k)
-  -- skip "\" aka strip escape
-  return string.sub(k,2)
-end})
--- END SoniEx2
 
 --- Scans a JSON string for special lua function calls defined above.
 -- Returns the result of the function call or the input when
@@ -354,6 +287,91 @@ function decode_scanFunctionCall(s,nextPos)
   end
   return s, nextPos
 end
+
+--- Scans a number from the JSON encoded string.
+-- (in fact, also is able to scan numeric +- eqns, which is not
+-- in the JSON spec.)
+-- Returns the number, and the position of the next character
+-- after the number.
+-- @param s The string being scanned.
+-- @param startPos The position at which to start scanning.
+-- @return number, int The extracted number and the position of the next character to scan.
+function decode_scanNumber(s,startPos)
+  local endPos = startPos+1
+  local stringLen = string.len(s)
+  local acceptableChars = "+-0123456789.e"
+  while (string.find(acceptableChars, string.sub(s,endPos,endPos), 1, true)
+	and endPos<=stringLen
+	) do
+    endPos = endPos + 1
+  end
+  local stringValue = 'return ' .. string.sub(s,startPos, endPos-1)
+  local stringEval = loadstring(stringValue)
+  assert(stringEval, 'Failed to scan number [ ' .. stringValue .. '] in JSON string at position ' .. startPos .. ' : ' .. endPos)
+  return stringEval(), endPos
+end
+
+--- Scans a JSON object into a Lua object.
+-- startPos begins at the start of the object.
+-- Returns the object and the next starting position.
+-- @param s The string being scanned.
+-- @param startPos The starting position of the scan.
+-- @return table, int The scanned object as a table and the position of the next character to scan.
+function decode_scanObject(s,startPos)
+  local object = {}
+  local stringLen = string.len(s)
+  local key, value
+  --assert(string.sub(s,startPos,startPos)=='{','decode_scanObject called but object does not start at position ' .. startPos .. ' in string:\n' .. s)
+  startPos = startPos + 1
+  repeat
+    startPos = decode_scanCommentWhitespace(s,startPos)
+    assert(startPos<=stringLen, 'JSON string ended unexpectedly while scanning object.')
+    local curChar = string.sub(s,startPos,startPos)
+    if (curChar=='}') then
+      return object, startPos + 1
+    elseif (curChar==',') then
+      startPos = decode_scanCommentWhitespace(s,startPos+1)
+      -- Ignore trailing comma
+      local nextChar = string.sub(s,startPos,startPos)
+      if (nextChar=='}') then
+        return object, startPos + 1
+      end
+    end
+    assert(startPos<=stringLen, 'JSON string ended unexpectedly scanning object.')
+    -- Scan the key
+    local k, newstartPos = json.decode(s,startPos)
+    if(newstartPos) then
+      startPos = newstartPos
+      key = k
+    elseif curChar==',' then
+      return object,startPos+1
+    end
+    assert(startPos<=stringLen, 'JSON string ended unexpectedly searching for value of key ' .. key)
+    startPos = decode_scanCommentWhitespace(s,startPos)
+    assert(startPos<=stringLen, 'JSON string ended unexpectedly searching for value of key ' .. key)
+    assert(string.sub(s,startPos,startPos)==':','JSON object key-value assignment mal-formed at ' .. startPos)
+    startPos = decode_scanCommentWhitespace(s,startPos+1)
+    assert(startPos<=stringLen, 'JSON string ended unexpectedly searching for value of key ' .. key)
+    value, startPos = json.decode(s,startPos)
+    object[key]=value
+  until false	-- infinite loop while key-value pairs are found
+end
+
+-- START SoniEx2
+-- Initialize some things used by decode_scanString
+-- You know, for efficiency
+local escapeSequences = {
+  ["\\t"] = "\t",
+  ["\\f"] = "\f",
+  ["\\r"] = "\r",
+  ["\\n"] = "\n",
+  ["\\b"] = "\b"
+}
+setmetatable(escapeSequences, {__index = function(t,k)
+  -- skip "\" aka strip escape
+  return string.sub(k,2)
+end})
+-- END SoniEx2
 
 --- Scans a JSON string from the opening inverted comma or single quote to the
 -- end of the string.
