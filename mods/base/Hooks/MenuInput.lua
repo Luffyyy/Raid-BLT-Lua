@@ -165,11 +165,18 @@ function MenuInput:update(t, dt)
 
 			if self._controller and self._accept_input then
 				for _, button in ipairs(self.special_buttons) do
-					if self._controller:get_input_pressed(button) and managers.menu_component:special_btn_pressed(Idstring(button)) then
-						if managers.menu:active_menu() then
-							managers.menu:active_menu().renderer:disable_input(0.2)
+					if self._controller:get_input_pressed(button) then
+						if managers.menu_component:special_btn_pressed(Idstring(button)) then
+							if managers.menu:active_menu() then
+								managers.menu:active_menu().renderer:disable_input(0.2)
+							end
+							break
 						end
-						break
+
+						-- things may still have changed at this point, recheck
+						if not self._controller or not self._accept_input then
+							break
+						end
 					end
 				end
 			end
