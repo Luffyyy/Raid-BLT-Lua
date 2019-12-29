@@ -37,21 +37,30 @@ function MenuInput:update(t, dt)
 
 	self:_update_axis_status()
 
-	if managers.blackmarket and managers.blackmarket:is_preloading_weapons() then
-		return
+	do
+		local bm_manager = managers.blackmarket
+		if bm_manager and bm_manager:is_preloading_weapons() then
+			return
+		end
 	end
 
-	if managers.system_menu and managers.system_menu:is_active() and not managers.system_menu:is_closing() then
-		return
+	do
+		local system_menu = managers.system_menu
+		if system_menu and system_menu:is_active() and not system_menu:is_closing() then
+			return
+		end
 	end
 
-	if managers.raid_menu._back_disabled then
-		return
-	end
+	do
+		local raid_menu = managers.raid_menu
+		if raid_menu._back_disabled then
+			return
+		end
 
-	if managers.raid_menu._ignore_back_once then
-		managers.raid_menu._ignore_back_once = nil
-		return
+		if raid_menu._ignore_back_once then
+			raid_menu._ignore_back_once = nil
+			return
+		end
 	end
 
 	-- BLT MenuUI and Dialog checks
@@ -167,8 +176,9 @@ function MenuInput:update(t, dt)
 				for _, button in ipairs(self.special_buttons) do
 					if self._controller:get_input_pressed(button) then
 						if managers.menu_component:special_btn_pressed(Idstring(button)) then
-							if managers.menu:active_menu() then
-								managers.menu:active_menu().renderer:disable_input(0.2)
+							local active_menu = managers.menu:active_menu()
+							if active_menu then
+								active_menu.renderer:disable_input(0.2)
 							end
 							break
 						end
@@ -181,17 +191,26 @@ function MenuInput:update(t, dt)
 				end
 			end
 
-			if self._accept_input and self._controller and managers.menu:active_menu() then
-				if self._accept_input and self._controller and self._controller:get_input_pressed("confirm") and managers.menu:active_menu().renderer:confirm_pressed() and managers.menu:active_menu() then
-					managers.menu:active_menu().renderer:disable_input(0.2)
+			if managers.menu:active_menu() then
+				if self._accept_input and self._controller and self._controller:get_input_pressed("confirm") and managers.menu:active_menu().renderer:confirm_pressed() then
+					local active_menu = managers.menu:active_menu()
+					if active_menu then
+						active_menu.renderer:disable_input(0.2)
+					end
 				end
 
-				if self._accept_input and self._controller and self._controller:get_input_pressed("back") and managers.menu:active_menu().renderer:back_pressed() and managers.menu:active_menu() then
-					managers.menu:active_menu().renderer:disable_input(0.2)
+				if self._accept_input and self._controller and self._controller:get_input_pressed("back") and managers.menu:active_menu().renderer:back_pressed() then
+					local active_menu = managers.menu:active_menu()
+					if active_menu then
+						active_menu.renderer:disable_input(0.2)
+					end
 				end
 
-				if self._accept_input and self._controller and self._controller:get_input_pressed("cancel") and managers.menu:active_menu().renderer:back_pressed() and managers.menu:active_menu() then
-					managers.menu:active_menu().renderer:disable_input(0.2)
+				if self._accept_input and self._controller and self._controller:get_input_pressed("cancel") and managers.menu:active_menu().renderer:back_pressed() then
+					local active_menu = managers.menu:active_menu()
+					if active_menu then
+						active_menu.renderer:disable_input(0.2)
+					end
 				end
 
 				self:_check_special_buttons2()
@@ -232,7 +251,11 @@ function MenuInput:_check_special_buttons2()
 	if not self._controller then
 		return
 	end
-	local active_renderer = managers.menu:active_menu().renderer
+	local active_menu = managers.menu:active_menu()
+	if not active_menu then
+		return
+	end
+	local active_renderer = active_menu.renderer
 	for i = 1, #self.special_buttons2 do
 		local button = self.special_buttons2[i]
 		if self._accept_input and self._controller then
