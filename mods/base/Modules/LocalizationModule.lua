@@ -30,9 +30,8 @@ end
 function LocalizationModule:LoadLocalization()
     if self.Localizations[SystemInfo:language():key()] then
         LocalizationManager:load_localization_file(Path:Combine(self.LocalizationDirectory, self.Localizations[SystemInfo:language():key()]))
-    else
-        LocalizationManager:load_localization_file(Path:Combine(self.LocalizationDirectory, self.DefaultLocalization))
     end
+    LocalizationManager:load_localization_file(Path:Combine(self.LocalizationDirectory, self.DefaultLocalization))
 end
 
 function LocalizationModule:RegisterHooks()
