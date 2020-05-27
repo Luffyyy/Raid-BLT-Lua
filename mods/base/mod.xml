@@ -7,7 +7,6 @@
 		image="blt.png"
 		author="James Wilkinson, Luffy, BangL"
 		color="Color('bf204b')"
-		contact="https://modworkshop.net/member.php?action=profile&uid=1934"
 		description="The collection of Lua files that allow the BLT hook to function."
 		cannot_be_disabled="true"
 		early_init="true">
@@ -15,7 +14,7 @@
 	<auto_updates
 			provider="modworkshop"
 			id="21618"
-			version="1.371"
+			version="1.4"
 			important="true"/>
 
 	<options build_menu="false">

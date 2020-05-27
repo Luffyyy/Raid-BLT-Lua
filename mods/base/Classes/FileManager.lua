@@ -31,15 +31,21 @@ function fm:Process(ids_ext, ids_path, name_mt)
 	local mods = self.modded_files[k_ext] and self.modded_files[k_ext][k_path]
 	if mods then
 		for id, mdata in pairs(mods) do
-			if not mdata.clbk or mdata.clbk() then
+			local func = mdata.clbk or mdata.use_clbk
+			if not func or func() then
 				if mdata.mode and not self.process_modes[mdata.mode] then
 					BLT:LogF(LogLevel.ERROR, "FileManager", "The process mode '%s' does not exist! Skipping...", data.mode)
 				else
 					local to_replace = (not mdata.mode or mdata.mode == "replace")
 					if to_replace and #mods > 1 then
-						BLT:LogF(LogLevel.WARN, "FileManager", "Script Mod with ID:'%s', Path:'%s.%s' may potentially overwrite changes from other mods! Continuing...", tostring(data.id), k_path, k_ext)
+						local id = data.id or "unknown"
+						if mdata.file then
+							BLT:LogF(LogLevel.WARN, "FileManager", "Script Mod with ID: '%s', Path:'%s' may potentially overwrite changes from other mods! Continuing...", id, mdata.file)
+						else
+							BLT:LogF(LogLevel.WARN, "FileManager", "Script Mod with ID: '%s', Path:'%s.%s' may potentially overwrite changes from other mods! Continuing...", id, k_path, k_ext)							
+						end
 					end
-					local new_data = FileIO:ReadScriptDataFrom(mdata.file, mdata.type)
+					local new_data = mdata.tbl or FileIO:ReadScriptDataFrom(mdata.file, mdata.type)
 					if new_data then
                         if ids_ext == Idstring("nav_data") then
                             Utils:RemoveMetas(new_data)
@@ -96,25 +102,28 @@ function fm:ScriptAddFile(path, ext, file, options)
 end
 
 function fm:ScriptReplaceFile(ext, path, file, options)
-    local ids_ext = ext:id()
-	local ids_path = path:id()
-
-    if options ~= nil and type(options) ~= "table" then
-        BLT:LogF(LogLevel.ERROR, "FileManager", "%s:ReplaceScriptData parameter 5, expected table, got %s.", self.Name, type(options))
-        return
-    end
     if not FileIO:Exists(file) then
-        BLT:LogF(LogLevel.ERROR, "FileManager", "Lua state is unable to read file '%s'!", file)
+        BLT:LogF(LogLevel.ERROR, "FileManager", "Failed reading scriptdata at path '%s'!", file)
         return
     end
 
-    options = options or {}
-	local k_ext = ids_ext:key()
-	local k_path = ids_path:key()
+	options = options or {}
+	options.type = options.type or "custom_xml"
+	local k_ext = ext:key()
+	local k_path = path:key()
 	fm.modded_files[k_ext] = fm.modded_files[k_ext] or {}
 	fm.modded_files[k_ext][k_path] = fm.modded_files[k_ext][k_path] or {}
 	--Potentially move to [id] = options
 	table.insert(fm.modded_files[k_ext][k_path], table.merge(options, {file = file}))
+end
+
+function fm:ScriptReplace(ext, path, tbl, options)
+    options = options or {}
+	local k_ext = ext:key()
+	local k_path = path:key()
+	fm.modded_files[k_ext] = fm.modded_files[k_ext] or {}
+	fm.modded_files[k_ext][k_path] = fm.modded_files[k_ext][k_path] or {}
+	table.insert(fm.modded_files[k_ext][k_path], table.merge(options, {tbl = tbl}))
 end
 
 function fm:Has(ext, path)
