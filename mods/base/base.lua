@@ -197,7 +197,7 @@ function BLT:RunHookFile(path, hook_data)
 			end
 		end
 	else
-		self:_Log(LogLevel.DEBUG, "BLTSetup", "No 'loadfile' function available. Falling back to 'dofile'.")
+		--self:_Log(LogLevel.DEBUG, "BLTSetup", "No 'loadfile' function available. Falling back to 'dofile'.")
 
 		-- fall back to dofile
 		dofile(hook_data.script)
