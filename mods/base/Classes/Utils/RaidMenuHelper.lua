@@ -115,7 +115,7 @@ function RaidMenuHelper:InjectIntoAList(menu_comp, injection_point, buttons, lis
 				for _, inject in pairs(list._injected_to_data_source) do
 					if inject.buttons then
 						for i, item in pairs(t) do
-							if (not inject.point and i == #t) or tostring(item.text):lower() == tostring(inject.point):lower() then
+							if i == #t or (inject.point and tostring(item.text):lower() == tostring(inject.point):lower()) then
 								for k = #inject.buttons, 1, -1 do
 									table.insert(t, i + 1, inject.buttons[k])
 								end
