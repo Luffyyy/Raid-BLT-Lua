@@ -5,10 +5,10 @@ UpdatesModule._always_enabled = true
 
 UpdatesModule._providers = {
     modworkshop = {
-        check_url = "https://api.modwork.shop/api.php?command=CompareVersion&did=$id$&vid=$version$&steamid=$steamid$&token=Je3KeUETqqym6V8b5T7nFdudz74yWXgU",
-        get_files_url = "https://api.modwork.shop/api.php?command=AssocFiles&did=$id$&steamid=$steamid$&token=Je3KeUETqqym6V8b5T7nFdudz74yWXgU",
-        download_url = "https://api.modwork.shop/api.php?command=DownloadFile&fid=$fid$&steamid=$steamid$&token=Je3KeUETqqym6V8b5T7nFdudz74yWXgU",
-        page_url = "https://modwork.shop/$id$",
+        check_url = "https://api.modworkshop.net/api.php?command=CompareVersion&did=$id$&vid=$version$&steamid=$steamid$&token=Je3KeUETqqym6V8b5T7nFdudz74yWXgU",
+        get_files_url = "https://api.modworkshop.net/api.php?command=AssocFiles&did=$id$&steamid=$steamid$&token=Je3KeUETqqym6V8b5T7nFdudz74yWXgU",
+        download_url = "https://api.modworkshop.net/api.php?command=DownloadFile&fid=$fid$&steamid=$steamid$&token=Je3KeUETqqym6V8b5T7nFdudz74yWXgU",
+        page_url = "https://modworkshop.net/$id$",
         check_func = function(self)
             local id = tonumber(self.id)
             if not id or id <= 0 then
