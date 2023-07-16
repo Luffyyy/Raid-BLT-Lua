@@ -14,7 +14,7 @@
 	<auto_updates
 			provider="modworkshop"
 			id="21618"
-			version="1.52"
+			version="1.60"
 			important="true"/>
 
 	<options build_menu="false">
