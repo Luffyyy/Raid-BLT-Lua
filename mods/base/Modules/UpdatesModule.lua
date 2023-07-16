@@ -121,7 +121,7 @@ function UpdatesModule:init(core_mod, config)
     self.use_local_path = NotNil(self._config.use_local_path, true)
 
     self.folder_names = self.use_local_dir and {table.remove(string.split(self._mod.path, "/"))} or (type(self._config.folder_name) == "string" and {self._config.folder_name} or Utils:RemoveNonNumberIndexes(self._config.folder_name))
-    self.install_directory = (self._config.install_directory and self._mod:GetRealFilePath(self._config.install_directory, self)) or (self.use_local_path ~= false and Utils.Path:GetDirectory(self._mod.path)) or BLTModManager.Constants.mod_overrides_directory
+    self.install_directory = (self._config.install_directory and self._mod:GetRealFilePath(self._config.install_directory, self)) or (self.use_local_path ~= false and Utils.Path:GetDirectory(self._mod.path)) or BLTModManager.Constants.mods_directory
     self.version_file = self._config.version_file and self._mod:GetRealFilePath(self._config.version_file, self) or Utils.Path:Combine(self.install_directory, self.folder_names[1], self._default_version_file)
 
     self._update_manager_id = self._mod.name .. self._name

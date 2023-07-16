@@ -66,7 +66,7 @@ function BLT:Initialize()
 	BLT:Require("Classes/Utils/MenuHelper")
 	BLT:Require("Classes/Utils/RaidMenuHelper")
 	BLT:Require("Classes/Utils/DelayedCalls")
-	
+
 	BLT:Require("Classes/Utils/json")
 	BLT:Require("Classes/Utils/QuickMenu")
 	BLT:Require("Classes/Mod")
@@ -238,11 +238,10 @@ end
 
 function BLT:FindMods()
 	self:_Log(LogLevel.INFO, "BLTSetup", "Loading mods for state:", _G)
-	
+
 	local mods_list = {}
 	local C = BLTModManager.Constants
 	self:LoadMods(C.mods_directory, mods_list)
-	self:LoadMods(C.mod_overrides_directory, mods_list)
 	self:LoadMods(C.maps_directory, mods_list)
 	return mods_list
 end

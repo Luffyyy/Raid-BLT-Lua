@@ -83,7 +83,7 @@ end
 --------------------------------------------------------------------------------
 BLTModManager.Constants = {
 	mods_directory = "mods/",
-	mod_overrides_directory = "assets/mod_overrides/",
+	mod_overrides_directory = mods_directory, -- backwards compat
 	maps_directory = "maps/",
 	lua_base_directory = "base/",
 	downloads_directory = "downloads/",
