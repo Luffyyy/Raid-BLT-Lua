@@ -61,7 +61,7 @@ function BLTModManager:RegisterHook(source_file, path, file, type, mod)
 		end
 	else
 		mod = mod or BLT
-        self:LogF(LogLevel.ERROR, "BLTModManager", "Hook file '%s' is not readable by the lua state!", hook_file)
+        mod:LogF(LogLevel.ERROR, "BLTModManager", "Hook file '%s' is not readable by the lua state!", hook_file)
     end
 end
 
