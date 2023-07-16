@@ -129,9 +129,9 @@ function UpdatesModule:init(core_mod, config)
     self._mod.auto_updates_module = self
     self:RetrieveCurrentVersion()
 
-    -- if not self._config.manual_check then
-    --     self:RegisterAutoUpdateCheckHook()
-    -- end
+    if not self._config.manual_check then
+        self:RegisterAutoUpdateCheckHook()
+    end
 
     return true
 end
