@@ -8,7 +8,7 @@ UpdatesModule._providers = {
         check_url = "https://api.modworkshop.net/api.php?command=CompareVersion&did=$id$&vid=$version$&steamid=$steamid$&token=Je3KeUETqqym6V8b5T7nFdudz74yWXgU",
         get_files_url = "https://api.modworkshop.net/api.php?command=AssocFiles&did=$id$&steamid=$steamid$&token=Je3KeUETqqym6V8b5T7nFdudz74yWXgU",
         download_url = "https://api.modworkshop.net/api.php?command=DownloadFile&fid=$fid$&steamid=$steamid$&token=Je3KeUETqqym6V8b5T7nFdudz74yWXgU",
-        page_url = "https://modworkshop.net/$id$",
+        page_url = "https://modworkshop.net/mod/$id$",
         check_func = function(self)
             local id = tonumber(self.id)
             if not id or id <= 0 then
@@ -43,7 +43,7 @@ UpdatesModule._providers = {
                 if fid then
                     self:_DownloadAssets({fid = fid, steamid = self.steamid})
                     Global.blt_checked_updates[self.id] = nil --check again later for hotfixes.
-                end    
+                end
             end)
         end
     },
@@ -62,7 +62,7 @@ UpdatesModule._providers = {
             dohttpreq(self._mod:GetRealFilePath(self.provider.check_url, self), function(json_data, http_id)
                 local self = self
                 self._requesting_updates = false
-        
+
                 if json_data:is_nil_or_empty() then
                     self:Log(LogLevel.WARN, "UpdateCheck", "Could not connect to the PaydayMods.com API!")
                     return
@@ -145,7 +145,7 @@ function UpdatesModule:RegisterAutoUpdateCheckHook()
     Hooks:Add("MenuManagerOnOpenMenu", hook_id, function(self_menu, menu, index)
         if menu == "menu_main" and not LuaNetworking:IsMultiplayer() then
             self:CheckVersion()
-            Hooks:RemoveHook("MenuManagerOnOpenMenu", hook_id) 
+            Hooks:RemoveHook("MenuManagerOnOpenMenu", hook_id)
         end
     end)
 end
@@ -228,7 +228,7 @@ function UpdatesModule:HasPage()
         return self.provider.page_url ~= nil
     end
 end
- 
+
 function UpdatesModule:ViewMod()
     local url = self._mod:GetRealFilePath(self.provider.page_url, self)
     if Steam:overlay_enabled() then
@@ -242,7 +242,7 @@ function UpdatesModule:_DownloadAssets(data)
     local download_url = self._mod:GetRealFilePath(self.provider.download_url, data or self)
     self:LogF(LogLevel.INFO, "Downloading assets from url '%s'.", download_url)
     local mods_menu = BLT.ModsMenu
-    dohttpreq(download_url, callback(self, self, "StoreDownloadedAssets", false), callback(mods_menu, mods_menu, "SetModProgress", self._mod))                
+    dohttpreq(download_url, callback(self, self, "StoreDownloadedAssets", false), callback(mods_menu, mods_menu, "SetModProgress", self._mod))
 end
 
 function UpdatesModule:StoreDownloadedAssets(config, data, id)
@@ -257,7 +257,7 @@ function UpdatesModule:StoreDownloadedAssets(config, data, id)
             mods_menu:SetModInstallingUpdate(self._mod)
         end
         wait(1)
-        
+
         self:Log(LogLevel.INFO, "DownloadAssets", "Finished downloading assets.")
 
         if string.is_nil_or_empty(data) then
@@ -280,7 +280,7 @@ function UpdatesModule:StoreDownloadedAssets(config, data, id)
             self:Log(LogLevel.ERROR, "DownloadAssets", "An error occured while trying to store the downloaded asset data.")
             return
         end
-        
+
         if self._config and not self._config.dont_delete then
             for _, dir in pairs(self.folder_names) do
                 local path = Utils.Path:Combine(self.install_directory, dir)
@@ -289,20 +289,21 @@ function UpdatesModule:StoreDownloadedAssets(config, data, id)
                 end
             end
         end
+
         unzip(temp_zip_path, config.install_directory or self.install_directory)
         FileIO:Delete(temp_zip_path)
 
         if config.done_callback then
             config.done_callback()
         end
-        self.version = self._new_version        
+        self.version = self._new_version
         if config.finish then
             config.finish()
         else
             mods_menu:SetModNormal(self._mod)
         end
         if alive(coroutine) then
-            coroutine:parnet():remove(coroutine)
+            coroutine:parent():remove(coroutine)
         end
     end)
 end

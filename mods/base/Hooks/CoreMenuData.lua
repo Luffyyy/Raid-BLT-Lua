@@ -1,7 +1,7 @@
 
 core:module("CoreMenuData")
 
-Hooks:Register("CoreMenuData.LoadData")
+Hooks:Register("CoreMenuData.LoadDataMenu")
 function Data:_load_data(root, menu_id)
 	-- Find the child menu with id = menu_id
 	local menu
@@ -14,12 +14,13 @@ function Data:_load_data(root, menu_id)
 
 	-- Call a hook here to let us mutate the menu data before it is parsed
 	Hooks:Call("CoreMenuData.LoadDataMenu", menu_id, menu)
+
 	-- Parse the nodes
 	if menu then
 		for _,c in ipairs(menu) do
 			local type = c._meta
 			if type == "node" then
-				self:_create_node(file_path, menu_id, c)			
+				self:_create_node(file_path, menu_id, c)
 			elseif type == "default_node" then
 				self._default_node_name = c.name
 			end
@@ -35,12 +36,12 @@ end
 
 function Data:_create_node(file_path, menu_id, c)
 	local node_class = CoreMenuNode.MenuNode
-	
+
 	local type = c.type
 	if type then
 		node_class = CoreSerialize.string_to_classtable(type)
 	end
-	
+
 	local name = c.name
 	if name then
 		self._nodes[name] = node_class:new(c)

@@ -10,8 +10,9 @@ end
 
 Hooks:RegisterHook("MenuComponentManagerUpdate")
 function MenuComponentManager:update(t, dt)
-	self.orig.update(self, t, dt)
+	local ret = self.orig.update(self, t, dt)
 	Hooks:Call("MenuComponentManagerUpdate", self, t, dt)
+	return ret
 end
 
 Hooks:RegisterHook("MenuComponentManagerPreSetActiveComponents")
@@ -77,13 +78,6 @@ function MenuComponentManager:mouse_clicked(o, button, x, y)
 		pointer = opointer
 	end
 	return hover, pointer
-end
-
-Hooks:RegisterHook("MenuComponentManagerUpdate")
-function MenuComponentManager:update(t, dt)
-	local ret = self.orig.update(self, t, dt)
-	Hooks:Call("MenuComponentManagerUpdate", self, t, dt)
-	return ret
 end
 
 -- Backported from PD2
