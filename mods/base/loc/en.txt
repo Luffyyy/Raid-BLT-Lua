@@ -10,7 +10,7 @@
 
 	"blt_update_dll_title" : "Critical Update",
 	"blt_update_dll_text" : "An update is available to the BLT DLL, you will need to update this yourself by downloading and installing it again from the website.\n\nPlease update ASAP as this is a critical update which may fix crashes with your game.",
-	"blt_update_dll_goto_website" : "Downloda",
+	"blt_update_dll_goto_website" : "Download",
 	"blt_update_later" : "Update Later",
 	
 	"blt_checking_updates" : "Checking for Updates",
