@@ -30,6 +30,20 @@
 		</options>
 	</options>
 
+	<localization directory="loc" default="english.json">
+		<loc file="chinese.json" language="chinese"/>
+		<loc file="dutch.json" language="dutch"/>
+		<loc file="english.json" language="english"/>
+		<loc file="french.json" language="french"/>
+		<loc file="german.json" language="german"/>
+		<loc file="italian.json" language="italian"/>
+		<loc file="korean.json" language="korean"/>
+		<loc file="portuguese.json" language="portuguese"/>
+		<loc file="russian.json" language="russian"/>
+		<loc file="spanish.json" language="spanish"/>
+		<loc file="thai.json" language="thai"/>
+	</localization>
+
 	<classes directory="Classes">
 		<class file="UI/MenuUI.lua"/>
 		<class file="UI/Items/TextBoxBase.lua"/>

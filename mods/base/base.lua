@@ -110,7 +110,7 @@ function BLT:Setup()
 	self.Logs = BLTLogs:new()
 	self.Mods = BLTModManager:new()
 	self.Keybinds = BLTKeybindsManager:new()
-	self.Localization = BLTLocalization:new()
+	self.Localization = BLTLocalization:new() -- deprecated
 	self.Notifications = BLTNotificationsManager:new()
 	self.PersistScripts = BLTPersistScripts:new()
 
