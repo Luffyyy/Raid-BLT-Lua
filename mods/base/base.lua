@@ -53,6 +53,7 @@ end
 
 -- BLT base functions
 function BLT:Initialize()
+
 	-- Create environment holders
 	self._envs = {}
 	self._env_mt = { __index = _G, __newindex = _G }
