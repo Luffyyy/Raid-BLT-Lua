@@ -5,9 +5,8 @@ UpdatesModule._always_enabled = true
 
 UpdatesModule._providers = {
     modworkshop = {
-        check_url = "https://api.modworkshop.net/api.php?command=CompareVersion&did=$id$&vid=$version$&steamid=$steamid$&token=Je3KeUETqqym6V8b5T7nFdudz74yWXgU",
-        get_files_url = "https://api.modworkshop.net/api.php?command=AssocFiles&did=$id$&steamid=$steamid$&token=Je3KeUETqqym6V8b5T7nFdudz74yWXgU",
-        download_url = "https://api.modworkshop.net/api.php?command=DownloadFile&fid=$fid$&steamid=$steamid$&token=Je3KeUETqqym6V8b5T7nFdudz74yWXgU",
+        check_url = "https://api.modworkshop.net/mods/$id$/version",
+        download_url = "https://api.modworkshop.net/mods/$id$/download",
         page_url = "https://modworkshop.net/mod/$id$",
         check_func = function(self)
             local id = tonumber(self.id)
@@ -17,7 +16,7 @@ UpdatesModule._providers = {
             --optimization, mostly you don't really need to check updates again when going back to menu
             local upd = Global.blt_checked_updates[self.id]
             if upd then
-                if type(upd) == "string" and upd ~= tostring(self.version) then
+                if type(upd) == "string" and tonumber(upd) > self.version then
                     self._new_version = upd
                     self:PrepareForUpdate()
                 end
@@ -25,8 +24,7 @@ UpdatesModule._providers = {
             end
             dohttpreq(self._mod:GetRealFilePath(self.provider.check_url, self), function(data, id)
                 if data then
-                    data = string.sub(data, 0, #data - 1)
-                    if data ~= "false" and data ~= "true" and string.len(data) > 0 then
+                    if string.len(data) > 0 and tonumber(data) > self.version then
                         self._new_version = data
                         Global.blt_checked_updates[self.id] = data
                         self:PrepareForUpdate()
@@ -37,14 +35,8 @@ UpdatesModule._providers = {
             end)
         end,
         download_file_func = function(self)
-            local get_files_url = self._mod:GetRealFilePath(self.provider.get_files_url, self)
-            dohttpreq(get_files_url, function(data, id)
-                local fid = string.split(data, '"')[1]
-                if fid then
-                    self:_DownloadAssets({fid = fid, steamid = self.steamid})
-                    Global.blt_checked_updates[self.id] = nil --check again later for hotfixes.
-                end
-            end)
+            self:_DownloadAssets()
+            Global.blt_checked_updates[self.id] = nil --check again later for hotfixes.
         end
     },
     paydaymods = {
