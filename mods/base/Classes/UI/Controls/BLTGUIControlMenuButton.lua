@@ -1,4 +1,3 @@
-
 BLTGUIControlMenuButton = BLTGUIControlMenuButton or class(BLTGUIControlButton)
 
 BLTGUIControlMenuButton.TEXT_PADDING = 16
@@ -9,7 +8,8 @@ BLTGUIControlMenuButton.SIDELINE_COLOR = tweak_data.gui.colors.raid_red
 BLTGUIControlMenuButton.SIDELINE_W = 3
 
 function BLTGUIControlMenuButton:init(parent, params)
-    params.text_padding = BLTGUIControlMenuButton.SIDELINE_W + BLTGUIControlMenuButton.TEXT_PADDING + (params.text_padding or 0)
+    params.text_padding = BLTGUIControlMenuButton.SIDELINE_W + BLTGUIControlMenuButton.TEXT_PADDING +
+    (params.text_padding or 0)
     params.font_size = params.font_size or tweak_data.gui.font_sizes.small
     params.color = params.color or BLTGUIControlMenuButton.TEXT_COLOR
     params.color_disabled = params.color_disabled or BLTGUIControlMenuButton.TEXT_COLOR_DISABLED
@@ -56,9 +56,12 @@ function BLTGUIControlMenuButton:_animate_highlight_on()
         t = t + dt
         local alpha = Easing.quartic_out(t, 0, 1, duration)
         self._sideline:set_alpha(alpha)
-        local description_r = Easing.quartic_out(t, self._params.color.r, self._params.highlight_color.r - self._params.color.r, duration)
-        local description_g = Easing.quartic_out(t, self._params.color.g, self._params.highlight_color.g - self._params.color.g, duration)
-        local description_b = Easing.quartic_out(t, self._params.color.b, self._params.highlight_color.b - self._params.color.b, duration)
+        local description_r = Easing.quartic_out(t, self._params.color.r,
+            self._params.highlight_color.r - self._params.color.r, duration)
+        local description_g = Easing.quartic_out(t, self._params.color.g,
+            self._params.highlight_color.g - self._params.color.g, duration)
+        local description_b = Easing.quartic_out(t, self._params.color.b,
+            self._params.highlight_color.b - self._params.color.b, duration)
         self._object_text:set_color(Color(description_r, description_g, description_b))
     end
     self._sideline:set_alpha(1)
@@ -74,9 +77,12 @@ function BLTGUIControlMenuButton:_animate_highlight_off()
         t = t + dt
         local alpha = Easing.quartic_out(t, 1, -1, duration)
         self._sideline:set_alpha(alpha)
-        local description_r = Easing.quartic_out(t, self._params.highlight_color.r, self._params.color.r - self._params.highlight_color.r, duration)
-        local description_g = Easing.quartic_out(t, self._params.highlight_color.g, self._params.color.g - self._params.highlight_color.g, duration)
-        local description_b = Easing.quartic_out(t, self._params.highlight_color.b, self._params.color.b - self._params.highlight_color.b, duration)
+        local description_r = Easing.quartic_out(t, self._params.highlight_color.r,
+            self._params.color.r - self._params.highlight_color.r, duration)
+        local description_g = Easing.quartic_out(t, self._params.highlight_color.g,
+            self._params.color.g - self._params.highlight_color.g, duration)
+        local description_b = Easing.quartic_out(t, self._params.highlight_color.b,
+            self._params.color.b - self._params.highlight_color.b, duration)
         self._object_text:set_color(Color(description_r, description_g, description_b))
     end
     self._sideline:set_alpha(0)

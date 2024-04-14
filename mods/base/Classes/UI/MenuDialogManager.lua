@@ -34,10 +34,10 @@ end
 function BLTMenuDialogManager:OpenDialog(dialog, params)
     self.biggest_id = self.biggest_id + 1
     if params and params.force then
-        table.insert(self._waiting_to_open, 1, {dialog = dialog, params = params, id = self.biggest_id})
+        table.insert(self._waiting_to_open, 1, { dialog = dialog, params = params, id = self.biggest_id })
         self._ready_to_open = true
     else
-        table.insert(self._waiting_to_open, {dialog = dialog, params = params, id = self.biggest_id})
+        table.insert(self._waiting_to_open, { dialog = dialog, params = params, id = self.biggest_id })
     end
 end
 
@@ -90,7 +90,7 @@ end
 function BLTMenuDialogManager:CloseLastDialog()
     if self.IgnoreDialogOnce then
         self.IgnoreDialogOnce = false
-        return false 
+        return false
     end
     local dialog = self._opened_dialogs[1]
     if not dialog then
@@ -106,13 +106,13 @@ function BLTMenuDialogManager:Show()
     self._menu:enable()
     local dialog = self._opened_dialogs[1]
     if dialog then
-        self._menu:ReloadInterface({background_color = Color.black:with_alpha(0.3), background_blur = dialog._blur})
+        self._menu:ReloadInterface({ background_color = Color.black:with_alpha(0.3), background_blur = dialog._blur })
         for _, dialog in pairs(self._opened_dialogs) do
             if dialog.ReloadInterface then
                 dialog:ReloadInterface()
             end
         end
-    end 
+    end
 end
 
 function BLTMenuDialogManager:KeyPressed(o, k)
@@ -132,17 +132,32 @@ function BLTMenuDialogManager:Update()
         end
     end
 end
+
 function BLTMenuDialogManager:paused_update() self:update() end
+
 function BLTMenuDialogManager:Simple() return self.simple end
+
 function BLTMenuDialogManager:List() return self.list end
+
 function BLTMenuDialogManager:SelectList() return self.select_list end
+
 function BLTMenuDialogManager:SimpleList() return self.simple_list end
+
 function BLTMenuDialogManager:SimpleSelectList() return self.simple_select_list end
+
 function BLTMenuDialogManager:Color() return self.color end
+
 function BLTMenuDialogManager:FileBrowser() return self.filebrowser end
+
 function BLTMenuDialogManager:Input() return self.input end
+
 function BLTMenuDialogManager:Download() return self.download end
+
 function BLTMenuDialogManager:Menu() return self._menu end
+
 function BLTMenuDialogManager:Hide() self._menu:disable() end
-function BLTMenuDialogManager:GetMyIndex(dialog) return (#self._opened_dialogs + 1) - tonumber(table.get_key(self._opened_dialogs, dialog)) or 0 end
+
+function BLTMenuDialogManager:GetMyIndex(dialog) return ((#self._opened_dialogs + 1) - tonumber(table.get_key(self._opened_dialogs, dialog))) or
+    0 end
+
 function BLTMenuDialogManager:AddDialog(dialog) table.insert(self._dialogs, dialog) end

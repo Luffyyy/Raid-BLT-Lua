@@ -1,4 +1,3 @@
-
 _G.Hooks = Hooks or {}
 Hooks._registered_hooks = Hooks._registered_hooks or {}
 Hooks._prehooks = Hooks._prehooks or {}
@@ -6,7 +5,7 @@ Hooks._posthooks = Hooks._posthooks or {}
 
 --[[
 	Hooks:Register(key)
-		Registers a hook so that functions can be added to it, and later called 
+		Registers a hook so that functions can be added to it, and later called
 	key, Unique identifier for the hook, so that hooked functions can be added to it
 ]]
 function Hooks:RegisterHook(key)
@@ -27,7 +26,7 @@ end
 		Adds a function call to a hook, so that it will be called when the hook is
 	key, 	The unique identifier of the hook to be called on
 	id, 	A unique identifier for this specific function call
-	func, 	The function to call with the hook 
+	func, 	The function to call with the hook
 ]]
 function Hooks:AddHook(key, id, func)
 	if type(func) ~= "function" then
@@ -45,7 +44,7 @@ function Hooks:AddHook(key, id, func)
 		end
 	end
 
-	table.insert(self._registered_hooks[key], {id = id, func = func})
+	table.insert(self._registered_hooks[key], { id = id, func = func })
 end
 
 --[[
@@ -108,7 +107,7 @@ end
 	Hooks:Call(key, ...)
 			Calls a specified hook, and all of its hooked functions
 	key,	The unique identifier of the hook to call its hooked functions
-	args,	The arguments to pass to the hooked functions 
+	args,	The arguments to pass to the hooked functions
 ]]
 function Hooks:Call(key, ...)
 	if not self._registered_hooks[key] then
@@ -133,7 +132,7 @@ function Hooks:ReturnCall(key, ...)
 	end
 
 	for _, v in ipairs(self._registered_hooks[key]) do
-		local ret = {v.func(...)}
+		local ret = { v.func(...) }
 		if ret[1] ~= nil then
 			return unpack(ret)
 		end
@@ -190,7 +189,7 @@ function Hooks:PreHook(object, func, id, pre_call)
 		end
 	end
 
-	table.insert(self._prehooks[object][func].overrides, {id = id, func = pre_call})
+	table.insert(self._prehooks[object][func].overrides, { id = id, func = pre_call })
 end
 
 function Hooks:Pre(...)
@@ -264,7 +263,7 @@ function Hooks:PostHook(object, func, id, post_call)
 		end
 	end
 
-	table.insert(self._posthooks[object][func].overrides, {id = id, func = post_call})
+	table.insert(self._posthooks[object][func].overrides, { id = id, func = post_call })
 end
 
 function Hooks:Post(...)
@@ -286,44 +285,44 @@ function Hooks:RemovePostHook(id)
 			end
 		end
 	end
-
 end
 
 function Hooks:_PrePostHookError(func, id)
 	BLT:LogF(LogLevel.ERROR, "BLTHook", "Could not hook function '%s' (%s).", tostring(func), tostring(id))
 end
 
-
 --TODO: Write what the functions do
 
 function Hooks:RemovePostHookWithObject(object, id)
-    local hooks = self._posthooks[object]
-    if not hooks then
-        BLT:LogF(LogLevel.ERROR, "BLTHook", "No post hooks for object '%s' while trying to remove id '%s'.", tostring(object), tostring(id))
-        return
+	local hooks = self._posthooks[object]
+	if not hooks then
+		BLT:LogF(LogLevel.ERROR, "BLTHook", "No post hooks for object '%s' while trying to remove id '%s'.",
+			tostring(object), tostring(id))
+		return
 	end
 
-    for func_i, func in pairs(hooks) do
-        for override_i, override in pairs(func.overrides) do
-            if override.id == id then
-                table.remove(func.overrides, override_i)
-            end
-        end
-    end         
+	for func_i, func in pairs(hooks) do
+		for override_i, override in pairs(func.overrides) do
+			if override.id == id then
+				table.remove(func.overrides, override_i)
+			end
+		end
+	end
 end
 
 function Hooks:RemovePreHookWithObject(object, id)
-    local hooks = self._prehooks[object]
-    if not hooks then
-        BLT:LogF(LogLevel.ERROR, "BLTHook", "No pre hooks for object '%s' while trying to remove id '%s'.", tostring(object), tostring(id))
-        return
+	local hooks = self._prehooks[object]
+	if not hooks then
+		BLT:LogF(LogLevel.ERROR, "BLTHook", "No pre hooks for object '%s' while trying to remove id '%s'.",
+			tostring(object), tostring(id))
+		return
 	end
 
-    for func_i, func in pairs(hooks) do
-        for override_i, override in pairs(func.overrides) do
-            if override.id == id then
-                table.remove(func.overrides, override_i)
-            end
-        end
-    end         
+	for func_i, func in pairs(hooks) do
+		for override_i, override in pairs(func.overrides) do
+			if override.id == id then
+				table.remove(func.overrides, override_i)
+			end
+		end
+	end
 end

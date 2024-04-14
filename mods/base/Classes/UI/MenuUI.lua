@@ -1,7 +1,7 @@
 MenuUI = MenuUI or class()
 function MenuUI:init(params)
     if not managers or not managers.gui_data then
-        Hooks:Add("SetupInitManagers", "CreateMenuUI"..tostring(self), function()
+        Hooks:Add("SetupInitManagers", "CreateMenuUI" .. tostring(self), function()
             self:init(params)
         end)
         return
@@ -10,10 +10,11 @@ function MenuUI:init(params)
     self.type_name = "MenuUI"
     self.layer = self.layer or 200 --Some fucking layer that is higher than most vanilla menus
     self._ws = managers.gui_data:create_fullscreen_workspace()
-	self._ws:connect_keyboard(Input:keyboard())
+    self._ws:connect_keyboard(Input:keyboard())
     self._panel = self._ws:panel():panel({
-        name = self.name or self.type_name, 
-        alpha = 0, layer = self.layer
+        name = self.name or self.type_name,
+        alpha = 0,
+        layer = self.layer
     })
     self._panel:key_press(callback(self, self, "KeyPressed"))
     self._panel:key_release(callback(self, self, "KeyReleased"))
@@ -30,14 +31,14 @@ function MenuUI:init(params)
         color = self.background_color,
     })
 
-    self._help = self._panel:panel({name = "help", alpha = 0, w = self.help_width or 300})
+    self._help = self._panel:panel({ name = "help", alpha = 0, w = self.help_width or 300 })
     self.help_background_color = NotNil(self.help_background_color, Color.white)
     self._help:rect({
         name = "bg",
-        halign ="grow",
-        valign ="grow",
+        halign = "grow",
+        valign = "grow",
         color = self.help_background_color,
-    })    
+    })
     self._help:text({
         name = "text",
         font = self.help_font or tweak_data.menu.pd2_massive_font,
@@ -51,9 +52,9 @@ function MenuUI:init(params)
 
     self._menus = {}
     self.private = {}
-	if self.visible == true and managers.mouse_pointer then self:enable() end
+    if self.visible == true and managers.mouse_pointer then self:enable() end
 
-    BLT:AddUpdater("MenuUIUpdate"..tostring(self), callback(self, self, "Update"), true)
+    BLT:AddUpdater("MenuUIUpdate" .. tostring(self), callback(self, self, "Update"), true)
     if self.create_items then self:create_items() end
 end
 
@@ -66,16 +67,16 @@ function MenuUI:ReloadInterface(params, shallow)
         w = self._panel:w(),
         h = self._panel:h(),
         color = self.background_color,
-        alpha = self.background_alpha,       
+        alpha = self.background_alpha,
     })
     self._help:child("bg"):configure({
         color = self.help_background_color or self.background_color,
-        alpha = self.help_background_alpha or self.background_alpha,       
+        alpha = self.help_background_alpha or self.background_alpha,
     })
     self._help:child("text"):configure({
         font = self.help_font or tweak_data.menu.pd2_massive_font,
-        font_size = self.help_font_size or 16,       
-        color = self.help_color or Color.black       
+        font_size = self.help_font_size or 16,
+        color = self.help_color or Color.black
     })
     if not shallow then
         for _, menu in pairs(self._menus) do
@@ -85,7 +86,7 @@ function MenuUI:ReloadInterface(params, shallow)
 end
 
 function MenuUI:ShowDelayedHelp(item)
-    DelayedCalls:Add("ShowItemHelp"..tostring(self), self.show_help_time or 1, function()
+    DelayedCalls:Add("ShowItemHelp" .. tostring(self), self.show_help_time or 1, function()
         if not alive(item) then
             self:HideHelp()
             return
@@ -98,15 +99,15 @@ function MenuUI:ShowDelayedHelp(item)
             help_text = self._help:child("text")
             help_text:set_w(300)
             help_text:set_text(item.help_localized and managers.localization:text(item.help) or item.help)
-            local _,_,w,h  = help_text:text_rect()
-            w = math.min(w, 300)
+            local _, _, w, h = help_text:text_rect()
+            w             = math.min(w, 300)
             self._help:set_size(w + 8, h + 8)
             help_text:set_shape(4, 4, w + 4, h + 4)
 
             local mouse = managers.mouse_pointer:mouse()
             local mouse_p = mouse:parent()
-            local bottom_h = (mouse_p:world_bottom() - mouse:world_bottom()) 
-            local top_h = (mouse:world_y() - mouse_p:world_y()) 
+            local bottom_h = (mouse_p:world_bottom() - mouse:world_bottom())
+            local top_h = (mouse:world_y() - mouse_p:world_y())
             local normal_pos = h <= bottom_h or bottom_h >= top_h
             self._help:set_world_left(mouse:world_left() + 7)
             if normal_pos then
@@ -114,7 +115,7 @@ function MenuUI:ShowDelayedHelp(item)
             else
                 self._help:set_world_bottom(mouse:world_y() - 5)
             end
-            play_anim(self._help, {set = {alpha = 1}})
+            play_anim(self._help, { set = { alpha = 1 } })
             self._showing_help = item
             self._saved_help_x = self._old_x
             self._saved_help_y = self._old_y
@@ -169,20 +170,20 @@ function MenuUI:Enable()
         return
     end
     if self.animate_toggle then
-        play_anim(self._panel, {set = {alpha = 1}, time = 0.2})       
+        play_anim(self._panel, { set = { alpha = 1 }, time = 0.2 })
     else
         self._panel:set_alpha(1)
     end
-	self._enabled = true
+    self._enabled = true
     self._mouse_id = self._mouse_id or managers.mouse_pointer:get_id()
-	managers.mouse_pointer:use_mouse({
-		mouse_move = callback(self, self, "MouseMoved"),
-		mouse_press = callback(self, self, "MousePressed"),
-		mouse_double_click = callback(self, self, "MouseDoubleClick"),
-		mouse_release = callback(self, self, "MouseReleased"),
-		id = self._mouse_id,
+    managers.mouse_pointer:use_mouse({
+        mouse_move = callback(self, self, "MouseMoved"),
+        mouse_press = callback(self, self, "MousePressed"),
+        mouse_double_click = callback(self, self, "MouseDoubleClick"),
+        mouse_release = callback(self, self, "MouseReleased"),
+        id = self._mouse_id,
         parent = self
-	})
+    })
 end
 
 function MenuUI:Disable()
@@ -190,26 +191,26 @@ function MenuUI:Disable()
         return
     end
     if self.animate_toggle then
-        play_anim(self._panel, {set = {alpha = 0}, time = 0.2})
+        play_anim(self._panel, { set = { alpha = 0 }, time = 0.2 })
     else
         self._panel:set_alpha(0)
     end
-	self._enabled = false
-	if self._highlighted then self._highlighted:UnHighlight() end
-	if self._openlist then self._openlist:hide() end
-	managers.mouse_pointer:remove_mouse(self._mouse_id)
+    self._enabled = false
+    if self._highlighted then self._highlighted:UnHighlight() end
+    if self._openlist then self._openlist:hide() end
+    managers.mouse_pointer:remove_mouse(self._mouse_id)
 end
 
 function MenuUI:RunToggleClbk()
     if self.toggle_clbk then
         self.toggle_clbk(self:Enabled())
-    end           
+    end
 end
 
 function MenuUI:CheckOpenedList()
-	if self._openlist and not self._openlist.parent:Enabled() then
-		self._openlist:hide()
-	end
+    if self._openlist and not self._openlist.parent:Enabled() then
+        self._openlist:hide()
+    end
 end
 
 function MenuUI:Toggle()
@@ -227,7 +228,7 @@ function MenuUI:Toggle()
 end
 
 function MenuUI:Update()
-    local x,y = managers.mouse_pointer:world_position()
+    local x, y = managers.mouse_pointer:world_position()
     if self._slider_hold then self._slider_hold:SetValueByMouseXPos(x) end
     self._old_x = x
     self._old_y = y
@@ -242,7 +243,7 @@ end
 function MenuUI:KeyReleased(o, k)
     if self.always_key_released then self.always_key_released(o, k) end
     self._scroll_hold = nil
-    self._key_pressed = nil   
+    self._key_pressed = nil
     if not self:Enabled() then
         return
     end
@@ -270,8 +271,8 @@ function MenuUI:KeyPressed(o, k)
         return
     end
     if self:IsMouseActive() and self._highlighted and self._highlighted.parent:Enabled() and self._highlighted:KeyPressed(o, k) then
-        return 
-    end 
+        return
+    end
     for _, menu in pairs(self._menus) do
         if menu:KeyPressed(o, k) then
             return
@@ -289,7 +290,7 @@ function MenuUI:SetParam(param, value)
 end
 
 function MenuUI:MouseReleased(o, button, x, y)
-	self._slider_hold = nil    
+    self._slider_hold = nil
     for _, menu in pairs(self._menus) do
         if menu:MouseReleased(button, x, y) then
             return
@@ -302,11 +303,11 @@ end
 
 function MenuUI:MouseDoubleClick(o, button, x, y)
     if self.always_mouse_double_click then self.always_mouse_double_click(button, x, y) end
-	for _, menu in pairs(self._menus) do
-		if menu:MouseDoubleClick(button, x, y) then
+    for _, menu in pairs(self._menus) do
+        if menu:MouseDoubleClick(button, x, y) then
             return
-		end
-	end
+        end
+    end
     if self.mouse_double_click then self.mouse_double_click(button, x, y) end
 end
 
@@ -321,28 +322,28 @@ function MenuUI:MousePressed(o, button, x, y)
         else
             self._openlist:hide()
         end
-    else    
-    	for _, menu in pairs(self._menus) do
+    else
+        for _, menu in pairs(self._menus) do
             if menu:MouseFocused() then
-        		if menu:MousePressed(button, x, y) then
+                if menu:MousePressed(button, x, y) then
                     return
-        		end
+                end
             end
-    	end
+        end
     end
     if self.mouse_press then self.mouse_press(button, x, y) end
 end
 
 function MenuUI:ShouldClose()
-	if not self._slider_hold and not self._grabbed_scroll_bar then
-		for _, menu in pairs(self._menus) do
+    if not self._slider_hold and not self._grabbed_scroll_bar then
+        for _, menu in pairs(self._menus) do
             if not menu:ShouldClose() then
                 return false
             end
-		end
-		return true
-	end
-	return false
+        end
+        return true
+    end
+    return false
 end
 
 function MenuUI:MouseMoved(o, x, y)
@@ -364,7 +365,7 @@ function MenuUI:MouseMoved(o, x, y)
                     return
                 end
             end
-        end        
+        end
     end
     if self.mouse_move then self.mouse_move(x, y) end
 end
@@ -412,11 +413,11 @@ function MenuUI:GetItemByLabel(label, shallow)
 end
 
 function MenuUI:Focused()
-	for _, menu in pairs(self._menus) do
-		if menu:Visible() then
+    for _, menu in pairs(self._menus) do
+        if menu:Visible() then
             return self._highlighted
         end
-	end
+    end
     return false
 end
 
@@ -434,6 +435,9 @@ function MenuUI:SwitchMenu(menu)
 end
 
 function MenuUI:NewMenu(params) return self:Menu(params) end
+
 function MenuUI:enable() return self:Enable() end
+
 function MenuUI:disable() return self:Disable() end
+
 function MenuUI:toggle() return self:Toggle() end

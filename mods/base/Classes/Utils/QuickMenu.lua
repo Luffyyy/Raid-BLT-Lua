@@ -1,4 +1,3 @@
-
 QuickMenu = QuickMenu or class()
 QuickMenu._menu_id_key = "quick_menu_id_"
 QuickMenu._menu_id_index = 0
@@ -9,11 +8,11 @@ end
 
 function QuickMenu:init(title, text, options, show_immediately)
 	options = options or {}
-    for _, opt in pairs(options) do
-        if not opt.callback then
-            opt.is_cancel_button = true
-        end
-    end
+	for _, opt in pairs(options) do
+		if not opt.callback then
+			opt.is_cancel_button = true
+		end
+	end
 	self._menu_id_index = QuickMenu._menu_id_index + 1
 	self.dialog_data = {
 		id = QuickMenu._menu_id_key .. tostring(QuickMenu._menu_id_index),
@@ -28,7 +27,7 @@ function QuickMenu:init(title, text, options, show_immediately)
 		add_default = true
 	end
 	if add_default then
-		table.insert(options, {text = "OK", is_cancel_button = true})
+		table.insert(options, { text = "OK", is_cancel_button = true })
 	end
 
 	for k, option in pairs(options) do
@@ -40,7 +39,7 @@ function QuickMenu:init(title, text, options, show_immediately)
 
 		table.insert(self.dialog_data.button_list, {
 			text = option.text,
-			callback_func = callback(self, self, "_callback", {data = option.data, callback = option.callback}),
+			callback_func = callback(self, self, "_callback", { data = option.data, callback = option.callback }),
 			cancel_button = option.is_cancel_button or false
 		})
 	end

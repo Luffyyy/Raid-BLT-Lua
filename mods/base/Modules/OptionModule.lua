@@ -4,7 +4,7 @@ OptionModule = OptionModule or class(ModuleBase)
 OptionModule.type_name = "Options"
 
 function OptionModule:init(core_mod, config)
-    self.required_params = table.add(clone(self.required_params), {"options"})
+    self.required_params = table.add(clone(self.required_params), { "options" })
     self._name = config.name or "Options"
 
     if not OptionModule.super.init(self, core_mod, config) then
@@ -23,7 +23,7 @@ function OptionModule:init(core_mod, config)
     if self._config.build_menu ~= nil then
         self._config.auto_build_menu = self._config.build_menu
     end
-    
+
     if self._config.auto_build_menu == nil or self._config.auto_build_menu then
         self:BuildMenuHook()
     end
@@ -60,6 +60,10 @@ function OptionModule:Load()
 
     local file = io.open(self.SavePath .. self.FileName, 'r')
 
+    if not file then
+        return
+    end
+
     --pcall for json decoding
     local success, data = pcall(function() return json.decode(file:read("*all")) end)
     file:close()
@@ -69,11 +73,14 @@ function OptionModule:Load()
 
         --Save the corrupted file incase the option values should be recovered
         local corrupted_file = io.open(self.SavePath .. self.FileName .. "_corrupted", "w+")
-        corrupted_file:write(file:read("*all"))
-        corrupted_file:close()
+        if corrupted_file then
+            corrupted_file:write(file:read("*all"))
+            corrupted_file:close()
 
-        --Save the Options file with the current option values
-        self:Save()
+            --Save the Options file with the current option values
+            self:Save()
+        end
+
         return
     end
 
@@ -124,7 +131,8 @@ function OptionModule:InitOptions(tbl, option_tbl)
         if sub_tbl._meta then
             if sub_tbl._meta == "option" then
                 if sub_tbl.type == "multichoice" then
-                    sub_tbl.values = sub_tbl.values_tbl and self._mod:StringToTable(sub_tbl.values_tbl) or Utils:RemoveNonNumberIndexes(sub_tbl.values)
+                    sub_tbl.values = sub_tbl.values_tbl and self._mod:StringToTable(sub_tbl.values_tbl) or
+                    Utils:RemoveNonNumberIndexes(sub_tbl.values)
                 end
 
                 if sub_tbl.value_changed then
@@ -138,7 +146,8 @@ function OptionModule:InitOptions(tbl, option_tbl)
                 if sub_tbl.enabled_callback then
                     sub_tbl.enabled_callback = self._mod:StringToCallback(sub_tbl.enabled_callback)
                 end
-                sub_tbl.default_value = type(sub_tbl.default_value) == "string" and Utils:normalize_string_value(sub_tbl.default_value) or sub_tbl.default_value
+                sub_tbl.default_value = type(sub_tbl.default_value) == "string" and
+                Utils:normalize_string_value(sub_tbl.default_value) or sub_tbl.default_value
                 option_tbl[sub_tbl.name] = sub_tbl
                 option_tbl[sub_tbl.name].value = sub_tbl.default_value
             elseif sub_tbl._meta == "option_group" then
@@ -272,7 +281,7 @@ function OptionModule:PopulateSaveTable(tbl, save_tbl)
         if type(sub_tbl) == "table" and sub_tbl._meta then
             if sub_tbl._meta == "option" then
                 local value = sub_tbl.value
-                if sub_tbl.type=="multichoice" and sub_tbl.save_value then
+                if sub_tbl.type == "multichoice" and sub_tbl.save_value then
                     if type(sub_tbl.values[sub_tbl.value]) == "table" then
                         value = sub_tbl.values[sub_tbl.value].value
                     else
@@ -290,10 +299,14 @@ end
 
 function OptionModule:Save()
     local file = io.open(self.SavePath .. self.FileName, "w+")
+    if not file then
+        return
+    end
+
     local save_data = {}
     self:PopulateSaveTable(self._storage, save_data)
-	file:write(json.encode(save_data))
-	file:close()
+    file:write(json.encode(save_data))
+    file:close()
 end
 
 function OptionModule:GetParameter(tbl, i)
@@ -317,7 +330,7 @@ function OptionModule:CreateSlider(menu, option_tbl, option_path)
 
     local merge_data = self:GetParameter(option_tbl, "merge_data") or {}
     merge_data = Utils:RemoveAllNumberIndexes(merge_data)
-    
+
     table.insert(menu._items_data, table.merge({
         type = "Slider",
         name = self:GetParameter(option_tbl, "name"),
@@ -392,7 +405,8 @@ function OptionModule:CreateMatrix(menu, option_tbl, option_path, components)
     local base_params = table.merge({
         type = "Slider",
         name = self:GetParameter(option_tbl, "name"),
-        text = managers.localization:text(self:GetParameter(option_tbl, "title_id") or self._mod.name .. option_tbl.name .. "Text"),
+        text = managers.localization:text(self:GetParameter(option_tbl, "title_id") or
+        self._mod.name .. option_tbl.name .. "Text"),
         callback = callback(self, self, "MatrixItemValueChanged"),
         min = self:GetParameter(option_tbl, "min") or 0,
         max = self:GetParameter(option_tbl, "max") or scale_factor,
@@ -402,7 +416,8 @@ function OptionModule:CreateMatrix(menu, option_tbl, option_path, components)
         scale_factor = scale_factor,
         get_value = function(value_name, item)
             local val, component = self:GetValue(item.value_name), item.component
-            return (type(val[component]) == "function" and val[component](val) or val[component] or 0) * scale_factor
+            return (val and (type(val[component]) == "function" and val[component](val) or val[component]) or 0) *
+            scale_factor
         end,
         value_name = option_path,
         opt_type = option_tbl.type
@@ -429,7 +444,7 @@ function OptionModule:CreateColour(menu, option_tbl, option_path)
 
     local merge_data = self:GetParameter(option_tbl, "merge_data") or {}
     merge_data = Utils:RemoveAllNumberIndexes(merge_data)
-    
+
     table.insert(menu._items_data, table.merge({
         type = "ColorButton",
         name = self:GetParameter(option_tbl, "name"),
@@ -441,11 +456,12 @@ function OptionModule:CreateColour(menu, option_tbl, option_path)
 end
 
 function OptionModule:CreateVector(menu, option_tbl, option_path)
-    self:CreateMatrix(menu, option_tbl, option_path, { {id="x", title="X"}, {id="y", title="Y"}, {id="z", title="Z"} })
+    self:CreateMatrix(menu, option_tbl, option_path, { { id = "x", title = "X" }, { id = "y", title = "Y" }, { id = "z", title = "Z" } })
 end
 
 function OptionModule:CreateRotation(menu, option_tbl, option_path)
-    self:CreateMatrix(menu, option_tbl, option_path, { {id="yaw", title="YAW"}, {id="pitch", title="PITCH"}, {id="roll", title="ROLL", max=90} })
+    self:CreateMatrix(menu, option_tbl, option_path,
+        { { id = "yaw", title = "YAW" }, { id = "pitch", title = "PITCH" }, { id = "roll", title = "ROLL", max = 90 } })
 end
 
 function OptionModule:CreateOption(menu, option_tbl, option_path)
@@ -490,11 +506,11 @@ function OptionModule:CreateSubMenu(menu, option_tbl, option_path)
     clss._mod = self._mod
     self._menus[base_name] = clss
     RaidMenuHelper:CreateMenu({
-		name = base_name,
-		name_id = self:GetParameter(option_tbl, "title_id") or base_name .. "ButtonText",
+        name = base_name,
+        name_id = self:GetParameter(option_tbl, "title_id") or base_name .. "ButtonText",
         inject_menu = menu,
         class = clss
-	})
+    })
 
     if option_tbl.build_items == nil or option_tbl.build_items then
         self:InitializeMenu(clss, option_tbl, name and (option_path == "" and name or option_path .. "/" .. name) or "")
@@ -519,9 +535,10 @@ function OptionModule:InitializeMenu(menu, option_tbl, option_path)
 end
 
 function OptionModule:BuildMenuHook()
-    Hooks:Add("MenuComponentManagerInitialize", self._mod.name .. "Build" .. self._name .. "Menu", function(self_menu, nodes)	
-        self:BuildMenu(BLTModManager.Constants.BLTOptions)
-    end)
+    Hooks:Add("MenuComponentManagerInitialize", self._mod.name .. "Build" .. self._name .. "Menu",
+        function(self_menu, nodes)
+            self:BuildMenu(BLTModManager.Constants.BLTOptions)
+        end)
 end
 
 function OptionModule:BuildMenu(menu)
@@ -540,6 +557,10 @@ end
 
 function OptionModule:MatrixItemValueChanged(value, item)
     local cur_val = self:GetValue(item._params.value_name)
+    if not cur_val then
+        return
+    end
+
     local comp = item._params.component
     local new_value = value / item._params.scale_factor
     if item._params.opt_type == "vector" then
@@ -551,7 +572,8 @@ function OptionModule:MatrixItemValueChanged(value, item)
             mvector3.set_z(cur_val, new_value)
         end
     elseif item._params.opt_type == "rotation" then
-        mrotation.set_yaw_pitch_roll(cur_val, comp == "yaw" and new_value or cur_val:yaw(), comp == "pitch" and new_value or cur_val:pitch(), comp == "roll" and new_value or cur_val:roll())
+        mrotation.set_yaw_pitch_roll(cur_val, comp == "yaw" and new_value or cur_val:yaw(),
+            comp == "pitch" and new_value or cur_val:pitch(), comp == "roll" and new_value or cur_val:roll())
     end
     item._params.val = cur_val
     self:SetValue(item._params.value_name, cur_val)

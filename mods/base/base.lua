@@ -4,6 +4,7 @@ if not _G or BLT then
 end
 
 -- Localise globals
+---@class _G
 local _G = _G
 
 -- BLT Global table
@@ -53,7 +54,6 @@ end
 
 -- BLT base functions
 function BLT:Initialize()
-
 	-- Create environment holders
 	self._envs = {}
 	self._env_mt = { __index = _G, __newindex = _G }
@@ -215,7 +215,7 @@ function BLT:OverrideRequire()
 
 	-- Override require function to run hooks
 	self.new_require = function(...)
-		local args = {...}
+		local args = { ... }
 		local path = args[1]
 		local path_lower = path:lower()
 		local require_result = nil
@@ -384,7 +384,8 @@ function BLT:LogC(...)
 end
 
 function BLT:log(...)
-	self:_Log(LogLevel.WARN, "DEPRECATED", "The BLT:log() function has been deprecated. Please use BLT:Log(lvl, cat, ...)")
+	self:_Log(LogLevel.WARN, "DEPRECATED",
+		"The BLT:log() function has been deprecated. Please use BLT:Log(lvl, cat, ...)")
 
 	local mod = self:_get_mod(3)
 	return BLTMod.log(mod, ...)

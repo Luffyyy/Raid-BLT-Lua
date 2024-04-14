@@ -3,7 +3,7 @@ ModuleBase.type_name = "ModuleBase"
 ModuleBase.required_params = {}
 function ModuleBase:init(core_mod, config)
     self._mod = core_mod
-    self._name =  self._name or config.name or config._meta or self.type_name
+    self._name = self._name or config.name or config._meta or self.type_name
     if config.file ~= nil then
         local file = io.open(self._mod:GetRealFilePath(Path:Combine(self._mod.path, config.file)), "r")
         self._config = table.merge(config, ScriptSerializer:from_custom_xml(file:read("*all")))
@@ -56,12 +56,11 @@ function ModuleBase:log(...)
     return self._mod:log(...)
 end
 
-
 ItemModuleBase = ItemModuleBase or class(ModuleBase)
 ItemModuleBase.type_name = "ItemModuleBase"
-ItemModuleBase.required_params = {"id"}
+ItemModuleBase.required_params = { "id" }
 ItemModuleBase.clean_table = {}
-ItemModuleBase.defaults = {global_value="mod", dlc="mod"}
+ItemModuleBase.defaults = { global_value = "mod", dlc = "mod" }
 ItemModuleBase._loose = true
 local remove_last = function(str)
     local tbl = string.split(str, "%.")
@@ -82,7 +81,7 @@ function ItemModuleBase:do_clean_table(config)
         local i, search_string = remove_last(clean.param)
         local tbl = search_string and Utils:StringToTable(search_string, config, true) or config
         if tbl and tbl[i] then
-            for _, action in pairs(type(clean.action) == "table" and clean.action or {clean.action}) do
+            for _, action in pairs(type(clean.action) == "table" and clean.action or { clean.action }) do
                 if action == "no_subtables" then
                     tbl[i] = Utils:RemoveAllSubTables(tbl[i])
                 elseif action == "no_number_indexes" then

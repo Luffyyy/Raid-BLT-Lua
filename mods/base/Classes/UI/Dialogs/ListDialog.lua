@@ -8,8 +8,8 @@ function ListDialog:init(params, menu)
     end
 
     menu = menu or BLT.Dialogs:Menu()
-    
-    local w,h = params.w, params.h
+
+    local w, h = params.w, params.h
     params.h = nil
 
     ListDialog.super.init(self, table.merge({
@@ -25,7 +25,7 @@ function ListDialog:init(params, menu)
     params.h = h
 
     self._list_menu = menu:Menu(table.merge({
-        name = "List",        
+        name = "List",
         w = 1000,
         h = params.h and params.h - self._menu.h or 700,
         items_size = 28,
@@ -37,16 +37,16 @@ function ListDialog:init(params, menu)
         position = params.position or "Center",
         visible = false,
     }, params))
-    
-    self._menus = {self._list_menu}
+
+    self._menus = { self._list_menu }
     self._menu:Panel():set_leftbottom(self._list_menu:Panel():left(), self._list_menu:Panel():top() - 1)
 end
 
 function ListDialog:CreateShortcuts(params)
-    local offset = {4, 0}
+    local offset = { 4, 0 }
     local bw = self._menu:Toggle({
         name = "Limit",
-        w = bw,
+        --w = bw, -- dafuq?
         offset = offset,
         text = ">|",
         help = "blt_limit_results",
@@ -56,7 +56,7 @@ function ListDialog:CreateShortcuts(params)
         callback = function(menu, item)
             self._limit = item:Value()
             self:MakeListItems()
-        end,  
+        end,
         label = "temp"
     }):Width()
     self._menu:Toggle({
@@ -70,7 +70,7 @@ function ListDialog:CreateShortcuts(params)
         callback = function(menu, item)
             self._case_sensitive = item:Value()
             self:MakeListItems()
-        end,  
+        end,
         label = "temp"
     })
     return offset, bw
@@ -94,8 +94,8 @@ function ListDialog:_Show(params)
         icon_h = 24,
         img_rot = 45,
         texture = "ui/atlas/raid_atlas_menu",
-        texture_rect = {761, 721, 18, 18},
-        callback = callback(self, self, "hide"),  
+        texture_rect = { 761, 721, 18, 18 },
+        callback = callback(self, self, "hide"),
         label = "temp"
     })
 
@@ -106,12 +106,12 @@ function ListDialog:_Show(params)
         index = 1,
         text = "blt_search",
         localized = true,
-        callback = callback(self, self, "Search"),  
+        callback = callback(self, self, "Search"),
         label = "temp"
     })
     if params.sort ~= false then
-        table.sort(params.list, function(a, b) 
-            return (type(a) == "table" and a.name or a) < (type(b) == "table" and b.name or b) 
+        table.sort(params.list, function(a, b)
+            return (type(a) == "table" and a.name or a) < (type(b) == "table" and b.name or b)
         end)
     end
     self:MakeListItems(params)
@@ -127,7 +127,7 @@ function ListDialog:SearchCheck(t)
     end
     local match
     for _, s in pairs(self._filter) do
-        match = (self._case_sensitive and string.match(t, s) or not self._case_sensitive and string.match(t:lower(), s:lower())) 
+        match = (self._case_sensitive and string.match(t, s) or not self._case_sensitive and string.match(t:lower(), s:lower()))
     end
     return match
 end
@@ -146,13 +146,13 @@ function ListDialog:MakeListItems(params)
                 break
             end
             local menu = self._list_menu
-            if type(v) == "table" and v.create_group then 
+            if type(v) == "table" and v.create_group then
                 menu = groups[v.create_group] or self._list_menu:Group({
                     auto_align = false,
                     name = v.create_group,
                     text = v.create_group,
                     label = "temp2"
-                }) 
+                })
                 groups[v.create_group] = menu
             end
             menu:Button(table.merge(type(v) == "table" and v or {}, {
@@ -162,18 +162,18 @@ function ListDialog:MakeListItems(params)
                     if self._callback then
                         self._callback(v)
                     end
-                end, 
+                end,
                 label = "temp2"
             }))
         end
     end
-    
+
     self:show_dialog()
     self._list_menu:AlignItems(true)
 end
 
 function ListDialog:ReloadInterface()
-    self._list_menu:AlignItems(true)    
+    self._list_menu:AlignItems(true)
 end
 
 function ListDialog:Search(menu, item)

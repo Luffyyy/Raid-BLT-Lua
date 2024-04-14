@@ -16,7 +16,8 @@ function KeybindsModule:Load()
     for i, keybind in ipairs(self._config) do
         if keybind._meta == "keybind" then
             if not keybind.keybind_id then
-                self:LogF(LogLevel.ERROR, "Load", "Keybind %s does not contain a definition for keybind_id!", tostring(keybind.name or "at index " .. tostring(i)))
+                self:LogF(LogLevel.ERROR, "Load", "Keybind %s does not contain a definition for keybind_id!",
+                    tostring(keybind.name or ("at index " .. tostring(i))))
                 return
             end
             keybind.run_in_menu = keybind.run_in_menu or true

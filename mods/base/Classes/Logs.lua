@@ -1,13 +1,12 @@
-
 BLTLogs = BLTLogs or class()
 function BLTLogs:init()
 	self.logs_location = "mods/logs/"
 	self.logs_lifetime = {
-		[1] = {1, "blt_logs_one_day"},
-		[2] = {3, "blt_logs_three_days"},
-		[3] = {7, "blt_logs_one_week"},
-		[4] = {14, "blt_logs_two_weeks"},
-		[5] = {30, "blt_logs_thirty_days"},
+		[1] = { 1, "blt_logs_one_day" },
+		[2] = { 3, "blt_logs_three_days" },
+		[3] = { 7, "blt_logs_one_week" },
+		[4] = { 14, "blt_logs_two_weeks" },
+		[5] = { 30, "blt_logs_thirty_days" },
 	}
 	self.day_length = 86400
 end

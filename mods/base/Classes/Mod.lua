@@ -35,22 +35,22 @@ function BLTMod:init(path, ident, data)
     -- Mod information
     self:InitParams(path, ident, data)
 
-	-- Updates data
-	if self._config.updates then
-		self._modules = {}
-		for _, data in ipairs(self._config.updates) do
-			local update = UpdatesModule:new(self, {
-				provider = "paydaymods",
-				id = data.identifier,
-				important = data.critical,
-				hash_file = data.hash_file,
-				manual_check = data.disallow_update, -- I think
-				install_directory = data.load_dir or "mods/",
-				folder_name = data.install_folder
-			})
-			table.insert(self._modules, update)
-		end
-	end
+    -- Updates data
+    if self._config.updates then
+        self._modules = {}
+        for _, data in ipairs(self._config.updates) do
+            local update = UpdatesModule:new(self, {
+                provider = "paydaymods",
+                id = data.identifier,
+                important = data.critical,
+                hash_file = data.hash_file,
+                manual_check = data.disallow_update, -- I think
+                install_directory = data.load_dir or "mods/",
+                folder_name = data.install_folder
+            })
+            table.insert(self._modules, update)
+        end
+    end
 end
 
 function BLTMod:PostInit()
@@ -60,8 +60,8 @@ function BLTMod:InitParams(path, ident, data)
     self._config = data
     self.id = ident
     self.load_dir = path
-	self.path = string.format("%s%s/", path, ident)
-	self.save_path = data.save_path or "saves/"
+    self.path = string.format("%s%s/", path, ident)
+    self.save_path = data.save_path or "saves/"
     self.name = data.name or self.id
     self.logname = data.log_name or self.name
     self.desc = data.description or BLTMod.desc
@@ -72,7 +72,7 @@ function BLTMod:InitParams(path, ident, data)
     self.priority = tonumber(data.priority) or 0
     self.dependencies = data.dependencies or {}
     self.image_path = data.image or nil
-    self.registered_hooks = {post = {}, pre = {}, wildcards = {}}
+    self.registered_hooks = { post = {}, pre = {}, wildcards = {} }
     if data.log_level then
         local log_level = tonumber(data.log_level) or 0
         if log_level >= 0 and log_level <= LogLevel.ALL then
@@ -89,13 +89,13 @@ function BLTMod:SetupCheck()
     mod_blt_version = mod_blt_version and tonumber(mod_blt_version) or nil
     if mod_blt_version and mod_blt_version > BLT:GetVersion() then
         self._blt_outdated = true
-        table.insert(self._errors, {"blt_mod_blt_outdated", math.round_with_precision(mod_blt_version, 4)})
+        table.insert(self._errors, { "blt_mod_blt_outdated", math.round_with_precision(mod_blt_version, 4) })
     end
 
     -- Check dependencies are installed for this mod
-   	self:AreDependenciesAvailable(true)
-	
-	self:SetEnabled(not self:Errors() and not disabled_mods[self.path])
+    self:AreDependenciesAvailable(true)
+
+    self:SetEnabled(not self:Errors() and not disabled_mods[self.path])
 end
 
 function BLTMod:Setup()
@@ -129,23 +129,23 @@ end
 function BLTMod:AddHooks(data_key, destination, wildcards_destination)
     local hooks = self._config[data_key] or {}
     local path = Path:Combine(self:GetPath(), hooks.directory)
-	for i, hook in ipairs(hooks) do
-		local source_file = hook.source_file or hook.hook_id
-		local script = hook.file or hook.script_path
-		BLT.Mods:RegisterHook(source_file, path, script, hook.type, self)
-		if source_file == "*" then
-			table.insert(self.registered_hooks.wildcards, script)
-		elseif hook.type == "pre" then
-			table.insert(self.registered_hooks.pre, {source_file, script})
-		else
-			table.insert(self.registered_hooks.post, {source_file, script})
-		end
-	end
+    for i, hook in ipairs(hooks) do
+        local source_file = hook.source_file or hook.hook_id
+        local script = hook.file or hook.script_path
+        BLT.Mods:RegisterHook(source_file, path, script, hook.type, self)
+        if source_file == "*" then
+            table.insert(self.registered_hooks.wildcards, script)
+        elseif hook.type == "pre" then
+            table.insert(self.registered_hooks.pre, { source_file, script })
+        else
+            table.insert(self.registered_hooks.post, { source_file, script })
+        end
+    end
 end
 
 function BLTMod:AddPersistScript(global, file)
     self._persists = self._persists or {}
-    table.insert(self._persists, {global = global, file = file})
+    table.insert(self._persists, { global = global, file = file })
 end
 
 function BLTMod:GetHooks()
@@ -184,7 +184,7 @@ end
 
 function BLTMod:LogF(lvl, category, formatstr, ...)
     if lvl > self.LOG_LEVEL then
-		return
+        return
     end
 
     return BLTMod._Log(self, lvl, category, string.format(formatstr, ...))
@@ -192,10 +192,10 @@ end
 
 function BLTMod:LogC(lvl, category, ...)
     if lvl > self.LOG_LEVEL then
-		return
+        return
     end
 
-    local str = {...}
+    local str = { ... }
 
     -- Explicitly convert arguments to string
     for i = 1, #str do
@@ -214,7 +214,8 @@ function BLTMod:log(lvl, category, ...)
     if type(lvl) ~= "number" then
         -- old format
         if LogLevel.WARN <= max_lvl then
-            self:_Log(LogLevel.WARN, "DEPRECATED", "The BLTMod:log() function has been deprecated. Please use BLTMod:Log(lvl, cat, ...)")
+            self:_Log(LogLevel.WARN, "DEPRECATED",
+                "The BLTMod:log() function has been deprecated. Please use BLTMod:Log(lvl, cat, ...)")
         elseif LogLevel.INFO <= max_lvl then
             return BLTMod.LogF(self, LogLevel.INFO, "None", lvl, category, ...)
         end
@@ -308,7 +309,8 @@ function BLTMod:GetColor()
                 self.color = color
                 return color
             end
-            self:LogF(LogLevel.WARN, "BLTModsMenu", "The color '%s' is not valid! %s, %s", tostring(self._config.color), tostring(err), tostring(color))
+            self:LogF(LogLevel.WARN, "BLTModsMenu", "The color '%s' is not valid! %s, %s", tostring(self._config.color),
+                tostring(err), tostring(color))
             self._config.color = false
         end
         return
@@ -383,34 +385,34 @@ function BLTMod:GetDisabledDependencies()
 end
 
 function BLTMod:AreDependenciesAvailable(pick_errors)
-	if not BLT.Options then
-		return true
-	end
+    if not BLT.Options then
+        return true
+    end
 
     local dep_mods = {}
-	local available = true
+    local available = true
     local disabled_mods = BLT.Options:GetValue("DisabledMods")
 
-	-- Iterate all mods and updates to find dependencies, store any that are missing
+    -- Iterate all mods and updates to find dependencies, store any that are missing
     local dependencies = self:GetDependencies()
     for _, mod in pairs(BLT.Mods:Mods()) do
         local name = mod:GetName()
         if table.contains(dependencies, name) then
-			dep_mods[name] = mod
+            dep_mods[name] = mod
         end
     end
 
     for _, id in ipairs(dependencies) do
         local mod = dep_mods[id]
-		if mod then
-			if mod:CanBeDisabled() and disabled_mods[mod:GetPath()] and pick_errors then
-				table.insert(self._errors, {"blt_mod_dependency_disabled", id})
-				available = false
-			end
-		else
-			table.insert(self._errors, {"blt_mod_missing_dependency", id})
-			available = false
-		end
+        if mod then
+            if mod:CanBeDisabled() and disabled_mods[mod:GetPath()] and pick_errors then
+                table.insert(self._errors, { "blt_mod_dependency_disabled", id })
+                available = false
+            end
+        else
+            table.insert(self._errors, { "blt_mod_missing_dependency", id })
+            available = false
+        end
     end
 
     return available
@@ -419,7 +421,7 @@ end
 function BLTMod:GetDeveloperInfo()
     local result = {}
     local append = function(...)
-        for i, s in ipairs({...}) do
+        for i, s in ipairs({ ... }) do
             if i > 1 then
                 table.insert(result, "    ")
             end
@@ -435,43 +437,43 @@ function BLTMod:GetDeveloperInfo()
     local persists = self:GetPersistScripts() or {}
     local version = self:GetVersion()
 
-	if #self._errors > 0 then
-		append("Failed to load!")
-		append("", "Errors:")
+    if #self._errors > 0 then
+        append("Failed to load!")
+        append("", "Errors:")
         for _, err in pairs(self._errors) do
             local param = type(err) == "table" and err[2] or nil
             err = param and err[1] or err
-			append("", "", tostring(managers.localization:text(err, {param = param})))
+            append("", "", tostring(managers.localization:text(err, { param = param })))
         end
     end
-    
+
     append("Name:", self:GetName())
     append("Path:", self:GetPath())
     append("Description:", self:GetDescription())
     append("Author:", self:GetAuthor())
     append("Contact:", self:GetContact())
     append("Path:", self:GetPath())
-	append("Load Priority:", self:GetPriority())
+    append("Load Priority:", self:GetPriority())
 
-	if version then
-		append("Version:", version)
-	end
+    if version then
+        append("Version:", version)
+    end
     local min = self:GetMinBLTVersion()
     if min then
         append("Minimum BLT-Version:", min)
     end
 
-	if self:CannotBeDisabled() then
-    	append("Cannot be disabled")
-	end
-	
-	if self._modules then
-		for _, module in pairs(self._modules) do
-			if module.GetInfo then
-				module:GetInfo(append)
-			end
-		end
-	end
+    if self:CannotBeDisabled() then
+        append("Cannot be disabled")
+    end
+
+    if self._modules then
+        for _, module in pairs(self._modules) do
+            if module.GetInfo then
+                module:GetInfo(append)
+            end
+        end
+    end
 
     if #hooks == 0 then
         append("Hooks: None")
@@ -481,9 +483,9 @@ function BLTMod:GetDeveloperInfo()
             append("", tostring(hook[1]), "->", tostring(hook[2]))
         end
     end
-	for _, hook in ipairs(wildcards) do
-		append("", "* ->", tostring(hook))
-	end
+    for _, hook in ipairs(wildcards) do
+        append("", "* ->", tostring(hook))
+    end
 
     if #prehooks == 0 then
         append("Pre-Hooks: None")
@@ -493,7 +495,7 @@ function BLTMod:GetDeveloperInfo()
             append("", tostring(hook[1]), "->", tostring(hook[2]))
         end
     end
-	
+
     if table.size(persists) < 1 then
         append("Persisent Scripts: None")
     else
@@ -502,7 +504,7 @@ function BLTMod:GetDeveloperInfo()
             append("", script.global, "->", script.file)
         end
     end
-    
+
     local keybinds = self._config.keybinds
     if not keybinds or #keybinds == 0 then
         append("Keybinds: None")
@@ -513,7 +515,7 @@ function BLTMod:GetDeveloperInfo()
         end
     end
 
-	return table.concat(result)
+    return table.concat(result)
 end
 
 function BLTMod:GetRealFilePath(path, lookup_tbl)

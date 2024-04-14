@@ -8,7 +8,7 @@ function SimpleListDialog:init(params, menu)
     params.w = 600
     params.h = 700
     params.main_h = 70
-    
+
     SimpleListDialog.super.init(self, params, menu)
 end
 
@@ -18,7 +18,7 @@ function SimpleListDialog:_Show(params)
     end
 
     params = params or {}
-    
+
     if self.type_name == SimpleSelectListDialog.type_name then
         self._single_select = params.single_select or false
         self._allow_multi_insert = params.allow_multi_insert or false
@@ -31,13 +31,13 @@ function SimpleListDialog:_Show(params)
     self._list = params.list
     local bs = self._menu.h + 4
     local tw = self._menu.w - (bs * 2)
-    
+
     self._menu:TextBox({
         name = "Search",
         w = tw,
         control_slice = 0.98,
         text = false,
-        callback = callback(self, self, "Search"),  
+        callback = callback(self, self, "Search"),
         label = "temp"
     })
 
@@ -50,8 +50,8 @@ function SimpleListDialog:_Show(params)
         img_rot = 45,
         position = "RightTop",
         texture = "ui/atlas/raid_atlas_menu",
-        texture_rect = {761, 721, 18, 18},
-        callback = callback(self, self, "hide", false),  
+        texture_rect = { 761, 721, 18, 18 },
+        callback = callback(self, self, "hide", false),
         label = "temp"
     })
 
@@ -65,13 +65,13 @@ function SimpleListDialog:_Show(params)
             item:Panel():set_righttop(close:Panel():position())
         end,
         texture = "ui/atlas/raid_atlas_menu",
-        texture_rect = {341, 997, 22, 22},
-        callback = callback(self, self, "hide", true),  
+        texture_rect = { 341, 997, 22, 22 },
+        callback = callback(self, self, "hide", true),
         label = "temp"
     })
     if params.sort ~= false then
-        table.sort(params.list, function(a, b) 
-            return (type(a) == "table" and a.name or a) < (type(b) == "table" and b.name or b) 
+        table.sort(params.list, function(a, b)
+            return (type(a) == "table" and a.name or a) < (type(b) == "table" and b.name or b)
         end)
     end
     self:MakeListItems(params)

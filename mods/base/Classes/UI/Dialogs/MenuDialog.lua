@@ -9,7 +9,7 @@ function MenuDialog:init(params, menu)
     self._tbl = {}
     menu = menu or BLT.Dialogs:Menu()
     self._menu = menu:Menu(table.merge({
-        name = "dialog"..tostring(self),
+        name = "dialog" .. tostring(self),
         position = "Center",
         w = MenuDialog._default_width,
         visible = false,
@@ -165,17 +165,27 @@ function QuickDialog(opt, items)
     local dialog = opt.dialog or BLT.Dialogs:Simple()
     opt.dialog = nil
     opt.title = opt.title or "Info"
-    dialog:Show(table.merge({no = "Close", yes = false, create_items = function(menu)
-        for i, item in pairs(items) do
-            if item[3] == true then
-                dialog._no_callback = item[2]
-            end
-            menu:Button({highlight = true, reachable = true, name =  type_name(item) == "table" and item[1] or item, callback = function() 
-                if type(item[2]) == "function" then
-                    item[2]()
+    dialog:Show(table.merge({
+        no = "Close",
+        yes = false,
+        create_items = function(menu)
+            for i, item in pairs(items) do
+                if item[3] == true then
+                    dialog._no_callback = item[2]
                 end
-                dialog:hide(false)
-            end, type_name(item) == "table" and item[2]})
+                menu:Button({
+                    highlight = true,
+                    reachable = true,
+                    name = type_name(item) == "table" and item[1] or item,
+                    callback = function()
+                        if type(item[2]) == "function" then
+                            item[2]()
+                        end
+                        dialog:hide(false)
+                    end,
+                    type_name(item) == "table" and item[2]
+                })
+            end
         end
-    end}, opt))
+    }, opt))
 end

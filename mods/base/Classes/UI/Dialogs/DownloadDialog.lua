@@ -11,10 +11,10 @@ function DownloadDialog:init(params, menu)
 end
 
 function DownloadDialog:_Show(params)
-	table.merge(params, {
+    table.merge(params, {
         no = params.no or "Close",
         yes = false,
-	})
+    })
     if not InputDialog.super._Show(self, params) then
         return
     end
@@ -22,8 +22,8 @@ function DownloadDialog:_Show(params)
     self._progress = self._menu:Panel():rect({
         name = "DownloadProgress",
         color = color:contrast():with_alpha(0.25),
-        halign ="grow",
-        valign ="grow",
+        halign = "grow",
+        valign = "grow",
         w = 0,
     })
     self._status = self._menu:Divider({
@@ -69,7 +69,9 @@ function DownloadDialog:SetProgress(id, bytes, total_bytes)
     local progress = bytes / total_bytes
     local mb = bytes / (1024 ^ 2)
     local total_mb = total_bytes / (1024 ^ 2)
-    self:SetStatus(string.format(managers.localization:text("blt_downloading").."%.2f/%.2fmb(%.0f%%)", mb, total_mb, tostring(progress * 100)), true)
+    self:SetStatus(
+    string.format(managers.localization:text("blt_downloading") .. "%.2f/%.2fmb(%.0f%%)", mb, total_mb,
+        tostring(progress * 100)), true)
     self._progress:set_w(self._menu:Panel():w() * progress)
 end
 

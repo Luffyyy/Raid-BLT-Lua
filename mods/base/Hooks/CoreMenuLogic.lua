@@ -1,4 +1,3 @@
-
 Hooks:RegisterHook("LogicOnSelectNode")
 core:module("CoreMenuLogic")
 _G.CloneClass(Logic)

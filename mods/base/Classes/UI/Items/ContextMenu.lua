@@ -8,7 +8,7 @@ function ContextMenu:init(owner, layer)
     local bgcolor = self.owner.context_background_color or self.parent.background_color or Color.white
     bgcolor = bgcolor:with_alpha(math.max(bgcolor.a, 0.75))
     self.panel = self.menu._panel:panel({
-        name = owner.name.."list",
+        name = owner.name .. "list",
         w = control_size,
         layer = layer,
         visible = false,
@@ -33,10 +33,10 @@ function ContextMenu:init(owner, layer)
         })
     end
     self._scroll = ScrollablePanel:new(self.panel, "ItemsPanel", {
-        layer = 4, 
-        padding = 0.0001, 
+        layer = 4,
+        padding = 0.0001,
         scroll_width = owner.scrollbar == false and 0 or self.parent.scroll_width or 12,
-        hide_shade = true, 
+        hide_shade = true,
         color = owner.scroll_color or owner.highlight_color,
         scroll_speed = owner.scroll_speed or 48
     })
@@ -52,8 +52,9 @@ function ContextMenu:alive() return alive(self.panel) end
 function ContextMenu:CheckItems()
     self._visible_items = {}
     local p = self.items_panel
-	for _, item in pairs(self._item_panels) do
-        item:set_visible(p:inside(p:world_x(), item:world_y()) == true or p:inside(p:world_x(), item:world_bottom()) == true)
+    for _, item in pairs(self._item_panels) do
+        item:set_visible(p:inside(p:world_x(), item:world_y()) == true or
+        p:inside(p:world_x(), item:world_bottom()) == true)
         if item:visible() then
             table.insert(self._visible_items, item)
         end
@@ -71,7 +72,7 @@ function ContextMenu:CreateItems()
         end
         local font_size = (self.owner.font_size or self.owner.items_size) - 2
         local panel = self.items_panel:panel({
-            name = "Item-"..tostring(text),
+            name = "Item-" .. tostring(text),
             h = font_size,
             y = (k - 1) * font_size,
         })
@@ -114,8 +115,8 @@ end
 
 function ContextMenu:reposition()
     local size = (self.owner.font_size or self.owner.items_size) - 2
-    local bottom_h = (self.menu._panel:world_bottom() - self.owner.panel:world_bottom()) 
-    local top_h = (self.owner.panel:world_y() - self.menu._panel:world_y()) 
+    local bottom_h = (self.menu._panel:world_bottom() - self.owner.panel:world_bottom())
+    local top_h = (self.owner.panel:world_y() - self.menu._panel:world_y())
     local items_h = (#self._my_items * size) + (self.owner.searchbox and self.owner.items_size or 0)
     local normal_pos = items_h <= bottom_h or bottom_h >= top_h
     if (normal_pos and items_h > bottom_h) or (not normal_pos and items_h > top_h) then
@@ -129,9 +130,9 @@ function ContextMenu:reposition()
     else
         self.panel:set_world_bottom(self.owner.panel:world_y())
     end
-    self._scroll:panel():set_y(self.owner.searchbox and self.owner.items_size or 0) 
+    self._scroll:panel():set_y(self.owner.searchbox and self.owner.items_size or 0)
     self._scroll:set_size(self.panel:w(), self.panel:h() - (self.owner.searchbox and self.owner.items_size or 0))
-    
+
     self._scroll:update_canvas_size()
 end
 
@@ -139,7 +140,7 @@ function ContextMenu:showing()
     return self.panel:visible()
 end
 
-function ContextMenu:show()   
+function ContextMenu:show()
     if self.menu._openlist == self then
         self:hide()
         return
@@ -150,13 +151,13 @@ function ContextMenu:show()
     self.menu._openlist = self
 end
 
-function ContextMenu:MousePressed(button, x, y)        
+function ContextMenu:MousePressed(button, x, y)
     if self:textbox() then
         if self:textbox():MousePressed(button, x, y) then
             return true
         end
     end
-    if self.panel:inside(x,y) then
+    if self.panel:inside(x, y) then
         if button == Idstring("mouse wheel down") or button == Idstring("mouse wheel up") then
             if self._scroll:scroll(x, y, button == Idstring("mouse wheel up") and 1 or -1) then
                 self:CheckItems()
@@ -170,13 +171,13 @@ function ContextMenu:MousePressed(button, x, y)
                 return true
             end
             for k, item in pairs(self.owner.items) do
-                local item_p = self.items_panel:child("Item-"..tostring(item))
-                if alive(item_p) and item_p:inside(x,y) then
+                local item_p = self.items_panel:child("Item-" .. tostring(item))
+                if alive(item_p) and item_p:inside(x, y) then
                     if self.owner.ContextMenuCallback then
                         self.owner:ContextMenuCallback(item)
                     else
-                        if item.callback then self.owner:RunCallback(item.callback, item) end            
-                    end        
+                        if item.callback then self.owner:RunCallback(item.callback, item) end
+                    end
                     self:hide()
                     return true
                 end
@@ -241,7 +242,7 @@ function ContextMenu:MouseMoved(x, y)
     if self:textbox() then
         self:textbox():MouseMoved(x, y)
     end
-    local _, pointer = self._scroll:mouse_moved(nil, x, y) 
+    local _, pointer = self._scroll:mouse_moved(nil, x, y)
     if pointer then
         managers.mouse_pointer:set_pointer_image(pointer)
         return true
@@ -249,8 +250,8 @@ function ContextMenu:MouseMoved(x, y)
         managers.mouse_pointer:set_pointer_image("arrow")
     end
     for k, item in pairs(self._visible_items) do
-        if alive(item)  then
-            self:HightlightItem(item, item:inside(x,y))
+        if alive(item) then
+            self:HightlightItem(item, item:inside(x, y))
         end
     end
 end

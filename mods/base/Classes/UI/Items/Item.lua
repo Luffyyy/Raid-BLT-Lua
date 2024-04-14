@@ -13,8 +13,8 @@ function Item:Init(params)
 		self.title:set_world_center_y(self.panel:world_center_y())
 	end
 	self:Reposition()
-    if self.items then
-		self._list = BLT.Items.ContextMenu:new(self, self.parent_panel:layer() + 100) 
+	if self.items then
+		self._list = BLT.Items.ContextMenu:new(self, self.parent_panel:layer() + 100)
 	end
 	if self.override_panel then
 		self.override_panel:AddItem(self)
@@ -68,23 +68,23 @@ end
 
 function Item:MousePressed(button, x, y)
 	if not self.menu_type then
-	    for _, item in pairs(self._adopted_items) do
-	        if item:MousePressed(button, x, y) then
-	            return true
-	        end
-	    end
+		for _, item in pairs(self._adopted_items) do
+			if item:MousePressed(button, x, y) then
+				return true
+			end
+		end
 	end
-    if not self:MouseCheck(true) then
-        return
-    end
-	if self:alive() and self:MouseInside(x,y) then
-        if button == Idstring("0") then
-            self:RunCallback()
-            return true
+	if not self:MouseCheck(true) then
+		return
+	end
+	if self:alive() and self:MouseInside(x, y) then
+		if button == Idstring("0") then
+			self:RunCallback()
+			return true
 		else
-			return self:CheckMouseRightClick(button, x,y)
-        end
-    end
+			return self:CheckMouseRightClick(button, x, y)
+		end
+	end
 end
 
 function Item:SetBorder(config)
@@ -98,35 +98,37 @@ end
 
 function Item:SetColor(color)
 	self.border_left = NotNil(self.border_left, true)
-	self:SetBorder({color = color})
+	self:SetBorder({ color = color })
 	self:_SetText(self.text)
 end
 
 --This is a mess..
 function Item:_SetText(text)
-    if self:alive() and self:title_alive() then
-        self.text = text
-        self.title:set_text(self.localized and text and managers.localization:text(text) or text)
-        local lines = math.max(1, self.title:number_of_lines()) 
-        local offset = math.max(self.border_left and self.border_width or 0, self.text_offset)
-        self.title:set_shape(offset, 0, self.panel:w() - (offset * 2), self.panel:h())
-        local _,_,w,h = self.title:text_rect()
-        self.title:set_h(not self.menu_type and self.h or math.max(self.items_size, h))
-        if self.size_by_text then
-        	local w = w + (offset * 2) + (self.type_name == "Toggle" and self.items_size or 0)
-            self.panel:set_size(math.clamp(w, self.min_width or 0, self.max_width or w), math.clamp(h, self.min_height or 0, self.max_height or h))
-            self.w, self.h = self.panel:size()
-            self.title:set_shape(offset, 0, self.w - (offset * 2), self.h)
-        end
+	if self:alive() and self:title_alive() then
+		self.text = text
+		self.title:set_text(self.localized and text and managers.localization:text(text) or text)
+		local lines = math.max(1, self.title:number_of_lines())
+		local offset = math.max(self.border_left and self.border_width or 0, self.text_offset)
+		self.title:set_shape(offset, 0, self.panel:w() - (offset * 2), self.panel:h())
+		local _, _, w, h = self.title:text_rect()
+		self.title:set_h(not self.menu_type and self.h or math.max(self.items_size, h))
+		if self.size_by_text then
+			local w = w + (offset * 2) + (self.type_name == "Toggle" and self.items_size or 0)
+			self.panel:set_size(math.clamp(w, self.min_width or 0, self.max_width or w),
+				math.clamp(h, self.min_height or 0, self.max_height or h))
+			self.w, self.h = self.panel:size()
+			self.title:set_shape(offset, 0, self.w - (offset * 2), self.h)
+		end
 		if self.SetScrollPanelSize then
-            self:SetScrollPanelSize()
-        elseif not self.size_by_text and not self.h then
-            self.panel:set_h(math.max(self.items_size * lines, self.items_size, self._textbox and alive(self._textbox.panel) and self._textbox.panel:h() or 0))
+			self:SetScrollPanelSize()
+		elseif not self.size_by_text and not self.h then
+			self.panel:set_h(math.max(self.items_size * lines, self.items_size,
+				self._textbox and alive(self._textbox.panel) and self._textbox.panel:h() or 0))
 			self.panel:set_h(math.clamp(self.panel:h(), self.min_height or 0, self.max_height or self.panel:h()))
 		end
-        return true
-    end
-    return false
+		return true
+	end
+	return false
 end
 
 function Item:SetTextLight(text)
@@ -141,7 +143,7 @@ function Item:SetText(text)
 	end
 end
 
-local border = {"left", "top", "right", "bottom"}
+local border = { "left", "top", "right", "bottom" }
 function Item:DoHighlight(highlight)
 	local foreground = self:GetForeground(highlight)
 	if self.no_animating then
@@ -157,8 +159,9 @@ function Item:DoHighlight(highlight)
 			end
 		end
 	else
-		if self.bg then play_anim(self.bg, {set = {alpha = highlight and self.highlight_bg and self.highlight_bg:visible() and 0 or 1}}) end
-		if self.highlight_bg then play_anim(self.highlight_bg, {set = {alpha = highlight and 1 or 0}}) end
+		if self.bg then play_anim(self.bg,
+				{ set = { alpha = highlight and self.highlight_bg and self.highlight_bg:visible() and 0 or 1 } }) end
+		if self.highlight_bg then play_anim(self.highlight_bg, { set = { alpha = highlight and 1 or 0 } }) end
 		if self.title then play_color(self.title, foreground) end
 		if self.border_highlight_color then
 			for _, v in pairs(border) do
@@ -172,19 +175,19 @@ function Item:DoHighlight(highlight)
 end
 
 function Item:Highlight()
-    if not self:alive() then
-        return
-    end
-    self:DoHighlight(true)
-    managers.mouse_pointer:set_pointer_image("link")
-    if self.menu._highlighted and self.menu._highlighted ~= self then
-        self.menu._highlighted:UnHighlight()
-    end
-    self.highlight = true
-    self.menu._highlighted = self
-    if self.help then
-        self.menu:ShowDelayedHelp(self)
-    end
+	if not self:alive() then
+		return
+	end
+	self:DoHighlight(true)
+	managers.mouse_pointer:set_pointer_image("link")
+	if self.menu._highlighted and self.menu._highlighted ~= self then
+		self.menu._highlighted:UnHighlight()
+	end
+	self.highlight = true
+	self.menu._highlighted = self
+	if self.help then
+		self.menu:ShowDelayedHelp(self)
+	end
 end
 
 function Item:UnHighlight()
@@ -194,33 +197,33 @@ function Item:UnHighlight()
 		end
 		self.menu._highlighted = nil
 	end
-	self.highlight = false	
+	self.highlight = false
 	if not self:alive() then
-		return 
+		return
 	end
 	self:DoHighlight(false)
 end
 
 function Item:MouseMoved(x, y)
 	if not self.menu_type then
-	    for _, item in pairs(self._adopted_items) do
-	        if item:MouseMoved(x, y) then
-	            return true
-	        end
-	    end
+		for _, item in pairs(self._adopted_items) do
+			if item:MouseMoved(x, y) then
+				return true
+			end
+		end
 	end
-    if not self:MouseCheck() then
-        return false
-    end
-    if not self.menu._openlist and not self.menu._slider_hold then
-        if self:MouseInside(x,y) then
-            self:Highlight()
-            return true
-        elseif not self.parent.always_highlight then
-            self:UnHighlight()
-            return false
-        end
-    end
+	if not self:MouseCheck() then
+		return false
+	end
+	if not self.menu._openlist and not self.menu._slider_hold then
+		if self:MouseInside(x, y) then
+			self:Highlight()
+			return true
+		elseif not self.parent.always_highlight then
+			self:UnHighlight()
+			return false
+		end
+	end
 end
 
 function Item:MouseReleased(button, x, y)

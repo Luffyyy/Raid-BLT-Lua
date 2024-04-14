@@ -14,7 +14,7 @@ function FileBrowserDialog:_Show(params, force)
     self:show_dialog()
 end
 
-function FileBrowserDialog:init(params, menu)  
+function FileBrowserDialog:init(params, menu)
     if self.type_name == FileBrowserDialog.type_name then
         params = params and clone(params) or {}
     end
@@ -28,7 +28,7 @@ function FileBrowserDialog:init(params, menu)
         auto_height = false,
         position = function(item)
             item:SetPositionByString("Center")
-            item:Panel():move(0, -h/2)
+            item:Panel():move(0, -h / 2)
         end,
         align_method = "grid",
         offset = 0
@@ -36,7 +36,7 @@ function FileBrowserDialog:init(params, menu)
 
     self._folders_menu = menu:Menu(table.merge(params, {
         w = 500,
-        h = h  ,
+        h = h,
         background_color = params.background_color or Color(0.6, 0.2, 0.2, 0.2),
         name = "Folders",
         position = function(item)
@@ -44,7 +44,7 @@ function FileBrowserDialog:init(params, menu)
         end,
         auto_height = false,
         visible = false
-    })) 
+    }))
 
     self._files_menu = menu:Menu(table.merge(params, {
         name = "Files",
@@ -54,7 +54,7 @@ function FileBrowserDialog:init(params, menu)
         end
     }))
 
-    self._menus = {self._files_menu, self._folders_menu}
+    self._menus = { self._files_menu, self._folders_menu }
     local path_and_search = (0.85 * self._menu:Width())
     local rest = (0.15 * self._menu:Width()) / 3
     self._menu:Button({
@@ -63,10 +63,9 @@ function FileBrowserDialog:init(params, menu)
         h = self._menu.h,
         text = "<",
         text_align = "center",
-        callback = callback(self, self, "FolderBack"),  
+        callback = callback(self, self, "FolderBack"),
         label = "temp"
-    })    
-    enabled = self._old_dir and self._old_dir ~= self._current_dir or false
+    })
     self._menu:Button({
         name = "Forward",
         w = rest,
@@ -75,35 +74,34 @@ function FileBrowserDialog:init(params, menu)
         text_align = "center",
         callback = function()
             self:Browse(self._old_dir)
-        end,  
+        end,
         label = "temp"
-    })    
+    })
     self._menu:TextBox({
         name = "CurrentPath",
         text = false,
         w = path_and_search * 0.65,
         control_slice = 1,
-        forbidden_chars = {':','*','?','"','<','>','|'},
+        forbidden_chars = { ':', '*', '?', '"', '<', '>', '|' },
         callback = callback(self, self, "OpenPathSetDialog"),
     })
     self._menu:TextBox({
         name = "Search",
         w = path_and_search * 0.35,
         control_slice = 0.7,
-        callback = callback(self, self, "Search"),  
+        callback = callback(self, self, "Search"),
         label = "temp"
     })
     self._menu:ImageButton({
         name = "Close",
         w = rest,
         h = self._menu.h,
-        offset = offset,
         icon_w = 24,
         icon_h = 24,
         img_rot = 45,
         texture = "ui/atlas/raid_atlas_menu",
-        texture_rect = {761, 721, 18, 18},
-        callback = callback(self, self, "hide"),  
+        texture_rect = { 761, 721, 18, 18 },
+        callback = callback(self, self, "hide"),
         label = "temp"
     })
     self._search = ""
@@ -126,7 +124,7 @@ function FileBrowserDialog:Browse(where, params)
     self._menu:GetItem("Forward"):SetEnabled(enabled)
     local f = {}
     local d = {}
-    if self._browse_func then  
+    if self._browse_func then
         f, d = self._browse_func(self)
     else
         f = SystemFS:list(where)
@@ -152,7 +150,7 @@ function FileBrowserDialog:Browse(where, params)
 end
 
 function FileBrowserDialog:MakeFilesAndFolders(files, folders)
-    for _,v in pairs(files) do
+    for _, v in pairs(files) do
         local tbl = type(v) == "table"
         local pass = true
         if self._extensions then
@@ -170,18 +168,18 @@ function FileBrowserDialog:MakeFilesAndFolders(files, folders)
                 name = tbl and v.name or v,
                 text = tbl and v.name or v,
                 path = tbl and v.path or Path:Combine(self._current_dir, v),
-                callback = callback(self, self, "FileClick"), 
+                callback = callback(self, self, "FileClick"),
                 label = "temp2",
             })
-        end       
-    end       
-    for _,v in pairs(folders) do
-         self._folders_menu:Button({
+        end
+    end
+    for _, v in pairs(folders) do
+        self._folders_menu:Button({
             name = v,
             text = v,
-            callback = callback(self, self, "FolderClick"), 
+            callback = callback(self, self, "FolderClick"),
             label = "temp2"
-        })        
+        })
     end
 end
 
@@ -198,7 +196,7 @@ function FileBrowserDialog:FileClick(menu, item)
     if self._file_click then
         self._file_click(item.path)
     end
-end 
+end
 
 function FileBrowserDialog:FolderClick(menu, item)
     self._old_dir = nil
@@ -217,7 +215,7 @@ function FileBrowserDialog:FolderBack()
         table.remove(str)
         self._old_dir = self._current_dir
         self:Browse(table.concat(str, "/"))
-    end 
+    end
 end
 
 function FileBrowserDialog:hide(...)

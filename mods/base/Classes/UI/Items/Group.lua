@@ -10,24 +10,24 @@ end
 function Group:InitBasicItem()
     Group.super.InitBasicItem(self)
     if not self.divider_type then
-	    self.toggle = self.panel:bitmap({
-	        name = "toggle",
-	        w = self.parent.items_size - 4,
-	        h = self.parent.items_size - 4,
-	        texture = "ui/atlas/raid_atlas_skills",
-	        color = self:GetForeground(highlight),
-	        y = 2,
-	        texture_rect = {self.closed and 437 or 421, self.closed and 109 or 93, 18, 18},
+        self.toggle = self.panel:bitmap({
+            name = "toggle",
+            w = self.parent.items_size - 4,
+            h = self.parent.items_size - 4,
+            texture = "ui/atlas/raid_atlas_skills",
+            color = self:GetForeground(),
+            y = 2,
+            texture_rect = { self.closed and 437 or 421, self.closed and 109 or 93, 18, 18 },
             layer = 3,
-            {421, 93, 18, 18}
-	    })
-	    self:RePositionToggle()
-	end
+            { 421, 93, 18, 18 }
+        })
+        self:RePositionToggle()
+    end
 end
 
 function Group:RePositionToggle()
     if self:title_alive() then
-        local _,_,w,_ = self.title:text_rect()
+        local _, _, w, _ = self.title:text_rect()
         if self.toggle and alive(self.toggle) then
             self.toggle:set_left(w + 4)
         end
@@ -58,8 +58,8 @@ function Group:ToggleGroup()
     self:SetSize(nil, nil, true)
 end
 
-function Group:MouseInside(x, y) 
-    return self.highlight_bg:inside(x,y) 
+function Group:MouseInside(x, y)
+    return self.highlight_bg:inside(x, y)
 end
 
 function Group:MousePressed(button, x, y)

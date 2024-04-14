@@ -1,4 +1,3 @@
-
 _G.LuaNetworking = _G.LuaNetworking or {}
 LuaNetworking.HiddenChannel = 4
 LuaNetworking.AllPeers = "GNAP"
@@ -126,37 +125,38 @@ function LuaNetworking:SendStringThroughChat(message)
 	ChatManager:send_message(LuaNetworking.HiddenChannel, tostring(LuaNetworking:LocalPeerID()), message)
 end
 
-Hooks:Add("ChatManagerOnReceiveMessage", "ChatManagerOnReceiveMessage_Network", function(channel_id, name, message, color, icon)
-	local LN = LuaNetworking
-	name = name:gsub("%%", "%%%%")
-	message = message:gsub("%%", "%%%%")
-	local s = string.format("[%s] %s: %s", channel_id, name, message)
-	BLT:Log(LogLevel.DEBUG, "BLTNetworking", "Received data:", s)
+Hooks:Add("ChatManagerOnReceiveMessage", "ChatManagerOnReceiveMessage_Network",
+	function(channel_id, name, message, color, icon)
+		local LN = LuaNetworking
+		name = name:gsub("%%", "%%%%")
+		message = message:gsub("%%", "%%%%")
+		local s = string.format("[%s] %s: %s", channel_id, name, message)
+		BLT:Log(LogLevel.DEBUG, "BLTNetworking", "Received data:", s)
 
-	local senderID = nil
-	if LN:IsMultiplayer() then
-		if name == managers.network:session():local_peer():name() then
-			senderID = LN:LocalPeerID()
-		end
+		local senderID = nil
+		if LN:IsMultiplayer() then
+			if name == managers.network:session():local_peer():name() then
+				senderID = LN:LocalPeerID()
+			end
 
-		for k, v in pairs(managers.network:session():peers()) do
-			if v:name() == name then
-				senderID = k
+			for k, v in pairs(managers.network:session():peers()) do
+				if v:name() == name then
+					senderID = k
+				end
 			end
 		end
-	end
 
-	if senderID == LN:LocalPeerID() then
-		return
-	end
+		if senderID == LN:LocalPeerID() then
+			return
+		end
 
-	local splt = message:split(LuaNetworking.Split)
-	splt = splt[#splt]
---[[tonumber(channel_id) == LuaNetworking.HiddenChannel]]
-	if splt and (splt == LN.AllPeers or splt == LN.SinglePeer or splt == LN.ExceptPeer) then --Pretty bad method but I seriously have no idea where is channel id without a decomp.
-		LN:ProcessChatString(senderID or name, message, color, icon)
-	end
-end)
+		local splt = message:split(LuaNetworking.Split)
+		splt = splt[#splt]
+		--[[tonumber(channel_id) == LuaNetworking.HiddenChannel]]
+		if splt and (splt == LN.AllPeers or splt == LN.SinglePeer or splt == LN.ExceptPeer) then --Pretty bad method but I seriously have no idea where is channel id without a decomp.
+			LN:ProcessChatString(senderID or name, message, color, icon)
+		end
+	end)
 
 Hooks:RegisterHook("NetworkReceivedData")
 function LuaNetworking:ProcessChatString(sender, message, color, icon)
@@ -219,7 +219,7 @@ function LuaNetworking:StringToColour(str)
 	if #data < 4 then
 		return nil
 	end
-	
+
 	local split_str = "[:]"
 	local r = tonumber(string.split(data[1], split_str)[2])
 	local g = tonumber(string.split(data[2], split_str)[2])

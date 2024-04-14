@@ -1,4 +1,3 @@
-
 BLTNotificationsGui = BLTNotificationsGui or class(BLTCustomMenu)
 local SPOT_W = 32
 local BAR_W = 32
@@ -30,8 +29,8 @@ function BLTNotificationsGui:_setup()
 	})
 	self._panel:set_bottom(self._ws:panel():h() - 90)
 
-	self._content_panel = self._panel:panel({y = 24, h = self._panel:h() * 0.8})
-	self._buttons_panel = self._panel:panel({y = self._content_panel:bottom() - 24, h = self._panel:h() * 0.2})
+	self._content_panel = self._panel:panel({ y = 24, h = self._panel:h() * 0.8 })
+	self._buttons_panel = self._panel:panel({ y = self._content_panel:bottom() - 24, h = self._panel:h() * 0.2 })
 
 	self._panel:rect({
 		name = "background",
@@ -50,8 +49,8 @@ function BLTNotificationsGui:_setup()
 	})
 
 	-- Outline
-	BoxGuiObject:new(self._content_panel, {sides = {1, 1, 1, 1}})
-	self._content_outline = BoxGuiObject:new(self._content_panel, {sides = {2, 2, 2, 2}})
+	BoxGuiObject:new(self._content_panel, { sides = { 1, 1, 1, 1 } })
+	self._content_outline = BoxGuiObject:new(self._content_panel, { sides = { 2, 2, 2, 2 } })
 
 	-- Setup notification buttons
 	self._bar = self._buttons_panel:bitmap({
@@ -73,7 +72,7 @@ function BLTNotificationsGui:_setup()
 		h = 32,
 		y = 8,
 		layer = 100
-	}) 
+	})
 	self._downloads_panel:set_right(self._panel:w() - 8)
 
 	self._downloads_count = self._downloads_panel:text({
@@ -112,6 +111,7 @@ function BLTNotificationsGui:_rec_round_object(object)
 		end
 	end
 end
+
 --------------------------------------------------------------------------------
 
 function BLTNotificationsGui:_get_uid()
@@ -231,7 +231,7 @@ function BLTNotificationsGui:_update_bars()
 		})
 		last = page_button
 		if not last then
-			page_button:set_center_x(middle * (BAR_W + 4))
+			page_button:set_center_x(middle * (BAR_W + 4)) -- FIXME ?!?
 		end
 		page_button:set_center_y((self._buttons_panel:h() - page_button:h()) / 2)
 		table.insert(self._buttons, page_button)
@@ -293,7 +293,7 @@ function BLTNotificationsGui:_move_to_notification(destination)
 		other_object:set_x(o:w())
 		local orig_x = o:x()
 		local orig_other_x = other_object:x()
-		over(duration, function (t)
+		over(duration, function(t)
 			other_object:set_x(PD2Easing.inout_quart(orig_other_x, 0, t))
 			o:set_x(PD2Easing.inout_quart(orig_x, -o:w(), t))
 			o:set_alpha(PD2Easing.in_quart(1, 0, t))
@@ -370,7 +370,7 @@ function BLTNotificationsGui:update(t, dt)
 			self:_next_notification()
 			self._next_time = t + TIME_PER_PAGE
 		end
-		self:set_bar_width(BAR_W *  (1 - (self._next_time - t) / TIME_PER_PAGE))
+		self:set_bar_width(BAR_W * (1 - (self._next_time - t) / TIME_PER_PAGE))
 	end
 
 	if not animating and self._queued then
@@ -403,7 +403,7 @@ end
 function BLTNotificationsGui:mouse_pressed(o, button, x, y)
 	if not self._enabled or button ~= Idstring("0") then
 		return
-    end
+	end
 
 	for i, button in ipairs(self._buttons) do
 		if button:inside(x, y) then
@@ -435,7 +435,7 @@ Hooks:Add("MenuComponentManagerInitialize", "BLTNotificationsGui.MenuComponentMa
 		title = managers.localization:text("blt_checking_updates"),
 		text = managers.localization:text("blt_checking_updates_help"),
 		icon = "ui/hud/atlas/raid_atlas",
-		icon_texture_rect = {891, 1285, 64, 64},
+		icon_texture_rect = { 891, 1285, 64, 64 },
 		priority = 1000,
 	})
 end)

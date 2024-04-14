@@ -1,4 +1,3 @@
-
 LocalizationManager._custom_localizations = LocalizationManager._custom_localizations or {}
 Hooks:RegisterHook("LocalizationManagerPostInit")
 Hooks:Post(LocalizationManager, "init", "BLT.LocalizationManager.Init", function(self, ...)
@@ -14,7 +13,8 @@ function LocalizationManager:text(str, macros, ...)
 			-- If the first macro is not using a trailing semicolon, then log the string. Checking
 			-- all macros would be a performance waste.
 			if return_str:byte(j + 1) ~= 59 then
-				BLT:Log(LogLevel.WARN, "BLTLocalization", debug.traceback("The use of macros without a trailing semicolon is deprecated in " .. tostring(str)))
+				BLT:Log(LogLevel.WARN, "BLTLocalization",
+					debug.traceback("The use of macros without a trailing semicolon is deprecated in " .. tostring(str)))
 			end
 
 			-- Look for macros defined as either $FORMAT or $FORMAT; (i.e. make the trailing semicolon optional)
@@ -61,7 +61,7 @@ function LocalizationManager:load_localization_file(file_path, overwrite)
 			self:add_localized_strings(data, overwrite)
 			return true
 		end
-		BLT:LogF(LogLevel.ERROR, "BLTMenuHelper", "Failed parsing json file at path '%s': %s", path, data)
+		BLT:LogF(LogLevel.ERROR, "BLTMenuHelper", "Failed parsing json file at path '%s': %s", file_path, data)
 	end
 	return false
 end

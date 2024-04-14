@@ -6,7 +6,8 @@ function ScriptReplacementsModule:init(core_mod, config)
         return false
     end
 
-    self.ScriptDirectory = self._config.directory and Path:Combine(self._mod.path, self._config.directory) or self._mod.path
+    self.ScriptDirectory = self._config.directory and Path:Combine(self._mod.path, self._config.directory) or
+    self._mod.path
 
     return true
 end
@@ -25,12 +26,12 @@ function ScriptReplacementsModule:post_init()
 
             local target = options.target_file or options.target_path
             local ext = options.target_type or options.target_ext
-            local opt = {mode = options.merge_mode, use_clbk = use_clbk}
+            local opt = { mode = options.merge_mode, use_clbk = use_clbk }
             local file = options.file or options.replacement
             if file then
                 local file = Path:Combine(self.ScriptDirectory, file)
                 local file_type = options.type or options.replacement_type
-                BLT.FileManager:ScriptReplaceFile(ext, target, file, table.merge(opt, {type = file_type}))
+                BLT.FileManager:ScriptReplaceFile(ext, target, file, table.merge(opt, { type = file_type }))
             elseif v.tbl then
                 BLT.FileManager:ScriptReplace(ext, target, options.tbl, opt)
             end

@@ -13,10 +13,10 @@ function InputDialog:init(params, menu)
 end
 
 function InputDialog:_Show(params)
-	table.merge(params, {
-		yes = params.yes or "Apply",
-		no = params.no or "Cancel",
-	})
+    table.merge(params, {
+        yes = params.yes or "Apply",
+        no = params.no or "Cancel",
+    })
     if not InputDialog.super._Show(self, params) then
         return
     end
@@ -56,5 +56,5 @@ function InputDialog:hide(yes, ...)
         return
     end
     self._check_value = nil
-	return InputDialog.super.hide(self, yes, ...)
+    return InputDialog.super.hide(self, yes, ...)
 end

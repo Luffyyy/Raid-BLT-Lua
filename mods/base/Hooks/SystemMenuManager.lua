@@ -1,4 +1,3 @@
-
 core:module("SystemMenuManager")
 
 Hooks:PostHook(GenericSystemMenuManager, "event_dialog_shown", "BLT.EventDialogShown", function(self)

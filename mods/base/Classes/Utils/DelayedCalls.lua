@@ -1,4 +1,3 @@
-
 DelayedCalls = DelayedCalls or {}
 DelayedCalls._calls = DelayedCalls._calls or {}
 Hooks:Add("MenuUpdate", "MenuUpdate_Queue", function(t, dt)
@@ -32,7 +31,7 @@ end
 		Adds a function to be automatically called after a set delay
 	id, 	Unique identifier for this delayed call
 	time, 	Time in seconds to call the specified function after
-	func, 	Function call to call after the time runs out 
+	func, 	Function call to call after the time runs out
 ]]
 function DelayedCalls:Add(id, time, func)
 	self._calls[id] = self._calls[id] or {}
@@ -44,7 +43,7 @@ end
 --[[
 	DelayedCalls:Remove(id)
 		Removes a scheduled call before it can be automatically called
-	id, Unique identifier for the delayed call remove 
+	id, Unique identifier for the delayed call remove
 ]]
 function DelayedCalls:Remove(id)
 	self._calls[id] = nil

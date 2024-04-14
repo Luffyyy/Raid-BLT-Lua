@@ -1,4 +1,3 @@
-
 -- BLT Mod / New mod format
 BLTModExtended = BLTModExtended or class(BLTMod)
 
@@ -14,27 +13,27 @@ BLTModExtended.contact = "N/A"
 BLTModExtended.priority = 0
 
 function BLTModExtended:init(path, ident, data, post_init)
-	-- Use most recent log data
-	self.LOG_LEVEL = BLT.LOG_LEVEL
-	self.LogPrefixes = BLT.LogPrefixes
+    -- Use most recent log data
+    self.LOG_LEVEL = BLT.LOG_LEVEL
+    self.LogPrefixes = BLT.LogPrefixes
 
-	-- Check module data
-	if not ident then
-		self:Log(LogLevel.ERROR, "BLTModSetup", "BLTMods can not be created without a mod identifier!")
-		return
-	end
-	if not data then
-		self:Log(LogLevel.ERROR, "BLTModSetup", "BLTMods can not be created without mod data!")
-		return
-	end
+    -- Check module data
+    if not ident then
+        self:Log(LogLevel.ERROR, "BLTModSetup", "BLTMods can not be created without a mod identifier!")
+        return
+    end
+    if not data then
+        self:Log(LogLevel.ERROR, "BLTModSetup", "BLTMods can not be created without mod data!")
+        return
+    end
 
-	self._errors = {}
+    self._errors = {}
 
-	-- Mod information
-	self:InitParams(path, ident, data)
+    -- Mod information
+    self:InitParams(path, ident, data)
 
-	self._early_init = data.early_init
-	self._auto_post_init = NotNil(data.auto_post_init, post_init)
+    self._early_init = data.early_init
+    self._auto_post_init = NotNil(data.auto_post_init, post_init)
 end
 
 function BLTModExtended:PostInit()
@@ -61,11 +60,15 @@ function BLTModExtended:InitModules()
                     local success, node_obj, valid = pcall(function() return node_class:new(self, module_tbl) end)
                     if success then
                         if valid == false then
-                            self:LogF(LogLevel.WARN, "BLTModSetup", "Module with name '%s' does not contain a valid config. See above for details.", tostring(node_obj._name))
+                            self:LogF(LogLevel.WARN, "BLTModSetup",
+                                "Module with name '%s' does not contain a valid config. See above for details.",
+                                tostring(node_obj._name))
                         else
                             if not node_obj._loose or node_obj._name ~= node_obj.type_name then
                                 if self[node_obj._name] then
-                                    self:LogF(LogLevel.WARN, "BLTModSetup", "A module named '%s' already exists in the mod table, please make sure this is a unique name!", tostring(node_obj._name))
+                                    self:LogF(LogLevel.WARN, "BLTModSetup",
+                                        "A module named '%s' already exists in the mod table, please make sure this is a unique name!",
+                                        tostring(node_obj._name))
                                 end
 
                                 self[node_obj._name] = node_obj
@@ -73,12 +76,15 @@ function BLTModExtended:InitModules()
                             table.insert(self._modules, node_obj)
                         end
                     else
-                        self:LogF(LogLevel.ERROR, "BLTModSetup", "An error occured on initilization of module: %s. Error:\n%s", tostring(module_tbl._meta), tostring(node_obj))
+                        self:LogF(LogLevel.ERROR, "BLTModSetup",
+                            "An error occured on initilization of module: %s. Error:\n%s", tostring(module_tbl._meta),
+                            tostring(node_obj))
                         table.insert(self._errors, "blt_module_failed_load")
                     end
                 end
             elseif not self._config.ignore_errors then
-                self:LogF(LogLevel.ERROR, "BLTModSetup", "Unable to find module with key '%s'.", tostring(module_tbl._meta))
+                self:LogF(LogLevel.ERROR, "BLTModSetup", "Unable to find module with key '%s'.",
+                    tostring(module_tbl._meta))
             end
         end
     end
@@ -88,38 +94,38 @@ function BLTModExtended:InitModules()
     self.modules_initialized = true
 end
 
-
 function BLTModExtended:PostInitModules(ignored_modules)
-	local data = self:GetConfig()
-	if data.global_key then
-		self.global = data.global_key
-		if _G[self.global] then
-			if data.merge_global then
-				table.merge(_G[self.global], self)
-				for k, v in pairs(getmetatable(self)) do
-					if type(v) == "function" then
-						_G[self.global][k] = v
-					end
-				end
-			end
-		else
-			rawset(_G, self.global, self)
-		end
-	end
+    local data = self:GetConfig()
+    if data.global_key then
+        self.global = data.global_key
+        if _G[self.global] then
+            if data.merge_global then
+                table.merge(_G[self.global], self)
+                for k, v in pairs(getmetatable(self)) do
+                    if type(v) == "function" then
+                        _G[self.global][k] = v
+                    end
+                end
+            end
+        else
+            rawset(_G, self.global, self)
+        end
+    end
     for _, module in pairs(self._modules) do
         if (not ignored_modules or not table.contains(ignored_modules, module._name)) then
             local success, err = pcall(function() module:post_init() end)
             if not success then
-                self:LogF(LogLevel.ERROR, "BLTModSetup", "An error occured on the post initialization of %s. Error:\n%s", module._name, tostring(err))
+                self:LogF(LogLevel.ERROR, "BLTModSetup", "An error occured on the post initialization of %s. Error:\n%s",
+                    module._name, tostring(err))
             end
         end
     end
 end
 
 function BLTModExtended:Setup()
-	BLT:_Log(LogLevel.INFO, "BLTModSetup", "Setting up mod:", self:GetId())
-	self:SetupCheck()
-	if not self._early_init then
+    BLT:_Log(LogLevel.INFO, "BLTModSetup", "Setting up mod:", self:GetId())
+    self:SetupCheck()
+    if not self._early_init then
         self:InitModules()
     end
 end

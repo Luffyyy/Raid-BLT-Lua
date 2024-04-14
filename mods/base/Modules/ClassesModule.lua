@@ -16,7 +16,7 @@ function ClassesModule:Load()
     for _, c in ipairs(self._config) do
         if type(c) == "table" and c._meta == "class" then
             local class_file = Path:Combine(path, c.file)
-            BLT:RunHookFile(nil, {mod=self._mod,script=class_file})
+            BLT:RunHookFile(nil, { mod = self._mod, script = class_file })
         end
     end
 end

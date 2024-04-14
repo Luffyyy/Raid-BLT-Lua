@@ -2,7 +2,7 @@
 --I just like the idea of having a class that has item creation functions
 RaidMenuHelper = RaidMenuHelper or {}
 function RaidMenuHelper:CreateMenu(params)
-	local name = string.gsub(params.name, "%s", "") --remove spaces from names, it doesn't seem to like them that much.
+	local name = string.gsub(params.name, "%s", "")        --remove spaces from names, it doesn't seem to like them that much.
 	local text = params.text or params.name_id or params.name --:shrug:
 	local component_name = params.component_name or name
 	managers.menu:register_menu_new({
@@ -14,13 +14,14 @@ function RaidMenuHelper:CreateMenu(params)
 			{
 				_meta = "menu",
 				id = params.id or name,
-				{_meta = "default_node", name = name},
+				{ _meta = "default_node", name = name },
 				{
 					_meta = "node",
 					gui_class = params.gui_class or "MenuNodeGuiRaid",
 					name = params.node_name or name,
 					topic_id = params.topic_id or name,
-					menu_components = params.menu_components or ("raid_menu_header raid_menu_footer raid_back_button " .. (params.components or name or "")),
+					menu_components = params.menu_components or
+					("raid_menu_header raid_menu_footer raid_back_button " .. (params.components or name or "")),
 					node_background_width = params.background_width or 0.4,
 					node_padding = params.padding or 30
 				}
@@ -28,21 +29,22 @@ function RaidMenuHelper:CreateMenu(params)
 		}
 	})
 	if managers.raid_menu then
-		managers.raid_menu.menus[component_name] = {name = component_name, class = params.class}
+		managers.raid_menu.menus[component_name] = { name = component_name, class = params.class }
 	end
 	if params.class then
-        if managers.menu_component then
-            self:CreateComponent(component_name, params.class, params.args)
-        else
-            BLT:Log(LogLevel.ERROR, "BLTMenuHelper", "You're building the menu too early! menu component isn't loaded yet.")
-        end
+		if managers.menu_component then
+			self:CreateComponent(component_name, params.class, params.args)
+		else
+			BLT:Log(LogLevel.ERROR, "BLTMenuHelper",
+				"You're building the menu too early! menu component isn't loaded yet.")
+		end
 	end
 	if params.localize == nil then
 		params.localize = true
 	end
-    if params.inject_list then
-        self:InjectButtons(params.inject_list, params.inject_after, {
-            self:PrepareListButton(text, params.localize, self:MakeNextMenuClbk(component_name), params.flags)
+	if params.inject_list then
+		self:InjectButtons(params.inject_list, params.inject_after, {
+			self:PrepareListButton(text, params.localize, self:MakeNextMenuClbk(component_name), params.flags)
 		}, true)
 	elseif params.inject_menu then
 		local menu = managers.raid_menu.menus[params.inject_menu]
@@ -51,7 +53,7 @@ function RaidMenuHelper:CreateMenu(params)
 			menu.class._items_data = menu.class._items_data or {}
 			table.insert(menu.class._items_data, table.merge({
 				type = "MenuButton",
-				name = params.name.."Button",
+				name = params.name .. "Button",
 				text = text,
 				localize = params.localize,
 				index = params.index,
@@ -62,17 +64,17 @@ function RaidMenuHelper:CreateMenu(params)
 				self:PrepareButton(text, params.localize, clbk)
 			})
 		end
-    end
-    return params.name
+	end
+	return params.name
 end
 
 function RaidMenuHelper:InjectButtons(menu, point, buttons, is_list)
-    BLT.Menus[menu] = BLT.Menus[menu] or {}
-    table.insert(BLT.Menus[menu], {
-        buttons = buttons,
+	BLT.Menus[menu] = BLT.Menus[menu] or {}
+	table.insert(BLT.Menus[menu], {
+		buttons = buttons,
 		point = point,
 		is_list = is_list
-    })
+	})
 end
 
 function RaidMenuHelper:PrepareButton(text, localize, callback)
@@ -99,7 +101,7 @@ end
 function RaidMenuHelper:MakeNextMenuClbk(next_menu)
 	local id = "open_menu_" .. next_menu
 	RaidMenuCallbackHandler[id] = RaidMenuCallbackHandler[id] or function(this)
-        managers.raid_menu:open_menu(next_menu)
+		managers.raid_menu:open_menu(next_menu)
 	end
 	return id
 end
@@ -109,7 +111,7 @@ function RaidMenuHelper:InjectIntoAList(menu_comp, injection_point, buttons, lis
 	if list then
 		if not list._injected_data_source then
 			list._orig_data_source_callback = list._orig_data_source_callback or list._data_source_callback
-			list._injected_to_data_source = list._injected_to_data_source or {}			
+			list._injected_to_data_source = list._injected_to_data_source or {}
 			list._data_source_callback = function()
 				local t = list._orig_data_source_callback()
 				for _, inject in pairs(list._injected_to_data_source) do
@@ -127,7 +129,7 @@ function RaidMenuHelper:InjectIntoAList(menu_comp, injection_point, buttons, lis
 				return t
 			end
 		end
-		table.insert(list._injected_to_data_source, {buttons = buttons, point = injection_point})
+		table.insert(list._injected_to_data_source, { buttons = buttons, point = injection_point })
 		list:refresh_data()
 	else
 		BLT:Log(LogLevel.ERROR, "BLTMenuHelper", "Menu component given has no list, cannot inject into this menu.")
@@ -137,28 +139,28 @@ end
 function RaidMenuHelper:CreateComponent(name, clss, args)
 	local comp = managers.menu_component
 	clss._name = name
-    comp._active_components[name] = {
-        create = function(node)
+	comp._active_components[name] = {
+		create = function(node)
 			if node then
 				comp[name] = comp[name] or clss:new(comp._ws, comp._fullscreen_ws, node, name, args)
-            end
-            return comp[name]	
-        end, 
-        close = function()
-            if comp[name] then
-                comp[name]:close()
-                comp[name] = nil
-            end
-        end
-    }
-    
-    if clss.update then
-        Hooks:Add("MenuComponentManagerUpdate", name..".MenuComponentManagerUpdate", function(self, t, dt)
-            if comp[name] then
-                comp[name]:update(t, dt)
-            end
-        end)
-    end
+			end
+			return comp[name]
+		end,
+		close = function()
+			if comp[name] then
+				comp[name]:close()
+				comp[name] = nil
+			end
+		end
+	}
+
+	if clss.update then
+		Hooks:Add("MenuComponentManagerUpdate", name .. ".MenuComponentManagerUpdate", function(self, t, dt)
+			if comp[name] then
+				comp[name]:update(t, dt)
+			end
+		end)
+	end
 end
 
 function RaidMenuHelper:LoadJson(path)
@@ -204,28 +206,30 @@ end
 
 function RaidMenuHelper:LoadMenu(data, path, mod)
 	if not data.name then
-		BLT:LogF(LogLevel.ERROR, "BLTMenuHelper", "Creation of menu at path '%s' has failed, no menu name given.", tostring(path))
+		BLT:LogF(LogLevel.ERROR, "BLTMenuHelper", "Creation of menu at path '%s' has failed, no menu name given.",
+			tostring(path))
 		return
 	end
 	local clss
 	local get_value
 	local function load_menu()
 		if data.class then
-			data.class = loadstring("return "..tostring(data.class))()
+			data.class = loadstring("return " .. tostring(data.class))()
 			clss = data.class
 		else
 			clss = class(BLTMenu)
-			rawset(_G, clss, data.global_name or data.name.."Menu")
+			rawset(_G, clss, data.global_name or data.name .. "Menu")
 		end
 		if data.get_value and clss then
 			if data.get_value:starts("callback") then
-				get_value = loadstring("return "..tostring(data.get_value))()
+				get_value = loadstring("return " .. tostring(data.get_value))()
 			elseif clss[data.callback] then
 				get_value = callback(clss, clss, data.get_value)
 			elseif type(data.get_value) == "function" then
 				get_value = data.get_value
 			else
-				BLT:LogF(LogLevel.WARN, "BLTMenuHelper", "Get value function given in menu named '%s' doesn't exist.", tostring(data.name))
+				BLT:LogF(LogLevel.WARN, "BLTMenuHelper", "Get value function given in menu named '%s' doesn't exist.",
+					tostring(data.name))
 			end
 		end
 		RaidMenuHelper:CreateMenu({
@@ -249,11 +253,13 @@ function RaidMenuHelper:LoadMenu(data, path, mod)
 					else
 						if item.callback then
 							if item.callback:begins("callback") then
-								item.callback = loadstring("return "..tostring(item.callback))
+								item.callback = loadstring("return " .. tostring(item.callback))
 							elseif clss[item.callback] then
 								item.callback = callback(clss, clss, item.callback)
 							else
-								BLT:LogF(LogLevel.ERROR, "BLTMenuHelper", "Callback given to item named '%s' in menu named '%s' doesn't exist.", tostring(item.name), tostring(data.name))
+								BLT:LogF(LogLevel.ERROR, "BLTMenuHelper",
+									"Callback given to item named '%s' in menu named '%s' doesn't exist.",
+									tostring(item.name), tostring(data.name))
 							end
 						end
 						table.insert(clss._items_data, item)
@@ -262,12 +268,13 @@ function RaidMenuHelper:LoadMenu(data, path, mod)
 			end
 			clss._get_value = get_value
 		else
-			BLT:LogF(LogLevel.ERROR, "BLTMenuHelper", "Failed to create menu named '%s', invalid class given!", tostring(data.menu.name))
+			BLT:LogF(LogLevel.ERROR, "BLTMenuHelper", "Failed to create menu named '%s', invalid class given!",
+				tostring(data.menu.name))
 		end
 	end
 	if managers and managers.menu_component then
 		load_menu()
 	else
-		Hooks:Add("MenuComponentManagerInitialize", tostring(data.name)..".MenuComponentManagerInitialize", load_menu)		
+		Hooks:Add("MenuComponentManagerInitialize", tostring(data.name) .. ".MenuComponentManagerInitialize", load_menu)
 	end
 end

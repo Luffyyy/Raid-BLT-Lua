@@ -16,7 +16,7 @@ function RaidGuiControlKeyBind:_key_press(text, key, input_id, ...)
 	if not self._params.is_blt then -- use normal for non blt keybinds.
 		return RaidGuiControlKeyBind.orig._key_press(self, text, key, input_id, ...)
 	end
-	
+
 	if managers.system_menu:is_active() then
 		return
 	end
@@ -37,8 +37,9 @@ function RaidGuiControlKeyBind:_key_press(text, key, input_id, ...)
 		return
 	end
 
-	local key_name = "" .. (input_id == "mouse" and Input:mouse():button_name_str(key) or Input:keyboard():button_name_str(key))
-	if not no_add and input_id == "mouse" then
+	local key_name = "" ..
+	(input_id == "mouse" and Input:mouse():button_name_str(key) or Input:keyboard():button_name_str(key))
+	if input_id == "mouse" then
 		key_name = "mouse " .. key_name or key_name
 	end
 
@@ -65,7 +66,7 @@ function RaidGuiControlKeyBind:_key_press(text, key, input_id, ...)
 	if not key_name:is_nil_or_empty() then
 		for _, btn in ipairs(forbidden_btns) do
 			if Idstring(btn) == key then
-				managers.menu:show_key_binding_forbidden({KEY = key_name})
+				managers.menu:show_key_binding_forbidden({ KEY = key_name })
 				self:_end_customize_controller(text, true)
 				return
 			end
@@ -81,7 +82,8 @@ function RaidGuiControlKeyBind:_key_press(text, key, input_id, ...)
 	end
 
 	local button_category = button_data.category
-	local connections = managers.controller:get_settings(managers.controller:get_default_wrapper_type()):get_connection_map()
+	local connections = managers.controller:get_settings(managers.controller:get_default_wrapper_type())
+	:get_connection_map()
 	for _, name in ipairs(MenuCustomizeControllerCreator.controls_info_by_category(button_category)) do
 		local connection = connections[name]
 		if connection._btn_connections then
@@ -129,7 +131,7 @@ function RaidGuiControlKeyBind:_key_press(text, key, input_id, ...)
 		end
 
 		connections[self._keybind_params.button]:set_controller_id(input_id)
-		connections[self._keybind_params.button]:set_input_name_list({key_name})
+		connections[self._keybind_params.button]:set_input_name_list({ key_name })
 		managers.controller:set_user_mod(self._keybind_params.connection_name, {
 			button = self._keybind_params.button,
 			connection = key_name,

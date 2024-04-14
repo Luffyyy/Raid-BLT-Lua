@@ -1,4 +1,3 @@
-
 BLTGUIControlButton = BLTGUIControlButton or class(RaidGUIControlButton)
 
 function BLTGUIControlButton:init(parent, params)

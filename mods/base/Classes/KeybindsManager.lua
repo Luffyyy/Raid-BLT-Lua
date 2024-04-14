@@ -1,4 +1,3 @@
-
 BLTKeybind = BLTKeybind or class()
 
 local BLTKeybind = BLTKeybind
@@ -45,7 +44,7 @@ function BLTKeybind:_SetKey(idx, key)
 	end
 	BLT:LogF(LogLevel.INFO, "BLTKeybind", "Bound %s to %s", tostring(self:Id()), tostring(key))
 	self._key[idx] = key
-	
+
 	BLT.Options:GetValue("Keybinds")[self:Id()] = self:Keys()
 	BLT.Options:Save()
 end
@@ -198,12 +197,13 @@ function BLTKeybindsManager:get_keybind(id)
 	end
 end
 
-Hooks:Add("CustomizeControllerOnKeySet", "CustomizeControllerOnKeySet.BLTKeybindsManager", function(connection_name, button)
-	local bind = BLT.Keybinds:get_keybind(connection_name)
-	if bind then
-		bind:SetKey(button)
-	end
-end)
+Hooks:Add("CustomizeControllerOnKeySet", "CustomizeControllerOnKeySet.BLTKeybindsManager",
+	function(connection_name, button)
+		local bind = BLT.Keybinds:get_keybind(connection_name)
+		if bind then
+			bind:SetKey(button)
+		end
+	end)
 
 --------------------------------------------------------------------------------
 -- Run keybinds

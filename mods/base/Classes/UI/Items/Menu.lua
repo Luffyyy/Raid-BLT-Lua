@@ -24,8 +24,8 @@ function Menu:Init(params)
     })
     self._scroll = ScrollablePanel:new(self.panel, "ItemsPanel", {
         layer = 4,
-        padding = 0.0001, 
-        scroll_width = self.scrollbar == false and 0 or self.scroll_width, 
+        padding = 0.0001,
+        scroll_width = self.scrollbar == false and 0 or self.scroll_width,
         color = self.scroll_color or self.highlight_color,
         scroll_speed = self.scroll_speed
     })
@@ -50,11 +50,11 @@ end
 
 function Menu:ReloadInterface()
     self.panel:child("background"):configure({
-       --visible = self.background_color ~= nil and self.background_visible,
-       --render_template = self.background_blur and "VertexColorTexturedBlur3D" or "VertexColorTextured",
-       --texture = self.background_blur and "guis/textures/test_blur_df" or "units/white_df",
+        --visible = self.background_color ~= nil and self.background_visible,
+        --render_template = self.background_blur and "VertexColorTexturedBlur3D" or "VertexColorTextured",
+        --texture = self.background_blur and "guis/textures/test_blur_df" or "units/white_df",
         color = self.background_color,
-        alpha = self.background_alpha,        
+        alpha = self.background_alpha,
     })
     self._scroll:set_scroll_color(self.scroll_color or self.highlight_color)
     self:RecreateItems()
@@ -66,7 +66,8 @@ function Menu:WorkParams(params)
     self:WorkParam("scroll_width", 12)
     self:WorkParam("scroll_speed", 48)
     self.background_visible = NotNil(self.background_visible, self.type_name == "Menu" and true or false)
-    self.private.background_color = NotNil(self.private.background_color, self.background_visible and self.background_color or nil)    
+    self.private.background_color = NotNil(self.private.background_color,
+        self.background_visible and self.background_color or nil)
     self.auto_align = NotNil(self.auto_align, true)
     self.auto_height = NotNil(self.auto_height, self.type_name == "Group" and true or false)
     self.scrollbar = NotNil(self.scrollbar, self.auto_height ~= true or self.min_height ~= nil or self.max_height ~= nil)
@@ -115,12 +116,13 @@ function Menu:SetScrollPanelSize()
 end
 
 function Menu:KeyPressed(o, k)
-    if self:Enabled() and (self:MouseFocused(x, y) or self.reach_ignore_focus) then
+    if self:Enabled() and self.reach_ignore_focus then
         local dir = k == Idstring("down") and 1 or k == Idstring("up") and -1
         local h = self.menu._highlighted
         local next_item
         if dir then
-            local next_index = (h and table.get_key(self._reachable_items, h) or (dir == 1 and 0 or #self._reachable_items)) + dir
+            local next_index = (h and table.get_key(self._reachable_items, h) or (dir == 1 and 0 or #self._reachable_items)) +
+            dir
             if next_index > #self._reachable_items then
                 next_index = 1
             elseif next_index < 1 then
@@ -164,16 +166,16 @@ function Menu:MousePressed(button, x, y)
             if button == Idstring("mouse wheel down") then
                 if self._scroll:scroll(x, y, -1) then
                     if menu._highlighted and menu._highlighted.parent == self then
-                        menu._highlighted:MouseMoved(x,y)
-                    end 
+                        menu._highlighted:MouseMoved(x, y)
+                    end
                     self:CheckItems()
                     return true
                 end
             elseif button == Idstring("mouse wheel up") then
                 if self._scroll:scroll(x, y, 1) then
                     if menu._highlighted and menu._highlighted.parent == self then
-                        menu._highlighted:MouseMoved(x,y)
-                    end 
+                        menu._highlighted:MouseMoved(x, y)
+                    end
                     self:CheckItems()
                     return true
                 end
@@ -185,7 +187,7 @@ end
 
 function Menu:MouseMoved(x, y)
     if self:Enabled() and self:MouseFocused(x, y) then
-        local _, pointer = self._scroll:mouse_moved(nil, x, y) 
+        local _, pointer = self._scroll:mouse_moved(nil, x, y)
         if pointer then
             self:CheckItems()
             if managers.mouse_pointer.set_pointer_image then
@@ -236,10 +238,10 @@ function Menu:SetVisible(visible, animate, no_align)
     BLT.Items.Item.super.SetVisible(self, visible, true)
     if animate and visible and not was_visible then
         panel:set_alpha(0)
-        play_anim(panel, {set = {alpha = 1}, time = 0.2})
+        play_anim(panel, { set = { alpha = 1 }, time = 0.2 })
     end
     if not no_align and self.parent.auto_align then
-    	self.parent:AlignItems()
+        self.parent:AlignItems()
     end
     self.menu:CheckOpenedList()
 end
@@ -262,7 +264,7 @@ function Menu:AlignItemsGrid(animate)
             end
             local x, y = max_x + offset[1], max_y + offset[2]
             if animate then
-                play_anim(panel, {set = {x = x, y = y}})
+                play_anim(panel, { set = { x = x, y = y } })
             else
                 panel:set_position(x, y)
             end
@@ -312,14 +314,14 @@ function Menu:AlignItemsNormal(animate)
         if not item.ignore_align and item:Visible() then
             local offset = item:Offset()
             local panel = item:Panel()
-            local x,y = offset[1], offset[2]
+            local x, y = offset[1], offset[2]
             if alive(prev_item) then
                 y = y + prev_item:Panel():bottom()
             end
             if animate then
-                play_anim(panel, {set = {x = x, y = y}})
+                play_anim(panel, { set = { x = x, y = y } })
             else
-                panel:set_position(x,y)
+                panel:set_position(x, y)
             end
             local repos = item:Reposition()
             if not repos or item.count_as_aligned then
@@ -493,27 +495,42 @@ function Menu:ShouldClose()
 end
 
 function Menu:Items() return self._my_items end
+
 function Menu:ItemsWidth() return self.items_panel:w() end
+
 function Menu:ItemsHeight() return self.items_panel:h() end
+
 function Menu:ItemsPanel() return self.items_panel end
+
 function Menu:ImageButton(params)
     local w = params.w or not params.icon_h and params.items_size
     local h = params.h or params.icon_h or params.items_size
     local _params = self:ConfigureItem(params)
-    _params.w = w or _params.w
-    _params.h = h or _params.h or _params.items_size
+    if _params then
+        _params.w = w or _params.w
+        _params.h = h or _params.h or _params.items_size
+    end
     return self:NewItem(BLT.Items.ImageButton:new(_params))
 end
 
 function Menu:Group(params) return self:NewItem(BLT.Items.Group:new(self:ConfigureItem(params, true))) end
+
 function Menu:Menu(params) return self:NewItem(BLT.Items.Menu:new(self:ConfigureItem(params, true))) end
+
 function Menu:Button(params) return self:NewItem(BLT.Items.Item:new(self:ConfigureItem(params))) end
+
 function Menu:ComboBox(params) return self:NewItem(BLT.Items.ComboBox:new(self:ConfigureItem(params))) end
+
 function Menu:TextBox(params) return self:NewItem(BLT.Items.TextBox:new(self:ConfigureItem(params))) end
+
 function Menu:ComboBox(params) return self:NewItem(BLT.Items.ComboBox:new(self:ConfigureItem(params))) end
+
 function Menu:Slider(params) return self:NewItem(BLT.Items.Slider:new(self:ConfigureItem(params))) end
+
 function Menu:KeyBind(params) return self:NewItem(BLT.Items.KeyBindItem:new(self:ConfigureItem(params))) end
+
 function Menu:Toggle(params) return self:NewItem(BLT.Items.Toggle:new(self:ConfigureItem(params))) end
+
 function Menu:ItemsGroup(params) return self:Group(params) end --Deprecated--
 
 function Menu:NumberBox(params)
@@ -565,11 +582,12 @@ function Menu:ConfigureItem(item, menu)
     end
     if type(item.index) == "string" then
         local split = string.split(item.index, "|")
-        local wanted_item = self:GetItem(split[2] or split[1]) 
+        local wanted_item = self:GetItem(split[2] or split[1])
         if wanted_item then
             item.index = wanted_item:Index() + (split[1] == "After" and 1 or split[1] == "Before" and -1 or 0)
         else
-            BLT:LogF(LogLevel.ERROR, "BLTMenu", "Could not create index from string, %s, %s.", tostring(item.index), tostring(item))
+            BLT:LogF(LogLevel.ERROR, "BLTMenu", "Could not create index from string, %s, %s.", tostring(item.index),
+                tostring(item))
             item.index = nil
         end
     end
@@ -590,8 +608,8 @@ function Menu:NewItem(item)
     end
     item.indx = item.indx or index
     if self.auto_align then self:AlignItems() end
-	if managers.mouse_pointer then
-		item:MouseMoved(managers.mouse_pointer:world_position())
-	end
+    if managers.mouse_pointer then
+        item:MouseMoved(managers.mouse_pointer:world_position())
+    end
     return item
 end

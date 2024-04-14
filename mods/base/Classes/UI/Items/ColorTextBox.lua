@@ -5,7 +5,7 @@ ColorTextBox.type_name = "ColoredTextBox"
 function ColorTextBox:Init(...)
     ColorTextBox.super.Init(self, ...)
     local panel = self:Panel()
-    panel:rect({name = "color_preview", w = self.items_size, h = self.items_size})
+    panel:rect({ name = "color_preview", w = self.items_size, h = self.items_size })
     self:UpdateColor()
 end
 
@@ -36,7 +36,7 @@ end
 function ColorTextBox:MousePressed(button, x, y)
     local result = ColorTextBox.super.MousePressed(self, button, x, y)
     if not result and self.show_color_dialog and self.enabled then
-        if button == Idstring("0") and self:Panel():inside(x,y) then
+        if button == Idstring("0") and self:Panel():inside(x, y) then
             self:RunCallback(self.show_color_dialog)
             return true
         end

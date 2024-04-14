@@ -26,8 +26,9 @@ end
 
 function BLTNotificationsManager:add_notification(parameters)
     -- Create and store the notification
+    local id = self:_get_uid()
     local data = {
-        id = self:_get_uid(),
+        id = id,
         title = parameters.title or "No Title",
         text = parameters.text or "",
         icon = parameters.icon,
@@ -43,7 +44,7 @@ function BLTNotificationsManager:add_notification(parameters)
         notifications:add_notification(data)
     end
 
-    return data.id
+    return id
 end
 
 function BLTNotificationsManager:remove_notification(uid)

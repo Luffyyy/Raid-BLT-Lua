@@ -7,7 +7,8 @@ function LocalizationModule:init(core_mod, config)
     if not LocalizationModule.super.init(self, core_mod, config) then
         return false
     end
-    self.LocalizationDirectory = self._config.directory and Path:Combine(self._mod.path, self._config.directory) or self._mod.path
+    self.LocalizationDirectory = self._config.directory and Path:Combine(self._mod.path, self._config.directory) or
+    self._mod.path
 
     self.Localizations = {}
 
@@ -29,7 +30,8 @@ end
 
 function LocalizationModule:LoadLocalization()
     if self.Localizations[SystemInfo:language():key()] then
-        LocalizationManager:load_localization_file(Path:Combine(self.LocalizationDirectory, self.Localizations[SystemInfo:language():key()]))
+        LocalizationManager:load_localization_file(Path:Combine(self.LocalizationDirectory,
+            self.Localizations[SystemInfo:language():key()]))
     end
     LocalizationManager:load_localization_file(Path:Combine(self.LocalizationDirectory, self.DefaultLocalization), false)
 end
@@ -40,7 +42,7 @@ function LocalizationModule:RegisterHooks()
     else
         Hooks:Add("LocalizationManagerPostInit", self._mod.name .. "_Localization", function(loc)
             self:LoadLocalization()
-    	end)
+        end)
     end
 end
 

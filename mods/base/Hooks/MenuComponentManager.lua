@@ -1,4 +1,3 @@
-
 CloneClass(MenuComponentManager)
 
 Hooks:RegisterHook("MenuComponentManagerInitialize")

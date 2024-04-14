@@ -1,23 +1,23 @@
 BLT.Items.ImageButton = BLT.Items.ImageButton or class(BLT.Items.Item)
-local ImageButton = BLT.Items.ImageButton 
+local ImageButton = BLT.Items.ImageButton
 ImageButton.type_name = "ImageButton"
 function ImageButton:InitBasicItem()
     self.h = self.h or self.w
-    self.panel = self.parent_panel:panel({ 
+    self.panel = self.parent_panel:panel({
         name = self.name,
         w = self.w,
         h = self.h,
     })
     self:InitBGs()
     self.img = self.panel:bitmap({
-        name = "img", 
+        name = "img",
         texture = self.texture,
         texture_rect = self.texture_rect,
         color = self.img_color or self.foreground,
         w = self.icon_w or self.w - 4,
         h = self.icon_h or self.h - 4,
         rotation = self.img_rot,
-        halign = "center", 
+        halign = "center",
         valign = "center",
         layer = 5
     })

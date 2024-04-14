@@ -51,7 +51,7 @@ function ScrollablePanel:init(parent_panel, name, data)
 		w = self._scroll_panel:w(),
 		h = self._scroll_panel:h()
 	})
- 
+
 	self._scroll_bar = self:panel():panel({
 		name = "scroll_bar",
 		halign = "right",
@@ -61,10 +61,10 @@ function ScrollablePanel:init(parent_panel, name, data)
 	self._scroll_bar:rect({
 		name = "scroll",
 		color = self._color,
-        halign = "grow",
-        valign = "grow"
+		halign = "grow",
+		valign = "grow"
 	})
-	
+
 	if data.left_scrollbar then
 		self._scroll_bar:set_x(2)
 	else
@@ -191,7 +191,7 @@ function ScrollablePanel:update_canvas_size(h)
 			end
 		end
 	end
-	
+
 	if max_h <= self:scroll_panel():h() then
 		max_h = self:scroll_panel():h()
 	end
@@ -293,7 +293,8 @@ end
 
 function ScrollablePanel:_set_scroll_indicator()
 	if self:canvas():h() ~= 0 then
-		self._scroll_bar:set_h(math.max((self:panel():h() * self:scroll_panel():h()) / self:canvas():h(), self._bar_minimum_size))
+		self._scroll_bar:set_h(math.max((self:panel():h() * self:scroll_panel():h()) / self:canvas():h(),
+			self._bar_minimum_size))
 	end
 end
 
@@ -353,6 +354,7 @@ end
 function ScrollablePanel:mouse_released(button, x, y)
 	return self:release_scroll_bar()
 end
+
 post_require("lib/managers/menu/ScrollablePanel")
 PD2Easing = PD2Easing or {}
 local mlerp = math.lerp

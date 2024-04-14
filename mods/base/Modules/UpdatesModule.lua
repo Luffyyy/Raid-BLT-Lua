@@ -43,7 +43,7 @@ UpdatesModule._providers = {
         check_url = "http://api.paydaymods.com/updates/retrieve/?mod[0]=$id$",
         download_url = "http://download.paydaymods.com/download/latest/$id$",
         get_hash = function(self)
-        	if self._config.hash_file then
+            if self._config.hash_file then
                 return SystemFS:exists(self._config.hash_file) and file.FileHash(self._config.hash_file) or nil
             else
                 local directory = Application:nice_path(self:GetMainInstallDir(), true)
@@ -67,7 +67,8 @@ UpdatesModule._providers = {
                         if data.ident == self.id then
                             self._server_hash = data.hash
                             local local_hash = self.provider.get_hash(self)
-                            self:LogF(LogLevel.DEBUG, "UpdateCheck", "Comparing hash data:\nServer: '%s'\n Local: '%s'.", data.hash, local_hash)
+                            self:LogF(LogLevel.DEBUG, "UpdateCheck", "Comparing hash data:\nServer: '%s'\n Local: '%s'.",
+                                data.hash, local_hash)
                             if data.hash then
                                 if data.hash ~= local_hash then
                                     self:PrepareForUpdate()
@@ -78,7 +79,8 @@ UpdatesModule._providers = {
                         return
                     end
                 end
-                self:LogF(LogLevel.WARN, "UpdateCheck", "Paydaymods did not return a valid result for id '%s'.", tostring(self.id))
+                self:LogF(LogLevel.WARN, "UpdateCheck", "Paydaymods did not return a valid result for id '%s'.",
+                    tostring(self.id))
             end)
         end
     }
@@ -101,8 +103,10 @@ function UpdatesModule:init(core_mod, config)
         end
     elseif self._config.custom_provider then
         local provider_details = self._config.custom_provider
-        if provider_details.check_func then provider_details.check_func = self._mod:StringToCallback(provider_details.check_func, self) end
-        if provider_details.download_file_func then provider_details.download_file_func = self._mod:StringToCallback(provider_details.download_file_func, self) end
+        if provider_details.check_func then provider_details.check_func = self._mod:StringToCallback(
+            provider_details.check_func, self) end
+        if provider_details.download_file_func then provider_details.download_file_func = self._mod:StringToCallback(
+            provider_details.download_file_func, self) end
         self.provider = provider_details
     else
         self:Log(LogLevel.ERROR, "Setup", "No provider can be found for mod assets.")
@@ -112,9 +116,12 @@ function UpdatesModule:init(core_mod, config)
     self.use_local_dir = NotNil(self._config.use_local_dir, true)
     self.use_local_path = NotNil(self._config.use_local_path, true)
 
-    self.folder_names = self.use_local_dir and {table.remove(string.split(self._mod.path, "/"))} or (type(self._config.folder_name) == "string" and {self._config.folder_name} or Utils:RemoveNonNumberIndexes(self._config.folder_name))
-    self.install_directory = (self._config.install_directory and self._mod:GetRealFilePath(self._config.install_directory, self)) or (self.use_local_path ~= false and Utils.Path:GetDirectory(self._mod.path)) or BLTModManager.Constants.mods_directory
-    self.version_file = self._config.version_file and self._mod:GetRealFilePath(self._config.version_file, self) or Utils.Path:Combine(self.install_directory, self.folder_names[1], self._default_version_file)
+    self.folder_names = self.use_local_dir and { table.remove(string.split(self._mod.path, "/")) } or
+    (type(self._config.folder_name) == "string" and { self._config.folder_name } or Utils:RemoveNonNumberIndexes(self._config.folder_name))
+    self.install_directory = (self._config.install_directory and self._mod:GetRealFilePath(self._config.install_directory, self)) or
+    (self.use_local_path ~= false and Utils.Path:GetDirectory(self._mod.path)) or BLTModManager.Constants.mods_directory
+    self.version_file = self._config.version_file and self._mod:GetRealFilePath(self._config.version_file, self) or
+    Utils.Path:Combine(self.install_directory, self.folder_names[1], self._default_version_file)
 
     self._update_manager_id = self._mod.name .. self._name
     self._mod.update_key = (self._config.is_standalone ~= false) and self.id
@@ -168,9 +175,13 @@ function UpdatesModule:PrepareForUpdate()
     BLT.ModsMenu:SetModNeedsUpdate(self._mod, self._new_version)
     if self._config.important and BLT.Options:GetValue("ImportantNotice") then
         local loc = managers.localization
-        QuickMenu:new(loc:text("blt_mods_manager_important_title", {mod = self._mod.name}), loc:text("blt_mods_manager_important_help"), {{text = loc:text("dialog_yes"), callback = function()
-            BLT.ModsMenu:SetEnabled(true)
-        end}, {text = loc:text("dialog_no"), is_cancel_button = true}})
+        QuickMenu:new(loc:text("blt_mods_manager_important_title", { mod = self._mod.name }),
+            loc:text("blt_mods_manager_important_help"), { {
+            text = loc:text("dialog_yes"),
+            callback = function()
+                BLT.ModsMenu:SetEnabled(true)
+            end
+        }, { text = loc:text("dialog_no"), is_cancel_button = true } })
     end
 end
 
@@ -179,7 +190,8 @@ function UpdatesModule:_CheckVersion(force)
     local loc = managers.localization
     dohttpreq(version_url, function(data, id)
         local self = self
-        self:LogF(LogLevel.INFO, "CheckVersion", "Received version '%s' from the server (local is '%s').", data, tostring(self.version))
+        self:LogF(LogLevel.INFO, "CheckVersion", "Received version '%s' from the server (local is '%s').", data,
+            tostring(self.version))
         if data then
             self._new_version = data
             if self._new_version and self._new_version ~= self.version then
@@ -197,10 +209,10 @@ function UpdatesModule:ShowNoChangePrompt()
     QuickMenu:new(
         managers.localization:text("blt_no_change"),
         managers.localization:text("blt_no_change_desc"),
-        {{
+        { {
             text = managers.localization:text("menu_ok"),
             is_cancel_button = true
-        }},
+        } },
         true
     )
 end
@@ -224,17 +236,18 @@ end
 function UpdatesModule:ViewMod()
     local url = self._mod:GetRealFilePath(self.provider.page_url, self)
     if Steam:overlay_enabled() then
-		Steam:overlay_activate("url", url)
-	else
-		os.execute("cmd /c start " .. url)
-	end
+        Steam:overlay_activate("url", url)
+    else
+        os.execute("cmd /c start " .. url)
+    end
 end
 
 function UpdatesModule:_DownloadAssets(data)
     local download_url = self._mod:GetRealFilePath(self.provider.download_url, data or self)
     self:LogF(LogLevel.INFO, "Downloading assets from url '%s'.", download_url)
     local mods_menu = BLT.ModsMenu
-    dohttpreq(download_url, callback(self, self, "StoreDownloadedAssets", false), callback(mods_menu, mods_menu, "SetModProgress", self._mod))
+    dohttpreq(download_url, callback(self, self, "StoreDownloadedAssets", false),
+        callback(mods_menu, mods_menu, "SetModProgress", self._mod))
 end
 
 function UpdatesModule:StoreDownloadedAssets(config, data, id)
@@ -264,12 +277,13 @@ function UpdatesModule:StoreDownloadedAssets(config, data, id)
 
         local temp_zip_path = self._update_manager_id .. ".zip"
 
-        local file = io.open(temp_zip_path, "wb+")
+        local file = io.open(temp_zip_path, "w+b")
         if file then
             file:write(data)
             file:close()
         else
-            self:Log(LogLevel.ERROR, "DownloadAssets", "An error occured while trying to store the downloaded asset data.")
+            self:Log(LogLevel.ERROR, "DownloadAssets",
+                "An error occured while trying to store the downloaded asset data.")
             return
         end
 

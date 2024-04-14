@@ -2,13 +2,13 @@ MenuModule = MenuModule or class(ModuleBase)
 MenuModule.type_name = "Menu"
 
 function MenuModule:post_init(...)
-    if not MenuModule.super.post_init(self, ...) then
-        return false
-    end
+	if not MenuModule.super.post_init(self, ...) then
+		return false
+	end
 
-    self:Load()
+	self:Load()
 
-    return true
+	return true
 end
 
 function MenuModule:Load()

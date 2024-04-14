@@ -17,7 +17,7 @@
 			version="1.64"
 			important="true"/>
 
-	<options build_menu="false">
+	<options build_menu="false" save_file="blt.json">
 		<options>
 			<option name="Language" type="string" default_value="English"/>
 			<option name="ImportantNotice" type="boolean" default_value="true"/>

@@ -19,14 +19,15 @@ function ComboBox:Init()
         layer = 1,
         color = self:GetForeground(),
     })
-	self._textbox = BLT.Items.TextBoxBase:new(self, {
+    self._textbox = BLT.Items.TextBoxBase:new(self, {
         panel = self.panel,
         lines = 1,
         align = self.textbox_align,
         line_color = self.line_color or self.highlight_color,
         w = self.panel:w() * (self.text == nil and 1 or self.control_slice),
         update_text = callback(self._list, self._list, "update_search", true),
-        value = self.localized_items and text and managers.localization:text(tostring(text)) or type(text) ~= "nil" and tostring(text) or "",
+        value = self.localized_items and text and managers.localization:text(tostring(text)) or
+        type(text) ~= "nil" and tostring(text) or "",
     })
     self._textbox:PostInit()
     combo_bg:set_right(self.panel:w())
@@ -35,8 +36,8 @@ function ComboBox:Init()
         w = self.items_size - 6,
         h = self.items_size - 6,
         texture = "ui/atlas/raid_atlas_skills",
-        texture_rect = {421, 93, 18, 18},
-        color = self:GetForeground(highlight),
+        texture_rect = { 421, 93, 18, 18 },
+        color = self:GetForeground(),
         layer = 2,
     })
     self.icon:set_right(combo_bg:right() - 2)
@@ -54,8 +55,8 @@ end
 
 function ComboBox:SetValue(value, run_callback, no_items_clbk)
     if not self:alive() then
-		return false
-	end
+        return false
+    end
     local v = self.items[value]
     if run_callback and type(v) == "table" and not no_items_clbk and v.callback then
         self:RunCallback(v.callback)
@@ -64,13 +65,14 @@ function ComboBox:SetValue(value, run_callback, no_items_clbk)
         v = v.text
     end
     if alive(self.panel) then
-       self._textbox:Text():set_text(self.localized_items and v and managers.localization:text(tostring(v)) or type(v) ~= "nil" and tostring(v) or "")
-    end    
+        self._textbox:Text():set_text(self.localized_items and v and managers.localization:text(tostring(v)) or
+        type(v) ~= "nil" and tostring(v) or "")
+    end
     ComboBox.super.SetValue(self, value, run_callback)
     return true
 end
 
-function ComboBox:SetSelectedItem(value, ...)    
+function ComboBox:SetSelectedItem(value, ...)
     self:SetValue(table.get_key(self.items, value), ...)
 end
 
@@ -90,7 +92,7 @@ function ComboBox:MousePressed(button, x, y)
     if not self:MouseCheck(true) then
         return
     end
-    if not self.menu._openlist and self.parent.panel:inside(x,y) and self.panel:inside(x,y) then
+    if not self.menu._openlist and self.parent.panel:inside(x, y) and self.panel:inside(x, y) then
         if button == Idstring("0") then
             self._list:update_search()
             self._list:show()

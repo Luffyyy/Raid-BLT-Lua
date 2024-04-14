@@ -4,21 +4,21 @@ BLT.CustomPackageManager = {}
 
 local C = BLT.CustomPackageManager
 C.custom_packages = {}
-C.ext_convert = {dds = "texture", png = "texture", tga = "texture", jpg = "texture"}
+C.ext_convert = { dds = "texture", png = "texture", tga = "texture", jpg = "texture" }
 
 --Hopefully will be functional at some point.
 
 function C:RegisterPackage(id, directory, config)
     local func_name = "CustomPackageManager:RegisterPackage"
-    if (not Utils:CheckParamsValidty({id, directory, config},
-        {
-            func_name = func_name,
-            params = {
-                { type="string", allow_nil = false },
-                { type="string", allow_nil = false },
-                { type="table", allow_nil = false }
-            }
-        })) then
+    if (not Utils:CheckParamsValidty({ id, directory, config },
+            {
+                func_name = func_name,
+                params = {
+                    { type = "string", allow_nil = false },
+                    { type = "string", allow_nil = false },
+                    { type = "table", allow_nil = false }
+                }
+            })) then
         return false
     end
     id = id:key()
@@ -27,7 +27,7 @@ function C:RegisterPackage(id, directory, config)
         return false
     end
 
-    self.custom_packages[id] = {dir = directory, config = config}
+    self.custom_packages[id] = { dir = directory, config = config }
 
     return true
 end
@@ -62,7 +62,8 @@ end
 
 function C:LoadPackageConfig(directory, config)
     if not SystemFS then
-        BLT:Log(LogLevel.ERROR, "PackageManager", "SystemFS does not exist! Custom Packages cannot function without this! Do you have an outdated game version?")
+        BLT:Log(LogLevel.ERROR, "PackageManager",
+            "SystemFS does not exist! Custom Packages cannot function without this! Do you have an outdated game version?")
         return
     end
     if config.load_clbk and not config.load_clbk() then
@@ -82,7 +83,7 @@ function C:LoadPackageConfig(directory, config)
                     path = Utils.Path:Normalize(path)
                     local ids_ext = Idstring(self.ext_convert[typ] or typ)
                     local ids_path = Idstring(path)
-                    local file_path = Utils.Path:Combine(directory, path) ..".".. typ
+                    local file_path = Utils.Path:Combine(directory, path) .. "." .. typ
                     if SystemFS:exists(file_path) then
                         if (not DB:has(ids_ext, ids_path) or child.force) then
                             FileManager:AddFile(ids_ext, ids_path, file_path)
@@ -90,24 +91,24 @@ function C:LoadPackageConfig(directory, config)
                                 PackageManager:reload(ids_ext, ids_path)
                             end
                             if child.load then
-                                table.insert(loading, {ids_ext, ids_path, file_path})
+                                table.insert(loading, { ids_ext, ids_path, file_path })
                             end
                         end
                     else
                         BLT:LogF(LogLevel.ERROR, "PackageManager", "File '%s' does not exist!", tostring(file_path))
                     end
                 else
-                    BLT:LogF(LogLevel.ERROR, "PackageManager", "Node in '%s' does not contain a definition for both type and path.", tostring(directory))
-                end                
+                    BLT:LogF(LogLevel.ERROR, "PackageManager",
+                        "Node in '%s' does not contain a definition for both type and path.", tostring(directory))
+                end
             end
         end
     end
-    --For some reason this needs to be here, instead of loading in the main loop or the game will go into a hissy fit 
+    --For some reason this needs to be here, instead of loading in the main loop or the game will go into a hissy fit
     for _, file in pairs(loading) do
         FileManager:LoadAsset(unpack(file))
     end
 end
-
 
 function C:UnloadPackageConfig(config)
     BLT:Log(LogLevel.INFO, "PackageManager", "Unloading added files")
@@ -128,7 +129,8 @@ function C:UnloadPackageConfig(config)
             elseif typ == "unit_load" or typ == "add" then
                 self:UnloadPackageConfig(child)
             else
-                BLT:Log(LogLevel.ERROR, "PackageManager", "Some node does not contain a definition for both type and path.")
+                BLT:Log(LogLevel.ERROR, "PackageManager",
+                    "Some node does not contain a definition for both type and path.")
             end
         end
     end

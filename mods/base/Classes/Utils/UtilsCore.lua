@@ -1,22 +1,22 @@
 --Functions that already exist but we need them by this time.
 function string.split(s, separator_pattern, keep_empty, max_splits)
-    local result = {}
-    local pattern = "(.-)" .. separator_pattern .. "()"
-    local count = 0
-    local final_match_end_index = 0
-    
-    for part, end_index in string.gmatch(s, pattern) do
-    	final_match_end_index = end_index
-    	if keep_empty or part ~= "" then
-	        count = count + 1
-	        result[count] = part
-	        if count == max_splits then break end
-        end
+	local result = {}
+	local pattern = "(.-)" .. separator_pattern .. "()"
+	local count = 0
+	local final_match_end_index = 0
+
+	for part, end_index in string.gmatch(s, pattern) do
+		final_match_end_index = end_index
+		if keep_empty or part ~= "" then
+			count = count + 1
+			result[count] = part
+			if count == max_splits then break end
+		end
 	end
-	
-    local remainder = string.sub(s, final_match_end_index)
-    result[count + 1] = (keep_empty or remainder ~= "") and remainder or nil
-    return result
+
+	local remainder = string.sub(s, final_match_end_index)
+	result[count + 1] = (keep_empty or remainder ~= "") and remainder or nil
+	return result
 end
 
 function string.begins(s, beginning)

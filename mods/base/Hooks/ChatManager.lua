@@ -1,4 +1,3 @@
-
 CloneClass(ChatManager)
 
 Hooks:RegisterHook("ChatManagerOnSendMessage")

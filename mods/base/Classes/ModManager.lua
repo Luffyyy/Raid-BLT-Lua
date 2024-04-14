@@ -1,8 +1,6 @@
-
 BLTModManager = BLTModManager or class()
 local BLTModManager = BLTModManager
 function BLTModManager:init()
-	Hooks:Register("BLTOnLoadData")
 	self.mods = {}
 end
 
@@ -47,13 +45,13 @@ function BLTModManager:RegisterHook(source_file, path, file, type, mod)
 	if path:byte(-1) ~= 47 then -- /
 		path = path .. "/"
 	end
-    local hook_file = Path:Combine(path, file)
-    local dest_tbl = type == "pre" and BLT.hook_tables.pre or BLT.hook_tables.post
-    if dest_tbl and FileIO:Exists(hook_file) then
-        local req_script = source_file:lower()
+	local hook_file = Path:Combine(path, file)
+	local dest_tbl = type == "pre" and BLT.hook_tables.pre or BLT.hook_tables.post
+	if dest_tbl and FileIO:Exists(hook_file) then
+		local req_script = source_file:lower()
 
 		dest_tbl[req_script] = dest_tbl[req_script] or {}
-		local data = {mod = mod, script = hook_file}
+		local data = { mod = mod, script = hook_file }
 		if req_script ~= "*" then
 			table.insert(dest_tbl[req_script], data)
 		else
@@ -61,8 +59,8 @@ function BLTModManager:RegisterHook(source_file, path, file, type, mod)
 		end
 	else
 		mod = mod or BLT
-        mod:LogF(LogLevel.ERROR, "BLTModManager", "Hook file '%s' is not readable by the lua state!", hook_file)
-    end
+		mod:LogF(LogLevel.ERROR, "BLTModManager", "Hook file '%s' is not readable by the lua state!", hook_file)
+	end
 end
 
 --------------------------------------------------------------------------------
@@ -73,9 +71,6 @@ function BLTModManager:Load()
 	for index, mod in ipairs(self.mods) do
 		mod:Setup()
 	end
-
-	-- Call load hook
-	Hooks:Call("BLTOnLoadData", saved_data)
 end
 
 --------------------------------------------------------------------------------
@@ -83,7 +78,6 @@ end
 --------------------------------------------------------------------------------
 BLTModManager.Constants = {
 	mods_directory = "mods/",
-	mod_overrides_directory = mods_directory, -- backwards compat
 	maps_directory = "maps/",
 	lua_base_directory = "base/",
 	downloads_directory = "downloads/",

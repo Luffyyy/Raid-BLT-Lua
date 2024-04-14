@@ -22,9 +22,9 @@ function HooksModule:Load()
             if source_file == "*" then
                 table.insert(registered_mod_hooks.wildcards, script)
             elseif hook.type == "pre" then
-                table.insert(registered_mod_hooks.pre, {source_file, script})
+                table.insert(registered_mod_hooks.pre, { source_file, script })
             else
-                table.insert(registered_mod_hooks.post, {source_file, script})
+                table.insert(registered_mod_hooks.post, { source_file, script })
             end
         end
     end

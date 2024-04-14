@@ -62,7 +62,7 @@ function SelectListDialog:ShowItem(t, selected)
             return true
         end
     end
-    return false    
+    return false
 end
 
 function SelectListDialog:MakeListItems(params)
@@ -86,7 +86,7 @@ end
 
 function SelectListDialog:ToggleClbk(value, menu, item)
     if self._single_select then
-        for _,v in pairs(self._list) do
+        for _, v in pairs(self._list) do
             local toggle = self._list_menu:GetItem(type(v) == "table" and v.name or v)
             if toggle and toggle ~= item then
                 toggle:SetValue(false)
@@ -96,7 +96,7 @@ function SelectListDialog:ToggleClbk(value, menu, item)
     if item:Value() == true then
         if not table.contains(self._selected_list, value) or self._allow_multi_insert then
             if self._single_select then
-                self._selected_list = {value}
+                self._selected_list = { value }
             else
                 table.insert(self._selected_list, type(value) == "table" and clone(value) or value)
             end

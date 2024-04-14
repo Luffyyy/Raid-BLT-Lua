@@ -10,7 +10,7 @@ function KeyBindItem:Init()
         align = "center",
         vertical = self.text_vertical,
         layer = 1,
-        color = self:GetForeground(highlight),
+        color = self:GetForeground(),
         font = self.font,
         font_size = self.items_size - 2
     })
@@ -26,14 +26,13 @@ function KeyBindItem:SetValue(value, run_callback)
     end
 end
 
-
 function KeyBindItem:SetKeybindKey()
     if not self:alive() then
         return
     end
     self.keybind_key:set_text(string.upper(self.value or "None"))
-    local _,_,w,h = self.keybind_key:text_rect()
-    self.keybind_key:set_size(w,h)
+    local _, _, w, h = self.keybind_key:text_rect()
+    self.keybind_key:set_size(w, h)
     self.keybind_key:set_right(self.panel:w() - self.text_offset)
 end
 
@@ -44,10 +43,10 @@ function KeyBindItem:SetCanEdit(CanEdit)
     end
     self.keybind_key:set_alpha(CanEdit and 0.5 or 1)
     if CanEdit then
-        BLT:AddUpdater("MenuUIKeyBindUpdate"..tostring(self), function()
+        BLT:AddUpdater("MenuUIKeyBindUpdate" .. tostring(self), function()
             local function get(input)
                 local key, additional_key
-                for _,k in pairs(input:down_list()) do
+                for _, k in pairs(input:down_list()) do
                     local _key = input:button_name_str(input:button_name(k))
                     if not additional_key then
                         if key then
@@ -122,9 +121,10 @@ function KeyBindItem:SetCanEdit(CanEdit)
             end
         end, true)
     else
-        BLT:RemoveUpdater("MenuUIKeyBindUpdate"..tostring(self))
+        BLT:RemoveUpdater("MenuUIKeyBindUpdate" .. tostring(self))
     end
 end
+
 function KeyBindItem:KeyPressed(o, k)
     if k == Idstring("enter") then
         self:SetCanEdit(true)
@@ -155,6 +155,7 @@ function KeyBindItem:MousePressed(button, x, y)
     end
 end
 
+---@obsolete
 function KeyBindItem:GetKeyBind()
-    return Idstring(item.value)
+    return Idstring(item.value) -- FIXME ?!?
 end
