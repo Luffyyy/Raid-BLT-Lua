@@ -240,6 +240,7 @@ function BLTKeybindsManager:update(t, dt, state)
 	for _, bind in ipairs(self:keybinds()) do
 		if bind:IsActive() and bind:HasKey() and bind:CanExecuteInState(state) then
 			local key = bind:Key()
+			local key_pressed
 			if string.find(key, "mouse ") == 1 then
 				key_pressed = self._input_mouse:pressed(Idstring(key:sub(7)))
 			else

@@ -161,6 +161,7 @@ end
 
 function ScrollablePanel:update_canvas_size(h)
 	local orig_w = self:canvas():w()
+	local max_h
 	if h then
 		max_h = h
 	else

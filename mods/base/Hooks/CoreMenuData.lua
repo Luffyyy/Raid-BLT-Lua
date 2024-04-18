@@ -1,7 +1,7 @@
 core:module("CoreMenuData")
 
 Hooks:Register("CoreMenuData.LoadDataMenu")
-function Data:_load_data(root, menu_id)
+function Data:_load_data(root, file_path, menu_id)
 	-- Find the child menu with id = menu_id
 	local menu
 	for _, c in ipairs(root) do
@@ -19,7 +19,7 @@ function Data:_load_data(root, menu_id)
 		for _, c in ipairs(menu) do
 			local type = c._meta
 			if type == "node" then
-				self:_create_node(file_path, menu_id, c) -- FIXME ?!?
+				self:_create_node(file_path, menu_id, c)
 			elseif type == "default_node" then
 				self._default_node_name = c.name
 			end
@@ -29,7 +29,7 @@ end
 
 function Data:load_data(file_path, menu_id)
 	if PackageManager:has(Idstring("menu"), file_path:id()) then
-		self:_load_data(PackageManager:script_data(Idstring("menu"), file_path:id()), menu_id)
+		self:_load_data(PackageManager:script_data(Idstring("menu"), file_path:id()), file_path, menu_id)
 	end
 end
 

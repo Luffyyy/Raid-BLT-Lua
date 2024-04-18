@@ -4,11 +4,13 @@ ModuleBase.required_params = {}
 function ModuleBase:init(core_mod, config)
     self._mod = core_mod
     self._name = self._name or config.name or config._meta or self.type_name
+    self._config = config
+
     if config.file ~= nil then
         local file = io.open(self._mod:GetRealFilePath(Path:Combine(self._mod.path, config.file)), "r")
-        self._config = table.merge(config, ScriptSerializer:from_custom_xml(file:read("*all")))
-    else
-        self._config = config
+        if file then
+            self._config = table.merge(config, ScriptSerializer:from_custom_xml(file:read("*all")))
+        end
     end
 
     for _, param in pairs(self.required_params) do

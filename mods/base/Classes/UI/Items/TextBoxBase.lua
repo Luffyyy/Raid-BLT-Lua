@@ -22,42 +22,44 @@ function TextBoxBase:init(parent, params)
     self.foreground = params.foreground
     self.foreground_highlight = params.foreground_highlight
     local color = self:GetForeground()
-    local line = self.panel:rect({
-        name = "line",
-        halign = "grow",
-        visible = params.line,
-        h = 2,
-        layer = 2,
-        color = self.line_color or color,
-    })
-    line:set_bottom(self.panel:h())
-    self.text = self.panel:text({
-        name = "text",
-        text = params.value and
-        (parent.filter == "number" and string.format("%." .. parent.floats .. "f", tonumber(params.value)) or tostring(params.value)) or
-        "",
-        align = params.align,
-        wrap = not params.lines or params.lines > 1,
-        word_wrap = not params.lines or params.lines > 1,
-        color = color,
-        selection_color = color:with_alpha(0.5), --I fucking wish there was something better..
-        font = parent.font or tweak_data.menu.pd2_large_font,
-        font_size = self.items_size
-    })
-    self.text:set_selection(self.text:text():len())
-    local caret = self.panel:rect({
-        name = "caret",
-        w = 2,
-        visible = false,
-        color = color:with_alpha(1),
-        h = self.text:font_size() - (line:h() * 2),
-        layer = 3,
-    })
-    self.lines = params.lines
-    self.btn = params.btn or "0"
-    self.history = { params.value and self.text:text() }
-    self.text:enter_text(callback(self, TextBoxBase, "enter_text"))
-    self.update_text = params.update_text or function(self, ...) self.owner:_SetValue(...) end
+    if color then
+        local line = self.panel:rect({
+            name = "line",
+            halign = "grow",
+            visible = params.line,
+            h = 2,
+            layer = 2,
+            color = self.line_color or color,
+        })
+        line:set_bottom(self.panel:h())
+        self.text = self.panel:text({
+            name = "text",
+            text = params.value and
+                (parent.filter == "number" and string.format("%." .. parent.floats .. "f", tonumber(params.value)) or tostring(params.value)) or
+                "",
+            align = params.align,
+            wrap = not params.lines or params.lines > 1,
+            word_wrap = not params.lines or params.lines > 1,
+            color = color,
+            selection_color = color:with_alpha(0.5), --I fucking wish there was something better..
+            font = parent.font or tweak_data.menu.pd2_large_font,
+            font_size = self.items_size
+        })
+        self.text:set_selection(self.text:text():len())
+        local caret = self.panel:rect({
+            name = "caret",
+            w = 2,
+            visible = false,
+            color = color:with_alpha(1),
+            h = self.text:font_size() - (line:h() * 2),
+            layer = 3,
+        })
+        self.lines = params.lines
+        self.btn = params.btn or "0"
+        self.history = { params.value and self.text:text() }
+        self.text:enter_text(callback(self, TextBoxBase, "enter_text"))
+        self.update_text = params.update_text or function(self, ...) self.owner:_SetValue(...) end
+    end
 end
 
 function TextBoxBase:PostInit()
@@ -72,7 +74,7 @@ end
 function TextBoxBase:DoHighlight(highlight)
     local color = self:GetForeground(highlight)
     local caret = self.panel:child("caret")
-    if caret then
+    if caret and color then
         play_color(caret, color:with_alpha(1))
         play_color(self.panel:child("line"), self.line_color or color)
         play_anim(self.panel:child("text"), { set = { color = color, selection_color = color:with_alpha(0.5) } })

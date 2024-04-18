@@ -72,7 +72,6 @@ local specialFunctions = {
   --['callback'] = false -- no expressions allowed
 }
 
-
 -----------------------------------------------------------------------------
 -- PUBLIC FUNCTIONS
 -----------------------------------------------------------------------------
@@ -203,7 +202,7 @@ function decode_scanArray(s, startPos)
       end
     end
     assert(startPos <= stringLen, 'JSON String ended unexpectedly scanning array.')
-    object, startPos = json.decode(s, startPos)
+    local object = json.decode(s, startPos)
     table.insert(array, object)
   until false
 end
@@ -348,7 +347,7 @@ function decode_scanObject(s, startPos)
     assert(startPos <= stringLen, 'JSON string ended unexpectedly scanning object.')
     -- Scan the key
     local k, newstartPos = json.decode(s, startPos)
-    if (newstartPos) then
+    if (k and newstartPos) then
       startPos = newstartPos
       key = k
     elseif curChar == ',' then

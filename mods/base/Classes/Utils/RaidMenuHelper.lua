@@ -252,7 +252,7 @@ function RaidMenuHelper:LoadMenu(data, path, mod)
 						self:LoadMenu(item, path, mod)
 					else
 						if item.callback then
-							if item.callback:begins("callback") then
+							if string.begins(item.callback, "callback") then
 								item.callback = loadstring("return " .. tostring(item.callback))
 							elseif clss[item.callback] then
 								item.callback = callback(clss, clss, item.callback)

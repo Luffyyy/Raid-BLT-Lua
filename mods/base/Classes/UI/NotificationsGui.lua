@@ -230,9 +230,12 @@ function BLTNotificationsGui:_update_bars()
 			h = BAR_H
 		})
 		last = page_button
-		if not last then
-			page_button:set_center_x(middle * (BAR_W + 4)) -- FIXME ?!?
-		end
+		-- FIXME?:
+		-- commented out, because this looks very very wrong. no idea what was tried to accomplish here exactly
+		-- last cant be null here, nor does 'middle' exist.
+		--if not last then
+		--	page_button:set_center_x(middle * (BAR_W + 4))
+		--end
 		page_button:set_center_y((self._buttons_panel:h() - page_button:h()) / 2)
 		table.insert(self._buttons, page_button)
 	end
@@ -279,6 +282,7 @@ function BLTNotificationsGui:set_bar_width(w, random)
 	self._bar:set_texture_coordinates(mvector_tl, mvector_tr, mvector_bl, mvector_br)
 end
 
+local animating
 function BLTNotificationsGui:_move_to_notification(destination)
 	-- Animation
 	local swipe_func = function(o, other_object, duration)
@@ -345,7 +349,6 @@ function BLTNotificationsGui:_next_notification()
 	self:_move_notifications(1)
 end
 
-local animating
 function BLTNotificationsGui:update(t, dt)
 	-- Update download count
 	local pending_downloads_count = #BLT.ModsMenu._waiting_for_update

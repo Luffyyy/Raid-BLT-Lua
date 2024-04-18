@@ -228,8 +228,9 @@ end
 function Utils:GetCrosshairRay(from, to, slot_mask)
     slot_mask = slot_mask or "bullet_impact_targets"
 
+    local player = managers.player:player_unit()
+
     if not from then
-        local player = managers.player:player_unit()
         if player then
             from = player:movement():m_head_pos()
         else
@@ -239,7 +240,7 @@ function Utils:GetCrosshairRay(from, to, slot_mask)
 
     if not to then
         to = Vector3()
-        mvector3.set(to, player:camera():forward()) -- FIXME ?!?
+        mvector3.set(to, player:camera():forward())
         mvector3.multiply(to, 20000)
         mvector3.add(to, from)
     end
@@ -274,6 +275,7 @@ end
 
 function Utils:TimestampToEpoch(year, month, day)
     -- Adapted from http://stackoverflow.com/questions/4105012/convert-a-string-date-to-a-timestamp
+    ---@diagnostic disable-next-line: param-type-mismatch
     local offset = os.time() - os.time(os.date("!*t"))
     local time = os.time({
         day = day,
@@ -1173,7 +1175,7 @@ function table.script_merge(base_tbl, new_tbl, ignore)
                 if sub.search then
                     local mode = sub.mode
                     local index, found_tbl, parent_tbl = table.search(base_tbl, sub.search, ignore)
-                    if found_tbl then
+                    if index and found_tbl then
                         if not mode then
                             table.script_merge(found_tbl, sub)
                         elseif mode == "merge" then
@@ -1223,7 +1225,7 @@ function table.script_merge(base_tbl, new_tbl, ignore)
                     for i, tbl in pairs(sub) do
                         if type(tbl) == "table" and tonumber(i) then
                             local parent_tbl = table.custom_insert(base_tbl, tbl, sub.insert)
-                            if not parent_tbl[tbl._meta] then
+                            if parent_tbl and not parent_tbl[tbl._meta] then
                                 parent_tbl[tbl._meta] = tbl
                             end
                             break
@@ -1231,7 +1233,7 @@ function table.script_merge(base_tbl, new_tbl, ignore)
                     end
                 else
                     local parent_tbl = table.custom_insert(base_tbl, sub, sub.index)
-                    if not parent_tbl[sub._meta] then
+                    if parent_tbl and not parent_tbl[sub._meta] then
                         parent_tbl[sub._meta] = sub
                     end
                     for _, param in pairs(special_params) do

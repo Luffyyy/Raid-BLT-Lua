@@ -155,7 +155,6 @@ function KeyBindItem:MousePressed(button, x, y)
     end
 end
 
----@obsolete
 function KeyBindItem:GetKeyBind()
-    return Idstring(item.value) -- FIXME ?!?
+    return Idstring(self.value)
 end
