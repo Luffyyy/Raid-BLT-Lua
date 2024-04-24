@@ -73,6 +73,7 @@ function BLTMod:InitParams(path, ident, data)
     self.dependencies = data.dependencies or {}
     self.image_path = data.image or nil
     self.registered_hooks = { post = {}, pre = {}, wildcards = {} }
+    self.cannot_be_disabled = data.cannot_be_disabled
     if data.log_level then
         local log_level = tonumber(data.log_level) or 0
         if log_level >= 0 and log_level <= LogLevel.ALL then
