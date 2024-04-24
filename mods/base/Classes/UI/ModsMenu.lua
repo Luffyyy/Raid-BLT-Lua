@@ -120,10 +120,20 @@ function BLTModsMenu:CreateItems(menu)
         animate_align = true,
         align_method = "grid",
     })
-    for _, mod in pairs(BLT.Mods:Mods()) do
+    for _, mod in pairs(table.sorted_copy(BLT.Mods:Mods(), self.ModSort)) do
         self:AddMod(mod, "normal")
     end
     self._list:AlignItems(true)
+end
+
+function BLTModsMenu.ModSort(mod1, mod2)
+    if mod1:GetId() == "base" then
+        return true
+    elseif mod2:GetId() == "base" then
+        return false
+    else
+        return mod1:GetName():lower() < mod2:GetName():lower()
+    end
 end
 
 function BLTModsMenu:Text(mod_item, t, opt)
