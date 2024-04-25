@@ -385,7 +385,6 @@ function BLTModsMenu:SetModNeedsUpdate(mod, new_version)
         self:SetModStatus(mod_item, loc:text("blt_waiting_update") .. (new_version and "(" .. new_version .. ")" or ""),
             true)
         mod_item:GetItem("Download"):SetEnabled(true)
-        mod_item:SetIndex(mod.name == "Raid WW2 BLT" and 1 or 2)
     else
         mod.NeedsUpdate = true
     end

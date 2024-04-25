@@ -390,14 +390,6 @@ function BaseItem:MouseCheck(press)
 	return not self.divider_type, true
 end
 
-function BaseItem:SetIndex(index)
-	table.delete(self.parent._my_items, self)
-	table.insert(self.parent._my_items, index, self)
-	if self.auto_align then
-		self:AlignItems(true)
-	end
-end
-
 function BaseItem:SetLayer(layer)
 	self:Panel():set_layer(layer)
 	self.layer = layer
