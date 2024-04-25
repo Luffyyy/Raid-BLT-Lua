@@ -292,8 +292,6 @@ function BLT:LoadMods(path, mods_list)
 				else
 					self:_Log(LogLevel.ERROR, "BLTSetup", "An error occured while loading mod.txt from:", mod_path)
 				end
-			elseif path == BLTModManager.Constants.mods_directory then --mod overrides is an optional directory.
-				self:_Log(LogLevel.WARN, "BLTSetup", "Could not read or find mod definition in", directory)
 			end
 		end
 	end
