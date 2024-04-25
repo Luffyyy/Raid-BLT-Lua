@@ -350,21 +350,6 @@ function BLTMod:GetModImage()
     end
 end
 
-function BLTMod:clbk_check_for_updates(update, required, reason)
-    self._update_cache = self._update_cache or {}
-    self._update_cache[update:GetId()] = {
-        requires_update = required,
-        reason = reason,
-        update = update
-    }
-
-    if self._update_cache.clbk and not self:IsCheckingForUpdates() then
-        local clbk = self._update_cache.clbk
-        self._update_cache.clbk = nil
-        clbk(self._update_cache)
-    end
-end
-
 function BLTMod:CannotBeDisabled()
     return NotNil(self.cannot_be_disabled, false)
 end
