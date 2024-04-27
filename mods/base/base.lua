@@ -367,17 +367,17 @@ function BLT:_Log(...)
 end
 
 function BLT:Log(...)
-	local mod = self:_get_mod(3)
+	local mod = self:_get_mod(5)
 	return BLTMod.Log(mod, ...)
 end
 
 function BLT:LogF(...)
-	local mod = self:_get_mod(3)
+	local mod = self:_get_mod(5)
 	return BLTMod.LogF(mod, ...)
 end
 
 function BLT:LogC(...)
-	local mod = self:_get_mod(3)
+	local mod = self:_get_mod(5)
 	return BLTMod.LogC(mod, ...)
 end
 
@@ -385,7 +385,7 @@ function BLT:log(...)
 	self:_Log(LogLevel.WARN, "DEPRECATED",
 		"The BLT:log() function has been deprecated. Please use BLT:Log(lvl, cat, ...)")
 
-	local mod = self:_get_mod(3)
+	local mod = self:_get_mod(5)
 	return BLTMod.log(mod, ...)
 end
 

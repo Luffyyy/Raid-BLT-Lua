@@ -41,17 +41,17 @@ end
 
 function ModuleBase:Log(lvl, cat, ...)
     cat = "<" .. cat .. ">"
-    return self._mod:Log(lvl, self._name, cat, ...)
+    return self._mod:Log(lvl, cat, ...)
 end
 
 function ModuleBase:LogF(lvl, cat, ...)
     cat = "<" .. cat .. ">"
-    return self._mod:LogF(lvl, self._name, cat, ...)
+    return self._mod:LogF(lvl, cat, ...)
 end
 
 function ModuleBase:LogC(lvl, cat, ...)
     cat = "<" .. cat .. ">"
-    return self._mod:LogC(lvl, self._name, cat, ...)
+    return self._mod:LogC(lvl, cat, ...)
 end
 
 function ModuleBase:log(...)

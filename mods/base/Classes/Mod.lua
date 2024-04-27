@@ -345,7 +345,7 @@ function BLTMod:GetModImage()
 
         return texture_id
     else
-        log("[Error] Mod image at path does not exist! " .. tostring(self:GetModImagePath()))
+        self:LogF(LogLevel.ERROR, "GetModImage", "Mod image at path does not exist %s", tostring(self:GetModImagePath()))
         return nil
     end
 end
