@@ -33,18 +33,19 @@ function Hooks:AddHook(key, id, func)
 		BLT:LogF(LogLevel.ERROR, "BLTHook", "Hook '%s' is not a function.", tostring(id))
 		return
 	end
-
-	if self._registered_hooks[key] == nil then
-		self._registered_hooks[key] = {}
-	else
-		for _, v in pairs(self._registered_hooks[key]) do
-			if v.id == id then
-				return false
-			end
+	self._registered_hooks[key] = self._registered_hooks[key] or {}
+	-- Update existing hook
+	for _, v in pairs(self._registered_hooks[key]) do
+		if type(v) == "table" and v.id == id then
+			v.func = func
+			return
 		end
 	end
-
-	table.insert(self._registered_hooks[key], { id = id, func = func })
+	-- Add new hook, if id doesn't exist
+	table.insert(self._registered_hooks[key], {
+		id = id,
+		func = func
+	})
 end
 
 --[[
@@ -72,6 +73,7 @@ function Hooks:Unregister(key)
 	self:UnregisterHook(key)
 end
 
+---@deprecated CAUTION: this is NOT thread-safe!
 function Hooks:RemoveHook(key, id)
 	local hooks = self._registered_hooks[key]
 	if hooks then
@@ -89,12 +91,12 @@ end
 		Removes a hooked function call with the specified id to prevent it from being called
 	id, Removes the function call and prevents it from being called
 ]]
+---@deprecated CAUTION: this is NOT thread-safe!
 function Hooks:Remove(id)
-	for _, hooks in pairs(self._registered_hooks) do
+	for k, hooks in pairs(self._registered_hooks) do
 		for i, v in pairs(hooks) do
 			if v.id == id then
 				table.remove(hooks, i)
-
 				-- NOTE: While it's supposed to be globally unique, this is not guaranteed, so
 				-- remove all matching hooks.
 				break
@@ -115,7 +117,9 @@ function Hooks:Call(key, ...)
 	end
 
 	for _, v in ipairs(self._registered_hooks[key]) do
-		v.func(...)
+		if type(v) == "table" and type(v.func) == "function" then
+			v.func(...)
+		end
 	end
 end
 
@@ -132,9 +136,11 @@ function Hooks:ReturnCall(key, ...)
 	end
 
 	for _, v in ipairs(self._registered_hooks[key]) do
-		local ret = { v.func(...) }
-		if ret[1] ~= nil then
-			return unpack(ret)
+		if type(v) == "table" and type(v.func) == "function" then
+			local ret = { v.func(...) }
+			if next(ret) == 1 then
+				return unpack(ret)
+			end
 		end
 	end
 end
