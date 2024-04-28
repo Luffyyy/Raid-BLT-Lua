@@ -73,6 +73,8 @@ function BLT:Initialize()
 	BLT:Require("Classes/Mod")
 	BLT:Require("Classes/ModExtended")
 	BLT:Require("Classes/Logs")
+	BLT:Require("Classes/UpdateCallbacks")
+	BLT:Require("Classes/UpdateManager")
 	BLT:Require("Classes/ModManager")
 	BLT:Require("Classes/Localization")
 	BLT:Require("Classes/NotificationsManager")
@@ -110,6 +112,7 @@ function BLT:Setup()
 	-- Setup modules
 	self.Logs = BLTLogs:new()
 	self.Mods = BLTModManager:new()
+	self.Updates = BLTUpdateManager:new()
 	self.Keybinds = BLTKeybindsManager:new()
 	self.Localization = BLTLocalization:new() -- deprecated
 	self.Notifications = BLTNotificationsManager:new()
@@ -127,6 +130,7 @@ function BLT:Setup()
 
 	self.Dialogs = BLTMenuDialogManager:new()
 	self.ModsMenu = BLTModsMenu:new()
+	self.UpdatesMenu = BLTUpdatesMenu:new()
 
 	_G.LuaModManager = {
 		_languages = {},
@@ -387,6 +391,15 @@ function BLT:log(...)
 
 	local mod = self:_get_mod(5)
 	return BLTMod.log(mod, ...)
+end
+
+-- Helpers
+function BLT:OpenUrl(url)
+	if Steam:overlay_enabled() then
+		Steam:overlay_activate("url", url)
+	else
+		os.execute("cmd /c start " .. url)
+	end
 end
 
 -- Perform startup

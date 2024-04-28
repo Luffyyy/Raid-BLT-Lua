@@ -14,8 +14,16 @@
 	<auto_updates
 			provider="modworkshop"
 			id="21618"
-			version="1.65"
+			version="1.70"
 			important="true"/>
+
+	<auto_updates provider="modworkshop"
+			id="47553"
+			important="true"
+			display_name="Raid WW2 BLT DLL"
+			version_func="blt_dll_version"
+			disallow_update="blt_update_dll_dialog"
+			update_url="https://modworkshop.net/mod/21065" />
 
 	<options build_menu="false">
 		<options>
@@ -67,6 +75,7 @@
 		<class file="UI/Dialogs/SimpleSelectListDialog.lua"/>
 		<class file="UI/MenuDialogManager.lua"/>
 		<class file="UI/ModsMenu.lua"/>
+		<class file="UI/UpdatesMenu.lua"/>
 	</classes>
 
 	<hooks>

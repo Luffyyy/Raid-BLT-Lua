@@ -9,7 +9,6 @@ function BLTModsMenu:init()
         auto_foreground = true,
         create_items = ClassClbk(self, "CreateItems"),
     })
-    self._waiting_for_update = {}
 end
 
 function BLTModsMenu:SetEnabled(enabled)
@@ -36,7 +35,6 @@ end
 
 function BLTModsMenu:CreateItems(menu)
     self._menu = menu
-    self._downloading_string = managers.localization:text("blt_downloading")
 
     self._holder = menu:Menu({
         name = "Main",
@@ -56,7 +54,7 @@ function BLTModsMenu:CreateItems(menu)
         text = "blt_mods_manager",
         localized = true,
         items_size = 38,
-        position = { 4, y },
+        position = { 8, y },
         count_as_aligned = true
     })
     local close = self._holder:Button({
@@ -67,33 +65,20 @@ function BLTModsMenu:CreateItems(menu)
         items_size = 32,
         position = function(item)
             item:SetPositionByString("RightTop")
-            item:Panel():move(-4, y)
+            item:Panel():move(-8, y)
         end,
         callback = ClassClbk(self, "SetEnabled", false)
     })
-    local upall = self._holder:Button({
-        name = "UpdateAllMods",
-        text = "blt_update_all",
+    local updates = self._holder:Button({
+        name = "Updates",
+        text = "blt_updates",
         size_by_text = true,
         localized = true,
         items_size = 32,
         position = function(item)
-            item:Panel():set_righttop(close:Panel():left() - 4, y)
+            item:Panel():set_righttop(close:Panel():left() - 8, y)
         end,
-        callback = ClassClbk(self, "UpdateAllMods", true),
-        second_callback = ClassClbk(self, "UpdateAllMods")
-    })
-    self._holder:Toggle({
-        name = "ImportantNotice",
-        text = "blt_important_notice",
-        value = BLT.Options:GetValue("ImportantNotice"),
-        size_by_text = true,
-        localized = true,
-        items_size = 32,
-        position = function(item)
-            item:Panel():set_righttop(upall:Panel():left() - 4, y)
-        end,
-        callback = ClassClbk(self, "SetShowImportantUpdatesNotice")
+        callback = ClassClbk(self, "GoToUpdates")
     })
     self._holder:TextBox({
         name = "search",
@@ -124,6 +109,11 @@ function BLTModsMenu:CreateItems(menu)
         self:AddMod(mod, "normal")
     end
     self._list:AlignItems(true)
+end
+
+function BLTModsMenu:GoToUpdates()
+    self:SetEnabled(false)
+    BLT.UpdatesMenu:SetEnabled(true)
 end
 
 function BLTModsMenu.ModSort(mod1, mod2)
@@ -204,7 +194,6 @@ function BLTModsMenu:AddMod(mod, type)
     })
     local t = self:Text(mod_item, tostring(name), { name = "Title", offset = { mod_item.offset[1], 16 } })
     self:Text(mod_item, loc:text("blt_mod_author", { author = mod:GetAuthor() }))
-    self:Text(mod_item, "", { name = "Status" })
     mod_item:Toggle({
         name = "Enabled",
         text = false,
@@ -221,21 +210,9 @@ function BLTModsMenu:AddMod(mod, type)
             item:Panel():move(-4, 1)
         end
     })
-    mod_item:Panel():rect({
-        name = "DownloadProgress",
-        color = color:contrast():with_alpha(0.25),
-        w = 0,
-    })
     self:Button(mod_item, "blt_more_info", ClassClbk(self, "ViewMoreInfoMod", mod))
-    self:Button(mod_item, "blt_visit_page", ClassClbk(self, "ViewMod", mod),
-        mod.auto_updates_module ~= nil and mod.auto_updates_module:HasPage())
-    self:Button(mod_item, "blt_updates_download_now", ClassClbk(self, "BeginModDownload", mod), false,
-        { name = "Download" })
-
-    if mod.NeedsUpdate then
-        self:SetModNeedsUpdate(mod)
-    else
-        self:SetModStatus(mod_item, "blt_updated")
+    if mod._main_update and mod._main_update:HasPage() then
+        self:Button(mod_item, "blt_visit_page", ClassClbk(self, "ViewMod", mod))
     end
     self:UpdateTitle(mod)
 end
@@ -245,7 +222,7 @@ function BLTModsMenu:UpdateTitle(mod)
     if mod_item then
         local title = mod_item:GetItem("Title")
         title:SetText((mod.name or "Missing name?") ..
-        (mod.auto_updates_module and mod.auto_updates_module.version and "(" .. mod.auto_updates_module.version .. ")" or ""))
+            (mod._main_update and mod._main_update.version and "(" .. mod._main_update.version .. ")" or ""))
     end
 end
 
@@ -272,44 +249,10 @@ function BLTModsMenu:SearchMods(menu, item)
     self._list:AlignItems()
 end
 
-function BLTModsMenu:UpdateAllMods(no_dialog)
-    local tbl = {}
-    for _, mod_item in pairs(self._list._my_items) do
-        local download = mod_item:GetItem("Download")
-        if download:Enabled() then
-            table.insert(tbl, { name = mod_item.name, value = mod_item })
-        end
-    end
-
-    if no_dialog == true then
-        self:UpdatesModsByList(tbl)
-    else
-        BLT.Dialogs:SimpleSelectList():Show({ force = true, list = tbl, selected_list = tbl, callback = ClassClbk(self,
-            "UpdatesModsByList") })
-    end
-end
-
-function BLTModsMenu:UpdatesModsByList(list)
-    for _, item in pairs(list) do
-        local download = item.value:GetItem("Download")
-        if download:Enabled() then
-            download:SetEnabled(false)
-            download:RunCallback()
-        end
-    end
-end
-
-function BLTModsMenu:SetShowImportantUpdatesNotice(menu, item)
-    BLT.Options:SetValue("ImportantNotice", item:Value())
-end
-
 function BLTModsMenu:ViewMod(mod)
-    mod.auto_updates_module:ViewMod()
-end
-
-function BLTModsMenu:BeginModDownload(mod)
-    self:SetModStatus(self._list:GetItemByLabel(mod), "blt_waiting")
-    mod.auto_updates_module:DownloadAssets()
+    if mod._main_update then
+        mod._main_update:ViewMod()
+    end
 end
 
 function BLTModsMenu:ViewMoreInfoMod(mod)
@@ -325,72 +268,6 @@ function BLTModsMenu:ViewMoreInfoMod(mod)
             holder:Divider({ size_by_text = true, text = mod:GetDeveloperInfo() })
         end
     })
-end
-
-local megabytes = (1024 ^ 2)
-function BLTModsMenu:SetModProgress(mod, id, bytes, total_bytes)
-    local mod_item = self._list:GetItemByLabel(mod)
-    if mod_item and alive(mod_item) then
-        local progress = bytes / total_bytes
-        local mb = bytes / megabytes
-        local total_mb = total_bytes / megabytes
-        mod_item:GetItem("Status"):SetTextLight(string.format(self._downloading_string .. "%.2f/%.2fmb(%.0f%%)", mb,
-            total_mb, tostring(progress * 100)))
-        mod_item:Panel():child("DownloadProgress"):set_w(mod_item:Panel():w() * progress)
-        local downbtn = mod_item:GetItem("Download")
-        if downbtn:Enabled() then
-            downbtn:SetEnabled(false)
-        end
-    end
-end
-
-function BLTModsMenu:SetModInstallingUpdate(mod)
-    local mod_item = self._list:GetItemByLabel(mod)
-    if mod_item then
-        self:SetModStatus(mod_item, "blt_download_complete")
-        mod_item:Panel():child("DownloadProgress"):set_w(0)
-    end
-end
-
-function BLTModsMenu:SetModFailedUpdate(mod)
-    local mod_item = self._list:GetItemByLabel(mod)
-    if mod_item then
-        self:SetModStatus(mod_item, "blt_download_failed")
-        mod_item:Panel():child("DownloadProgress"):set_w(0)
-    end
-end
-
-function BLTModsMenu:SetModNormal(mod)
-    local mod_item = self._list:GetItemByLabel(mod)
-    if mod_item then
-        self:SetModStatus(mod_item, "blt_updated")
-        mod_item:Panel():child("DownloadProgress"):set_w(0)
-        mod_item:GetItem("Download"):SetEnabled(false)
-        self:UpdateTitle(mod)
-    end
-    table.delete(self._waiting_for_update, mod)
-end
-
-function BLTModsMenu:SetModStatus(mod_item, status, not_localized)
-    if mod_item then
-        mod_item:GetItem("Status"):SetText(not_localized and status or managers.localization:text(status))
-    end
-end
-
-function BLTModsMenu:SetModNeedsUpdate(mod, new_version)
-    local mod_item = self._list:GetItemByLabel(mod)
-    local loc = managers.localization
-
-    if mod_item then
-        self:SetModStatus(mod_item, loc:text("blt_waiting_update") .. (new_version and "(" .. new_version .. ")" or ""),
-            true)
-        mod_item:GetItem("Download"):SetEnabled(true)
-    else
-        mod.NeedsUpdate = true
-    end
-    if not table.has(self._waiting_for_update, mod) then
-        table.insert(self._waiting_for_update, mod)
-    end
 end
 
 Hooks:Add("MenuComponentManagerInitialize", "BLTModsGui.MenuComponentManagerInitialize", function(self)

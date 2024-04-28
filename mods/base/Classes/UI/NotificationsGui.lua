@@ -94,6 +94,8 @@ function BLTNotificationsGui:_setup()
 	for _, notif in ipairs(BLT.Notifications:get_notifications()) do
 		self:add_notification(notif)
 	end
+
+	BLT.Updates:RunAutoCheckForUpdates()
 end
 
 function BLTNotificationsGui:close()
@@ -351,10 +353,9 @@ end
 
 function BLTNotificationsGui:update(t, dt)
 	-- Update download count
-	local pending_downloads_count = #BLT.ModsMenu._waiting_for_update
-	if pending_downloads_count > 0 then
+	if BLT.Updates:UpdatesAvailable() then
 		self._downloads_panel:show()
-		self._downloads_count:set_text(tostring(pending_downloads_count))
+		self._downloads_count:set_text(tostring(BLT.Updates:GetAvailableUpdateCount()))
 	else
 		self._downloads_panel:hide()
 	end
@@ -420,7 +421,7 @@ function BLTNotificationsGui:mouse_pressed(o, button, x, y)
 	end
 
 	if alive(self._content_panel) and self._content_panel:inside(x, y) then
-		BLT.ModsMenu:SetEnabled(true)
+		BLT.UpdatesMenu:SetEnabled(true)
 		return true
 	end
 end
@@ -434,13 +435,6 @@ end
 
 Hooks:Add("MenuComponentManagerInitialize", "BLTNotificationsGui.MenuComponentManagerInitialize", function(self)
 	RaidMenuHelper:CreateComponent("blt_notifications", BLTNotificationsGui)
-	BLT.Notifications:add_notification({
-		title = managers.localization:text("blt_checking_updates"),
-		text = managers.localization:text("blt_checking_updates_help"),
-		icon = "ui/hud/atlas/raid_atlas",
-		icon_texture_rect = { 891, 1285, 64, 64 },
-		priority = 1000,
-	})
 end)
 
 --------------------------------------------------------------------------------

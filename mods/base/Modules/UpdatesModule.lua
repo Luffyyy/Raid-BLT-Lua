@@ -2,88 +2,27 @@ UpdatesModule = UpdatesModule or class(ModuleBase)
 UpdatesModule.type_name = "AutoUpdates"
 UpdatesModule._default_version_file = "version.txt"
 UpdatesModule._always_enabled = true
+UpdatesModule._can_have_multiple = true
 
 UpdatesModule._providers = {
     modworkshop = {
         check_url = "https://api.modworkshop.net/mods/$id$/version",
         download_url = "https://api.modworkshop.net/mods/$id$/download",
         page_url = "https://modworkshop.net/mod/$id$",
-        check_func = function(self)
+        check_condition = function(self)
             local id = tonumber(self.id)
-            if not id or id <= 0 then
-                return
-            end
-            --optimization, mostly you don't really need to check updates again when going back to menu
-            local upd = Global.blt_checked_updates[self.id]
-            if upd then
-                if type(upd) == "string" and tonumber(upd) > self.version then
-                    self._new_version = upd
-                    self:PrepareForUpdate()
-                end
-                return
-            end
-            dohttpreq(self._mod:GetRealFilePath(self.provider.check_url, self), function(data, id)
-                if data then
-                    if string.len(data) > 0 and tonumber(data) > self.version then
-                        self._new_version = data
-                        Global.blt_checked_updates[self.id] = data
-                        self:PrepareForUpdate()
-                    else
-                        Global.blt_checked_updates[self.id] = true
-                    end
-                end
-            end)
+            return id and id > 0
         end,
-        download_file_func = function(self)
-            self:_DownloadAssets()
-            Global.blt_checked_updates[self.id] = nil --check again later for hotfixes.
-        end
+        check_func = function(self, data)
+            local self = self
+
+            local is_newer = data ~= tostring(self.version)
+            if is_newer then
+                return data, nil -- update required, no error_reason
+            end
+            return false, nil    -- update not required, no error_reason
+        end,
     },
-    paydaymods = {
-        check_url = "http://api.paydaymods.com/updates/retrieve/?mod[0]=$id$",
-        download_url = "http://download.paydaymods.com/download/latest/$id$",
-        get_hash = function(self)
-            if self._config.hash_file then
-                return SystemFS:exists(self._config.hash_file) and file.FileHash(self._config.hash_file) or nil
-            else
-                local directory = Application:nice_path(self:GetMainInstallDir(), true)
-                return SystemFS:exists(directory) and file.DirectoryHash(directory) or nil
-            end
-        end,
-        check_func = function(self)
-            dohttpreq(self._mod:GetRealFilePath(self.provider.check_url, self), function(json_data, http_id)
-                local self = self
-                self._requesting_updates = false
-
-                if json_data:is_nil_or_empty() then
-                    self:Log(LogLevel.WARN, "UpdateCheck", "Could not connect to the PaydayMods.com API!")
-                    return
-                end
-
-                local success, server_data = pcall(function() return json.decode(json_data) end)
-                if success and type(server_data) == "table" then
-                    for _, data in pairs(server_data) do
-                        self:LogF(LogLevel.INFO, "UpdateCheck", "Received update data for '%s'.", data.ident)
-                        if data.ident == self.id then
-                            self._server_hash = data.hash
-                            local local_hash = self.provider.get_hash(self)
-                            self:LogF(LogLevel.DEBUG, "UpdateCheck", "Comparing hash data:\nServer: '%s'\n Local: '%s'.",
-                                data.hash, local_hash)
-                            if data.hash then
-                                if data.hash ~= local_hash then
-                                    self:PrepareForUpdate()
-                                    return
-                                end
-                            end
-                        end
-                        return
-                    end
-                end
-                self:LogF(LogLevel.WARN, "UpdateCheck", "Paydaymods did not return a valid result for id '%s'.",
-                    tostring(self.id))
-            end)
-        end
-    }
 }
 
 function UpdatesModule:init(core_mod, config)
@@ -93,6 +32,10 @@ function UpdatesModule:init(core_mod, config)
 
     self.steamid = Steam:userid()
     self.id = self._config.id
+    self.display_name = self._config.display_name or self._mod.name
+    self.version_func = self._config.version_func or false
+    self.disallow_update = self._config.disallow_update or false
+    self.update_url = self._config.update_url or false
 
     if self._config.provider then
         if self._providers[self._config.provider] then
@@ -101,13 +44,13 @@ function UpdatesModule:init(core_mod, config)
             self:LogF(LogLevel.ERROR, "Setup", "No provider information for provider '%s'.", self._config.provider)
             return
         end
-    elseif self._config.custom_provider then
-        local provider_details = self._config.custom_provider
-        if provider_details.check_func then provider_details.check_func = self._mod:StringToCallback(
-            provider_details.check_func, self) end
-        if provider_details.download_file_func then provider_details.download_file_func = self._mod:StringToCallback(
-            provider_details.download_file_func, self) end
-        self.provider = provider_details
+        -- elseif self._config.custom_provider then
+        --     local provider_details = self._config.custom_provider
+        --     if provider_details.check_func then provider_details.check_func = self._mod:StringToCallback(
+        --         provider_details.check_func, self) end
+        --     if provider_details.download_file_func then provider_details.download_file_func = self._mod:StringToCallback(
+        --         provider_details.download_file_func, self) end
+        --     self.provider = provider_details
     else
         self:Log(LogLevel.ERROR, "Setup", "No provider can be found for mod assets.")
         return
@@ -117,20 +60,26 @@ function UpdatesModule:init(core_mod, config)
     self.use_local_path = NotNil(self._config.use_local_path, true)
 
     self.folder_names = self.use_local_dir and { table.remove(string.split(self._mod.path, "/")) } or
-    (type(self._config.folder_name) == "string" and { self._config.folder_name } or Utils:RemoveNonNumberIndexes(self._config.folder_name))
+        (type(self._config.folder_name) == "string" and { self._config.folder_name } or Utils:RemoveNonNumberIndexes(self._config.folder_name))
     self.install_directory = (self._config.install_directory and self._mod:GetRealFilePath(self._config.install_directory, self)) or
-    (self.use_local_path ~= false and Utils.Path:GetDirectory(self._mod.path)) or BLTModManager.Constants.mods_directory
+        (self.use_local_path ~= false and Utils.Path:GetDirectory(self._mod.path)) or
+        BLTModManager.Constants.mods_directory
     self.version_file = self._config.version_file and self._mod:GetRealFilePath(self._config.version_file, self) or
-    Utils.Path:Combine(self.install_directory, self.folder_names[1], self._default_version_file)
+        Utils.Path:Combine(self.install_directory, self.folder_names[1], self._default_version_file)
 
-    self._update_manager_id = self._mod.name .. self._name
-    self._mod.update_key = (self._config.is_standalone ~= false) and self.id
-    self._mod.auto_updates_module = self
+    self._zip_name = self._mod.name .. self._name
+    if self._mod._auto_updates[self.id] then
+        self:Log(LogLevel.ERROR, "Setup", "Update id " .. self.id .. " already exists.")
+        return
+    end
+    self._mod._auto_updates[self.id] = self
+    if not self._mod._main_update then
+        self._mod._main_update = self
+    end
+
     self:RetrieveCurrentVersion()
 
-    if not self._config.manual_check then
-        self:RegisterAutoUpdateCheckHook()
-    end
+    BLT.Updates:RegisterAutoUpdate(self)
 
     return true
 end
@@ -139,22 +88,14 @@ function UpdatesModule:GetMainInstallDir()
     return Utils.Path:GetDirectory(self.version_file)
 end
 
-function UpdatesModule:RegisterAutoUpdateCheckHook()
-    local hook_id = self._mod.name .. self._name .. "UpdateCheck"
-    Hooks:Add("MenuManagerOnOpenMenu", hook_id, function(self_menu, menu, index)
-        if menu == "menu_main" and not LuaNetworking:IsMultiplayer() then
-            self:CheckVersion()
-            Hooks:RemoveHook("MenuManagerOnOpenMenu", hook_id)
-        end
-    end)
-end
-
 function UpdatesModule:RetrieveCurrentVersion()
     if FileIO:Exists(self.version_file) then
         local version = io.open(self.version_file):read("*all")
         if version then
             self.version = version
         end
+    elseif self.version_func ~= false then
+        self.version = BLTUpdateCallbacks[self.version_func](BLTUpdateCallbacks, self)
     elseif self._config.version then
         self.version = self._config.version
     end
@@ -163,65 +104,92 @@ function UpdatesModule:RetrieveCurrentVersion()
     end
 end
 
-function UpdatesModule:CheckVersion(force)
+function UpdatesModule:CheckForUpdates(clbk)
+    if self.provider.check_condition and not self.provider.check_condition(self) then
+        return
+    end
+
+    self._requesting_updates = true
+
     if self.provider.check_func then
-        self.provider.check_func(self, force)
+        dohttpreq(self._mod:GetRealFilePath(self.provider.check_url, self), function(data, id)
+            local self = self
+
+            if data and string.len(data) > 0 then
+                self:LogF(LogLevel.DEBUG, "CheckForUpdates", "Received version '%s' from the server (local is '%s').",
+                    data, tostring(self.version))
+                local requires_update, error_reason = self.provider.check_func(self, data)
+                if requires_update ~= false and not error_reason then
+                    self._new_version = requires_update
+                end
+                return self:_run_update_callback(clbk, requires_update, error_reason)
+            else
+                self._error = string.format("Unable to parse string '%s' as a version number.", data)
+                self:Log(LogLevel.ERROR, "CheckForUpdates", self._error)
+                return self:_run_update_callback(clbk, false, self._error)
+            end
+        end)
     else
-        self:_CheckVersion(force)
+        self._error = string.format("Unable to find check_func for update with id '%s'.", tostring(self.id))
+        self:Log(LogLevel.ERROR, "CheckForUpdates", self._error)
+        return self:_run_update_callback(clbk, false, self._error)
     end
 end
 
-function UpdatesModule:PrepareForUpdate()
-    BLT.ModsMenu:SetModNeedsUpdate(self._mod, self._new_version)
-    if self._config.important and BLT.Options:GetValue("ImportantNotice") then
-        local loc = managers.localization
-        QuickMenu:new(loc:text("blt_mods_manager_important_title", { mod = self._mod.name }),
-            loc:text("blt_mods_manager_important_help"), { {
-            text = loc:text("dialog_yes"),
-            callback = function()
-                BLT.ModsMenu:SetEnabled(true)
-            end
-        }, { text = loc:text("dialog_no"), is_cancel_button = true } })
-    end
+-- function UpdatesModule:_CheckVersion(clbk)
+--     local version_url = self._mod:GetRealFilePath(self.provider.version_api_url, self)
+--     local loc = managers.localization
+--     dohttpreq(version_url, function(data, id)
+--         local self = self
+
+--         self:LogF(LogLevel.INFO, "CheckVersion", "Received version '%s' from the server (local is '%s').", data,
+--             tostring(self.version))
+--         if data then
+--             self._new_version = data
+--             if self._new_version and self._new_version > self.version then
+--                 self:PrepareForUpdate(clbk)
+--             end
+--         else
+--             self:LogF(LogLevel.ERROR, "CheckVersion", "Unable to parse string '%s' as a version number.", data)
+--         end
+--     end)
+-- end
+
+-- function UpdatesModule:PrepareForUpdate(clbk)
+--     BLT.Updates:AddAvailableUpdate(self)
+--     if self._config.important and BLT.Options:GetValue("ImportantNotice") then
+--         local loc = managers.localization
+--         QuickMenu:new(loc:text("blt_mods_manager_important_title", { mod = self._mod.name }),
+--             loc:text("blt_mods_manager_important_help"), { {
+--             text = loc:text("dialog_yes"),
+--             callback = function()
+--                 BLT.UpdatesMenu:SetEnabled(true)
+--             end
+--         }, { text = loc:text("dialog_no"), is_cancel_button = true } })
+--     end
+-- end
+
+function UpdatesModule:_run_update_callback(clbk, requires_update, error_reason)
+    --self._requires_update = requires_update
+    self._requesting_updates = false
+    clbk(self, requires_update, error_reason)
+    return requires_update
 end
 
-function UpdatesModule:_CheckVersion(force)
-    local version_url = self._mod:GetRealFilePath(self.provider.version_api_url, self)
-    local loc = managers.localization
-    dohttpreq(version_url, function(data, id)
-        local self = self
-        self:LogF(LogLevel.INFO, "CheckVersion", "Received version '%s' from the server (local is '%s').", data,
-            tostring(self.version))
-        if data then
-            self._new_version = data
-            if self._new_version and self._new_version ~= self.version then
-                self:PrepareForUpdate()
-            elseif force then
-                self:ShowNoChangePrompt()
-            end
-        else
-            self:LogF(LogLevel.ERROR, "CheckVersion", "Unable to parse string '%s' as a version number.", data)
-        end
-    end)
-end
-
-function UpdatesModule:ShowNoChangePrompt()
-    QuickMenu:new(
-        managers.localization:text("blt_no_change"),
-        managers.localization:text("blt_no_change_desc"),
-        { {
-            text = managers.localization:text("menu_ok"),
-            is_cancel_button = true
-        } },
-        true
-    )
+function UpdatesModule:IsCheckingForUpdates()
+    return self._requesting_updates or false
 end
 
 function UpdatesModule:DownloadAssets()
+    -- Check if this update is allowed to be updated by the update manager
+    if self:DisallowsUpdate() then
+        BLTUpdateCallbacks[self:GetDisallowCallback()](BLTUpdateCallbacks, self)
+        return false
+    end
     if self.provider.download_file_func then
-        self.provider.download_file_func(self)
+        return self.provider.download_file_func(self)
     else
-        self:_DownloadAssets()
+        return self:_DownloadAssets()
     end
 end
 
@@ -234,32 +202,30 @@ function UpdatesModule:HasPage()
 end
 
 function UpdatesModule:ViewMod()
-    local url = self._mod:GetRealFilePath(self.provider.page_url, self)
-    if Steam:overlay_enabled() then
-        Steam:overlay_activate("url", url)
-    else
-        os.execute("cmd /c start " .. url)
-    end
+    BLT:OpenUrl(self._mod:GetRealFilePath(self.provider.page_url, self))
 end
 
 function UpdatesModule:_DownloadAssets(data)
     local download_url = self._mod:GetRealFilePath(self.provider.download_url, data or self)
-    self:LogF(LogLevel.INFO, "Downloading assets from url '%s'.", download_url)
-    local mods_menu = BLT.ModsMenu
-    dohttpreq(download_url, callback(self, self, "StoreDownloadedAssets", false),
-        callback(mods_menu, mods_menu, "SetModProgress", self._mod))
+    self:LogF(LogLevel.DEBUG, "DownloadAssets", "Downloading assets from url '%s'.", download_url)
+    return dohttpreq(download_url, callback(self, self, "StoreDownloadedAssets", false),
+        callback(self, self, "SetUpdateProgress"))
 end
 
-function UpdatesModule:StoreDownloadedAssets(config, data, id)
+function UpdatesModule:SetUpdateProgress(_httpreq_id, bytes, total_bytes)
+    BLT.UpdatesMenu:SetUpdateProgress(self, bytes, total_bytes)
+end
+
+function UpdatesModule:StoreDownloadedAssets(config, data, id) -- FIXME: decouple from UI
     config = config or self._config
-    local mods_menu = BLT.ModsMenu
-    local coroutine = mods_menu._menu._ws:panel():panel({})
+    local updates_menu = BLT.UpdatesMenu
+    local coroutine = updates_menu._menu._ws:panel():panel({})
     coroutine:animate(function()
         wait(0.001)
         if config.install then
             config.install()
         else
-            mods_menu:SetModInstallingUpdate(self._mod)
+            updates_menu:SetInstallingUpdate(self)
         end
         wait(1)
 
@@ -270,12 +236,12 @@ function UpdatesModule:StoreDownloadedAssets(config, data, id)
             if config.failed then
                 config.failed()
             else
-                mods_menu:SetModFailedUpdate(self._mod)
+                updates_menu:SetFailedUpdate(self)
             end
             return
         end
 
-        local temp_zip_path = self._update_manager_id .. ".zip"
+        local temp_zip_path = self._zip_name .. ".zip"
 
         local file = io.open(temp_zip_path, "w+b")
         if file then
@@ -306,7 +272,8 @@ function UpdatesModule:StoreDownloadedAssets(config, data, id)
         if config.finish then
             config.finish()
         else
-            mods_menu:SetModNormal(self._mod)
+            updates_menu:SetUpdateDone(self)
+            BLT.Updates:RemoveAvailableUpdate(self)
         end
         if alive(coroutine) then
             coroutine:parent():remove(coroutine)
@@ -331,6 +298,14 @@ function UpdatesModule:GetInfo(append)
             append("", "Version:", tostring(self.version))
         end
     end
+end
+
+function UpdatesModule:DisallowsUpdate()
+    return self.disallow_update ~= false
+end
+
+function UpdatesModule:GetDisallowCallback()
+    return self.disallow_update
 end
 
 BLT:RegisterModule(UpdatesModule.type_name, UpdatesModule)

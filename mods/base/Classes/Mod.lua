@@ -35,21 +35,8 @@ function BLTMod:init(path, ident, data)
     -- Mod information
     self:InitParams(path, ident, data)
 
-    -- Updates data
     if self._config.updates then
-        self._modules = {}
-        for _, data in ipairs(self._config.updates) do
-            local update = UpdatesModule:new(self, {
-                provider = "paydaymods",
-                id = data.identifier,
-                important = data.critical,
-                hash_file = data.hash_file,
-                manual_check = data.disallow_update, -- I think
-                install_directory = data.load_dir or "mods/",
-                folder_name = data.install_folder
-            })
-            table.insert(self._modules, update)
-        end
+        self:Log(LogLevel.WARN, tostring(self.id), "mod.txt auto updates are no longer supported! ignoring.")
     end
 end
 

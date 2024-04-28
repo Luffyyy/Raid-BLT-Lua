@@ -28,6 +28,8 @@ function BLTModExtended:init(path, ident, data, post_init)
     end
 
     self._errors = {}
+    self._main_update = nil
+    self._auto_updates = {}
 
     -- Mod information
     self:InitParams(path, ident, data)
@@ -64,7 +66,7 @@ function BLTModExtended:InitModules()
                                 "Module with name '%s' does not contain a valid config. See above for details.",
                                 tostring(node_obj._name))
                         else
-                            if not node_obj._loose or node_obj._name ~= node_obj.type_name then
+                            if not node_obj._can_have_multiple and (not node_obj._loose or node_obj._name ~= node_obj.type_name) then
                                 if self[node_obj._name] then
                                     self:LogF(LogLevel.WARN, "BLTModSetup",
                                         "A module named '%s' already exists in the mod table, please make sure this is a unique name!",
@@ -132,8 +134,8 @@ end
 
 function BLTModExtended:GetVersion(...)
     local version = BLTModExtended.super.GetVersion(self, ...)
-    if not version and self.auto_updates and self.auto_updates.version then
-        return self.auto_updates.version
+    if not version and self._main_update and self._main_update.version then
+        return self._main_update.version
     end
     return version
 end
