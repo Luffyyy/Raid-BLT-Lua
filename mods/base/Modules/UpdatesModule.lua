@@ -115,7 +115,7 @@ function UpdatesModule:CheckForUpdates(clbk)
         dohttpreq(self._mod:GetRealFilePath(self.provider.check_url, self), function(data, id)
             local self = self
 
-            if data and string.len(data) > 0 then
+            if data and string.len(data) > 0 and string.find(data, "<!DOCTYPE html>", 1) == nil then
                 self:LogF(LogLevel.DEBUG, "CheckForUpdates", "Received version '%s' from the server (local is '%s').",
                     data, tostring(self.version))
                 local requires_update, error_reason = self.provider.check_func(self, data)
