@@ -141,7 +141,7 @@ function BLTUpdateManager:_SetNotification(title, text, localize)
 	self._updates_notification = BLT.Notifications:add_notification({
 		title = localize and managers.localization:text(title) or title,
 		text = localize and managers.localization:text(text) or text,
-		icon = "ui/hud/atlas/raid_atlas",
+		icon = "ui/atlas/raid_atlas_hud",
 		icon_texture_rect = { 891, 1285, 64, 64 },
 		priority = 0
 	})

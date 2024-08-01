@@ -10,7 +10,7 @@ function Toggle:Init()
 		w = s,
 		h = s,
 		color = fgcolor,
-		texture = "ui/atlas/raid_atlas_menu",
+		texture = "ui/atlas/menu/raid_atlas_menu",
 		texture_rect = { 575, 385, 34, 34 },
 		layer = 5,
 	})
@@ -19,7 +19,7 @@ function Toggle:Init()
 		name = "toggle_value",
 		w = s,
 		h = s,
-		texture = "ui/atlas/raid_atlas_menu",
+		texture = "ui/atlas/menu/raid_atlas_menu",
 		texture_rect = { 341, 997, 22, 22 },
 		color = fgcolor,
 		layer = 5,

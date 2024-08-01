@@ -37,7 +37,7 @@ function Slider:Init()
         w = ch,
         h = ch,
         y = 1,
-        texture = "ui/atlas/raid_atlas_menu",
+        texture = "ui/atlas/menu/raid_atlas_menu",
         texture_rect = { 765, 679, 33, 33 },
         layer = 3,
         color = fgcolor,

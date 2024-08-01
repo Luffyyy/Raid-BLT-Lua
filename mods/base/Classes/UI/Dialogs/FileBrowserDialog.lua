@@ -99,7 +99,7 @@ function FileBrowserDialog:init(params, menu)
         icon_w = 24,
         icon_h = 24,
         img_rot = 45,
-        texture = "ui/atlas/raid_atlas_menu",
+        texture = "ui/atlas/menu/raid_atlas_menu",
         texture_rect = { 761, 721, 18, 18 },
         callback = callback(self, self, "hide"),
         label = "temp"

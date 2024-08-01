@@ -49,7 +49,7 @@ function SimpleListDialog:_Show(params)
         icon_h = 20,
         img_rot = 45,
         position = "RightTop",
-        texture = "ui/atlas/raid_atlas_menu",
+        texture = "ui/atlas/menu/raid_atlas_menu",
         texture_rect = { 761, 721, 18, 18 },
         callback = callback(self, self, "hide", false),
         label = "temp"
@@ -64,7 +64,7 @@ function SimpleListDialog:_Show(params)
         position = function(item)
             item:Panel():set_righttop(close:Panel():position())
         end,
-        texture = "ui/atlas/raid_atlas_menu",
+        texture = "ui/atlas/menu/raid_atlas_menu",
         texture_rect = { 341, 997, 22, 22 },
         callback = callback(self, self, "hide", true),
         label = "temp"

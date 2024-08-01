@@ -14,7 +14,7 @@ function Group:InitBasicItem()
             name = "toggle",
             w = self.parent.items_size - 4,
             h = self.parent.items_size - 4,
-            texture = "ui/atlas/raid_atlas_skills",
+            texture = "ui/atlas/skilltree/raid_atlas_skills",
             color = self:GetForeground(),
             y = 2,
             texture_rect = { self.closed and 437 or 421, self.closed and 109 or 93, 18, 18 },

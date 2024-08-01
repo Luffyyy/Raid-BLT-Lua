@@ -434,7 +434,7 @@ function BLTMenu:ColorButton(params)
         h = 24,
         x = -26,
         rotation = 360,
-        texture = "ui/atlas/raid_atlas_menu",
+        texture = "ui/atlas/menu/raid_atlas_menu",
         texture_rect = { 765, 679, 33, 33 },
         color = params.value
     })

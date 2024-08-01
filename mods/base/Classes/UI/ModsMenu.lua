@@ -189,7 +189,7 @@ function BLTModsMenu:AddMod(mod, type)
         auto_foreground = mod._config.auto_image_color or not img,
         count_as_aligned = true,
         texture_rect = not img and { 353, 894, 100, 100 },
-        texture = img or "ui/atlas/raid_atlas_menu",
+        texture = img or "ui/atlas/menu/raid_atlas_menu",
         position = "center_x"
     })
     local t = self:Text(mod_item, tostring(name), { name = "Title", offset = { mod_item.offset[1], 16 } })

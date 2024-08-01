@@ -35,7 +35,7 @@ function ComboBox:Init()
         name = "icon_arrow",
         w = self.items_size - 6,
         h = self.items_size - 6,
-        texture = "ui/atlas/raid_atlas_skills",
+        texture = "ui/atlas/skilltree/raid_atlas_skills",
         texture_rect = { 421, 93, 18, 18 },
         color = self:GetForeground(),
         layer = 2,
