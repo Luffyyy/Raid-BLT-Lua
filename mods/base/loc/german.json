@@ -33,6 +33,7 @@
   "blt_mods_manager": "Mods Manager",
   "blt_updates_manager": "BLT Mod Downloads",
   "blt_update_all": "Alle aktualisieren",
+  "blt_quick_restart": "Lua Neuladen",
   "blt_important_notice": "Zeige Updateinformationen",
   "blt_close": "Schließen",
   "blt_mod_type_normal": "Normal",

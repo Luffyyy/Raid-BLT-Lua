@@ -93,6 +93,17 @@ function BLTUpdatesMenu:CreateItems(menu)
         callback = ClassClbk(self, "UpdateAll", true),
         second_callback = ClassClbk(self, "UpdateAll")
     })
+    local quick_restart = self._holder:Button({
+        name = "QuickRestart",
+        text = "blt_quick_restart",
+        size_by_text = true,
+        localized = true,
+        items_size = 32,
+        position = function(item)
+            item:Panel():set_righttop(upall:Panel():left() - 8, y)
+        end,
+        callback = ClassClbk(self, "QuickRestart")
+    })
     self._holder:Toggle({
         name = "ImportantNotice",
         text = "blt_important_notice",
@@ -101,7 +112,7 @@ function BLTUpdatesMenu:CreateItems(menu)
         localized = true,
         items_size = 32,
         position = function(item)
-            item:Panel():set_righttop(upall:Panel():left() - 8, y)
+            item:Panel():set_righttop(quick_restart:Panel():left() - 8, y)
         end,
         callback = ClassClbk(self, "SetShowImportantUpdatesNotice")
     })
@@ -123,6 +134,13 @@ function BLTUpdatesMenu:CreateItems(menu)
         end
     end
     self._list:AlignItems(true)
+end
+
+function BLTUpdatesMenu:QuickRestart()
+    if setup and setup.quit_to_main_menu then
+        setup.exit_to_main_menu = true
+        setup:quit_to_main_menu() -- reloads lua
+    end
 end
 
 function BLTUpdatesMenu:GoToMods()
