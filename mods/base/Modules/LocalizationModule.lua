@@ -29,9 +29,10 @@ function LocalizationModule:init(core_mod, config)
 end
 
 function LocalizationModule:LoadLocalization()
-    if self.Localizations[SystemInfo:language():key()] then
+    local current_language = Idstring(Steam:current_language()):key()
+    if self.Localizations[current_language] then
         LocalizationManager:load_localization_file(Path:Combine(self.LocalizationDirectory,
-            self.Localizations[SystemInfo:language():key()]))
+            self.Localizations[current_language]))
     end
     LocalizationManager:load_localization_file(Path:Combine(self.LocalizationDirectory, self.DefaultLocalization), false)
 end
