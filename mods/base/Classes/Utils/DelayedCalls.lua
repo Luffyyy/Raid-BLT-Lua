@@ -1,5 +1,7 @@
 DelayedCalls = DelayedCalls or {}
 DelayedCalls._calls = DelayedCalls._calls or {}
+DelayedCalls._remove_queue = DelayedCalls._remove_queue or {}
+
 Hooks:Add("MenuUpdate", "MenuUpdate_Queue", function(t, dt)
 	DelayedCalls:Update(t, dt)
 end)
@@ -8,43 +10,43 @@ Hooks:Add("GameSetupUpdate", "GameSetupUpdate_Queue", function(t, dt)
 	DelayedCalls:Update(t, dt)
 end)
 
-function DelayedCalls:Update(t, dt)
-	local t = {}
-	for k, v in pairs(self._calls) do
-		if v ~= nil then
-			v.currentTime = v.currentTime + dt
-			if v.currentTime > v.timeToWait then
-				if v.func then
-					v.func()
-				end
-				v = nil
-			else
-				table.insert(t, v)
+function DelayedCalls:Update(time, deltaTime)
+	local calls = self._calls
+	self._calls = {}
+
+	for k, v in pairs(calls) do
+		v.currentTime = v.currentTime + deltaTime
+		if self._remove_queue[k] then
+			-- Remove call if it has been queued for removal
+			self._remove_queue[k] = nil
+		elseif v.currentTime > v.timeToWait then
+			if v.functionCall then
+				v.functionCall()
 			end
+		else
+			-- If a call with that id already exists, it has been added during call iteration
+			-- If that is the case, prefer the existing one (new call overrides old)
+			self._calls[k] = self._calls[k] or v
 		end
 	end
-	self._calls = t
 end
 
---[[
-	DelayedCalls:Add(id, time, func)
-		Adds a function to be automatically called after a set delay
-	id, 	Unique identifier for this delayed call
-	time, 	Time in seconds to call the specified function after
-	func, 	Function call to call after the time runs out
-]]
+---Adds a function to be automatically called after a set delay
+---If a call with the same id already exists, it will be replaced
+---@param id string @Unique name for this delayed call
+---@param time number @Time in seconds to call the specified function after
+---@param func function @Function to call after the time runs out
 function DelayedCalls:Add(id, time, func)
-	self._calls[id] = self._calls[id] or {}
-	self._calls[id].func = func
-	self._calls[id].timeToWait = time
-	self._calls[id].currentTime = 0
+	local queuedFunc = {
+		functionCall = func,
+		timeToWait = time,
+		currentTime = 0
+	}
+	self._calls[id] = queuedFunc
 end
 
---[[
-	DelayedCalls:Remove(id)
-		Removes a scheduled call before it can be automatically called
-	id, Unique identifier for the delayed call remove
-]]
+---Removes a scheduled call that hasn't been called yet
+---@param id string @Name of the delayed call to remove
 function DelayedCalls:Remove(id)
-	self._calls[id] = nil
+	self._remove_queue[id] = true
 end
