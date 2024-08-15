@@ -212,6 +212,8 @@ function BLTModsMenu:AddMod(mod, type)
     })
     self:Button(mod_item, "blt_more_info", ClassClbk(self, "ViewMoreInfoMod", mod))
     if mod._main_update and mod._main_update:HasPage() then
+        self:Button(mod_item, "blt_show_mod_changelog", ClassClbk(self, "ShowModChangelog", mod), true,
+            { name = "View Changelog" })
         self:Button(mod_item, "blt_visit_page", ClassClbk(self, "ViewMod", mod))
     end
     self:UpdateTitle(mod)
@@ -252,6 +254,12 @@ end
 function BLTModsMenu:ViewMod(mod)
     if mod._main_update then
         mod._main_update:ViewMod()
+    end
+end
+
+function BLTModsMenu:ShowModChangelog(mod)
+    if mod._main_update then
+        mod._main_update:ViewModChangelog()
     end
 end
 
