@@ -9,6 +9,7 @@ UpdatesModule._providers = {
         check_url = "https://api.modworkshop.net/mods/$id$/version",
         download_url = "https://api.modworkshop.net/mods/$id$/download",
         page_url = "https://modworkshop.net/mod/$id$",
+        changelog_url = "https://modworkshop.net/mod/$id$?tab=changelog",
         check_condition = function(self)
             local id = tonumber(self.id)
             return id and id > 0
@@ -227,6 +228,10 @@ end
 
 function UpdatesModule:ViewMod()
     BLT:OpenUrl(self._mod:GetRealFilePath(self.provider.page_url, self))
+end
+
+function UpdatesModule:ViewModChangelog()
+    BLT:OpenUrl(self._mod:GetRealFilePath(self.provider.changelog_url, self))
 end
 
 function UpdatesModule:_DownloadAssets(data)

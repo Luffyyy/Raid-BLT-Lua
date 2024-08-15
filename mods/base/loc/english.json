@@ -58,5 +58,6 @@
   "blt_match_case": "Match case",
   "blt_limit_results": "Limit results",
   "blt_tick_all": "Tick all present items",
-  "blt_untick_all": "Untick all present items"
+  "blt_untick_all": "Untick all present items",
+  "blt_show_mod_changelog": "View Changelog"
 }

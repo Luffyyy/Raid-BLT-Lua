@@ -219,7 +219,9 @@ function BLTUpdatesMenu:AddUpdate(update, mod_type, realign)
 
     self:Button(update_item, "blt_updates_download_now", ClassClbk(self, "BeginUpdateDownload", update), true,
         { name = "Download" })
-
+    if update:HasPage() then
+        self:Button(update_item, "blt_show_mod_changelog", ClassClbk(self, "ShowModChangelog", update), true)
+    end
     self:SetUpdateStatus(update_item,
         loc:text("blt_waiting_update") .. (update._new_version and "(" .. update._new_version .. ")" or ""),
         true)
@@ -229,6 +231,11 @@ function BLTUpdatesMenu:AddUpdate(update, mod_type, realign)
     if realign then
         self._list:AlignItems(true)
     end
+end
+
+function BLTUpdatesMenu:ShowModChangelog(update)
+    update:ViewModChangelog()
+
 end
 
 function BLTUpdatesMenu:UpdateTitle(update)

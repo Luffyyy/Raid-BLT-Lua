@@ -58,5 +58,6 @@
   "blt_match_case": "Groß/Kleinschreibung",
   "blt_limit_results": "Begrenze Ergebnisse",
   "blt_tick_all": "Wähle alle angezeigten Items an",
-  "blt_untick_all": "Wähle alle angezeigten Item ab"
+  "blt_untick_all": "Wähle alle angezeigten Item ab",
+  "blt_show_mod_changelog": "Zeige Änderungsprotokoll"
 }
