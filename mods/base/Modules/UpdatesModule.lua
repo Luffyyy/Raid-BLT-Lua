@@ -14,16 +14,37 @@ UpdatesModule._providers = {
             return id and id > 0
         end,
         check_func = function(self, data)
-            local self = self
-
-            local is_newer = data ~= tostring(self.version)
-            if is_newer then
+            if self:CompareVersions(self.version, data) == 2 then
                 return data, nil -- update required, no error_reason
             end
             return false, nil    -- update not required, no error_reason
         end,
     },
 }
+
+-- returns 1 if version 1 is newer, 2 if version 2 is newer, or 0 if versions are equal.
+function UpdatesModule:CompareVersions(version1, version2)
+    local v1 = self:ToVersionTable(tostring(version1))
+    local v2 = self:ToVersionTable(tostring(version2))
+    for i = 1, math.max(#v1, #v2) do
+        local num1 = v1[i] or 0
+        local num2 = v2[i] or 0
+        if num1 > num2 then
+            return 1
+        elseif num1 < num2 then
+            return 2
+        end
+    end
+    return 0
+end
+
+function UpdatesModule:ToVersionTable(version)
+    local vt = {}
+    for num in version:gmatch("%d+") do
+        table.insert(vt, tonumber(num))
+    end
+    return vt
+end
 
 function UpdatesModule:init(core_mod, config)
     if not UpdatesModule.super.init(self, core_mod, config) then
@@ -116,8 +137,11 @@ function UpdatesModule:CheckForUpdates(clbk)
             local self = self
 
             if data and string.len(data) > 0 then
-                self:LogF(LogLevel.DEBUG, "CheckForUpdates", "Received version '%s' from the server (local is '%s').",
-                    data, tostring(self.version))
+                local newer = self:CompareVersions(self.version, data)
+                self:LogF(LogLevel.DEBUG, "CheckForUpdates", "Received version '%s' from the server (local is '%s'). %s",
+                    data, tostring(self.version),
+                    newer == 2 and "Update available!" or (newer == 1 and "[local is newer]" or "")
+                )
                 local requires_update, error_reason = self.provider.check_func(self, data)
                 if requires_update ~= false and not error_reason then
                     self._new_version = requires_update
