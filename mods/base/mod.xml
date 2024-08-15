@@ -27,7 +27,6 @@
 
 	<options build_menu="false">
 		<options>
-			<option name="Language" type="string" default_value="English"/>
 			<option name="ImportantNotice" type="boolean" default_value="true"/>
 			<option name="DisabledMods" type="table">
 				<default_value/>
