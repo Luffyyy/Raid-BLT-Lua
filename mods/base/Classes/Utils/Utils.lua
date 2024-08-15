@@ -5,6 +5,46 @@
 Utils = Utils or {}
 _G.Utils = Utils
 
+function Utils.MakeValueOutput(value, output)
+	if type(value) == "string" then
+		output[#output + 1] = '"'
+		output[#output + 1] = value
+		output[#output + 1] = '"'
+	else
+		output[#output + 1] = tostring(value)
+	end
+end
+
+function Utils.MakeTableOutput(tbl, output, has, tabs, depth, maxDepth)
+	has[tbl] = true
+	output[#output + 1] = tostring(tbl)
+
+	if next(tbl) then
+		output[#output + 1] = " {\n"
+		local nextTabs = tabs .. "\t"
+		depth = depth + 1
+
+		for k, v in pairs(tbl) do
+			output[#output + 1] = nextTabs
+			Utils.MakeValueOutput(k, output)
+			output[#output + 1] = " = "
+
+			if (type(v) == "table") and not has[v] and (depth < maxDepth) then
+				Utils.MakeTableOutput(v, output, has, nextTabs, depth, maxDepth)
+			else
+				Utils.MakeValueOutput(v, output)
+			end
+
+			output[#output + 1] = "\n"
+		end
+
+		output[#output + 1] = tabs
+		output[#output + 1] = "}"
+	else
+		output[#output + 1] = " {}"
+	end
+end
+
 --[[
 	CloneClass(class, clone_key)
 		Copies an existing class into an orig table, so that class functions can be overwritten and called again easily
@@ -19,34 +59,27 @@ function _G.CloneClass(class, clone_key)
     end
 end
 
---[[
-	PrintTable(tbl, level)
-		Prints the contents of a table to your console
-		Warning, may cause game slowdown if the table is fairly large, only for debugging purposes
-	tbl, The table to print to console
-    level, how much levels should it print, for example 2 levels would fully print this table {x = {y = "z"}}
-    the rest of the params should not be written, they're used as recursive params.
-]]
-function _G.PrintTable(tbl, level, key, tab)
-    level = level or 1
-    tab = tab or 1
-    level = level - 1
-    local tabs = string.rep('	', tab)
-    if level == -1 then
-        log(string.format(tabs .. "['%s'] = %s,", tostring(key), tostring(tbl)))
-        return
-    end
-    local fixed = type(tbl) == "userdata" and getmetatable(tbl) or tbl or {}
-    log(tabs .. (key and "['" .. key .. "'] = " or "") .. "{")
-    tabs = string.rep('	', tab + 1)
-    for k, v in pairs(fixed) do
-        if type(v) == "table" then
-            PrintTable(v, level, k, tab + 1)
-        else
-            log(string.format(tabs .. "['%s'] = %s,", tostring(k), tostring(v)))
-        end
-    end
-    log(tabs .. "}")
+---Prints the contents of a table to your console  
+---May cause game slowdown if the table is fairly large, only for debugging purposes
+---PrintTable will include the contents of nested tables down to maxDepth or 1
+---@param tbl table @The table to print to console
+---@param maxDepth? number @Controls the depth that PrintTable will read to (defaults to `1`)
+function _G.PrintTable(tbl, maxDepth)
+	local output = nil
+
+	if type(tbl) == "table" then
+		output = {"\n"} -- Start the output on a new line. Doing this here to avoid a possibly large copy later.
+		local has = {}
+		local tabs = ""
+		local depth = 0
+		maxDepth = maxDepth or 1
+		Utils.MakeTableOutput(tbl, output, has, tabs, depth, maxDepth)
+	else
+		output = {}
+		Utils.MakeValueOutput(tbl, output)
+	end
+
+	log(table.concat(output))
 end
 
 --[[
