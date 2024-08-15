@@ -217,11 +217,11 @@ function BLTUpdatesMenu:AddUpdate(update, mod_type, realign)
         w = 0,
     })
 
-    self:Button(update_item, "blt_updates_download_now", ClassClbk(self, "BeginUpdateDownload", update), true,
-        { name = "Download" })
     if update:HasPage() then
         self:Button(update_item, "blt_show_mod_changelog", ClassClbk(self, "ShowModChangelog", update), true)
     end
+    self:Button(update_item, "blt_updates_download_now", ClassClbk(self, "BeginUpdateDownload", update), true,
+        { name = "Download" })
     self:SetUpdateStatus(update_item,
         loc:text("blt_waiting_update") .. (update._new_version and "(" .. update._new_version .. ")" or ""),
         true)
