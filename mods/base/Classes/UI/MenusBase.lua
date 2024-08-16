@@ -43,6 +43,12 @@ function BLTMenu:init(ws, fullscreen_ws, node, name, args)
             end
         end
     end
+    self._description_label = self:Label({
+        name = "bltmenu_description_label",
+        text = "",
+        ignore_align = true
+    })
+    self:adjust_description_label()
     self:Align()
     self:Finalize()
 end
@@ -189,6 +195,7 @@ function BLTMenu:BasicItemData(params, no_clone, typ)
     else
         params.text = ""
     end
+
     params.parent = params.parent or self._root_panel
     params.is_blt = true
     params.ignore_align = not not params.ignore_align
@@ -215,6 +222,13 @@ function BLTMenu:CreateSimple(typ, params, create_data)
     local data = BLTMenu.BasicItemData(self, params, create_data.no_clone, typ)
     local parent = data.parent
     if parent then
+        if params.desc then
+            if params.localize_desc == nil then
+                params.localize_desc = true
+            end
+            data.on_mouse_exit_callback = callback(self, self, "_hide_description")
+            data.on_mouse_enter_callback = callback(self, self, "_show_description", params)
+        end
         local clbk_key = create_data.clbk_key or "on_click_callback"
         data[clbk_key] = data.callback and (create_data.default_clbk or function(a, item, value)
             data.callback(value, item)
@@ -246,6 +260,23 @@ function BLTMenu:CreateSimple(typ, params, create_data)
     end
 end
 
+function BLTMenu:adjust_description_label()
+    local _, _, w, _ = MenuNodeBaseGui.make_fine_text(self._description_label._object)
+    self._description_label:set_width(w)
+    self._description_label:set_right(managers.viewport:get_safe_rect_pixels().width)
+end
+
+function BLTMenu:_show_description(params)
+    if params.desc then
+        self._description_label:set_text(string.gsub(params.localize_desc and managers.localization:text(params.desc) or params.desc, "\n", " "))
+        self:adjust_description_label()
+        self._description_label:set_visible(true)
+    end
+end
+
+function BLTMenu:_hide_description()
+    self._description_label:set_visible(false)
+end
 --Item creation functions
 
 function BLTMenu:Button(params)
@@ -494,6 +525,7 @@ function BLTMenu:ReloadMenu(menu)
     managers.raid_menu:open_menu(menu or self._name)
 end
 
+
 --Basically all the shit that was in mods_menu, view_mod and download_manager but instead of fucking repeating it.
 BLTCustomMenu = BLTCustomMenu or class(RaidGuiBase)
 function BLTCustomMenu:init(ws, fullscreen_ws, node, name)
@@ -616,6 +648,8 @@ function BLTCustomMenu:make_fine_text(text)
     text:set_size(w, h)
     text:set_position(math.round(text:x()), math.round(text:y()))
 end
+
+
 
 -------------------------------------------------------------------------------
 -- Adds a back button to a menu
