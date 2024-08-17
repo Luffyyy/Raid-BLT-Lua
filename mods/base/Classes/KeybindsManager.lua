@@ -21,7 +21,7 @@ function BLTKeybind:init(parent_mod, parameters)
 		self._show_in_menu = true
 	end
 	self._name = parameters.name or false
-	self._desc = parameters.desc or false
+	self._desc = parameters.desc or parameters.description	or false
 	self._localize = parameters.localized or false
 	self._localize_desc = parameters.localize_desc or false
 	self:SetKeys(BLT.Options:GetValue("Keybinds")[self:Id()] or {})
