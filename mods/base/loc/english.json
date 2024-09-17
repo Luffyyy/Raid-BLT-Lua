@@ -59,5 +59,8 @@
   "blt_limit_results": "Limit results",
   "blt_tick_all": "Tick all present items",
   "blt_untick_all": "Untick all present items",
-  "blt_show_mod_changelog": "View Changelog"
+  "blt_show_mod_changelog": "View Changelog",
+  "blt_farewell_rblt_title": "!IMPORTANT! RaidBLT deprecation !IMPORTANT!",
+  "blt_farewell_rblt_text": "Due to the release of SuperBLT for Raid:WW2, RaidBLT wont be developed any further and all future development effort will be put into SuperBLT!",
+  "blt_farewell_open_sblt_page": "Open SBLT"
 }

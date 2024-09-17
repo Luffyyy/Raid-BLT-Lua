@@ -393,6 +393,27 @@ function BLT:log(...)
 	return BLTMod.log(mod, ...)
 end
 
+function BLT:_Farewell()
+	QuickMenu:new(
+		managers.localization:text("blt_farewell_rblt_title"),
+		managers.localization:text("blt_farewell_rblt_text"),
+		{
+			[1] = {
+				text = managers.localization:text("dialog_yes"),
+				is_cancel_button = true,
+			},
+			[2] = {
+				text = managers.localization:text("blt_farewell_open_sblt_page"),
+				callback = function()
+					local url = "https://modworkshop.net/mod/21065" -- FIXME: use actual SuperBLT for Raid url when that is released
+					os.execute("cmd /c start " .. url)
+				end
+			},
+		},
+		true
+	)
+end
+
 -- Helpers
 function BLT:OpenUrl(url)
 	if Steam:overlay_enabled() then
