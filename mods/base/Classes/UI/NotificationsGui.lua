@@ -16,11 +16,6 @@ function BLTNotificationsGui:init(ws, fullscreen_ws, node)
 	self._uid = 1000
 
 	BLTNotificationsGui.super.init(self, ws, fullscreen_ws, node, "blt_notifications")
-	if not SystemFS:exists(SavePath .. "rblt_farewell") then
-		BLT:_Farewell()
-		local f = io.open(SavePath .. "rblt_farewell", "w")
-		f.close()
-	end
 end
 
 function BLTNotificationsGui:_setup()
