@@ -18,6 +18,10 @@ end
 function Utils.MakeTableOutput(tbl, output, has, tabs, depth, maxDepth)
     has[tbl] = true
 
+    if type(tbl) == "userdata" then
+        tbl = getmetatable(tbl)
+    end
+
     if next(tbl) then
         output[#output + 1] = "{\n"
         local nextTabs = tabs .. "\t"
@@ -67,7 +71,7 @@ end
 function _G.PrintTable(tbl, maxDepth)
     local output = nil
 
-    if type(tbl) == "table" then
+    if type(tbl) == "table" or type(tbl) == "userdata" then
         output = { "\n" } -- Start the output on a new line. Doing this here to avoid a possibly large copy later.
         local has = {}
         local tabs = ""
