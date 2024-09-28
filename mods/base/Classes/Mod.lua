@@ -74,8 +74,8 @@ function BLTMod:SetupCheck()
     local disabled_mods = BLT.Options:GetValue("DisabledMods")
 
     local mod_blt_version = self:GetMinBLTVersion()
-    mod_blt_version = mod_blt_version and tonumber(mod_blt_version) or nil
-    if mod_blt_version and mod_blt_version > BLT:GetVersion() then
+    mod_blt_version = mod_blt_version or nil
+    if mod_blt_version and BLT:CompareVersions(mod_blt_version, BLT:GetVersion()) == 1 then
         self._blt_outdated = true
         table.insert(self._errors, { "blt_mod_blt_outdated", math.round_with_precision(mod_blt_version, 4) })
     end
