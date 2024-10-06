@@ -62,6 +62,6 @@
   "blt_show_mod_changelog": "View Changelog",
   "blt_farewell_rblt_title": "!IMPORTANT! RaidBLT deprecation !IMPORTANT!",
   "blt_farewell_rblt_button": "RaidBLT deprecation",
-  "blt_farewell_rblt_text": "Due to the release of SuperBLT for Raid:WW2, RaidBLT wont be developed any further and all future development effort will be put into SuperBLT!",
-  "blt_farewell_open_sblt_page": "Open SBLT"
+  "blt_farewell_rblt_text": "Due to the release of RAID-SuperBLT, RaidBLT wont be developed any further and all future development effort will be put into RAID-SuperBLT! Please read the installation instructions on the RAID-SuperBLT page carefully.",
+  "blt_farewell_open_sblt_page": "Open RSBLT"
 }

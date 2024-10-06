@@ -405,7 +405,7 @@ function BLT:_Farewell()
 			[2] = {
 				text = managers.localization:text("blt_farewell_open_sblt_page"),
 				callback = function()
-					local url = "https://modworkshop.net/mod/21065" -- FIXME: use actual SuperBLT for Raid url when that is released
+					local url = "https://modworkshop.net/mod/49744"
 					os.execute("cmd /c start " .. url) -- doesnt use BLT:OpenUrl because we want to open SBLT page in the browser
 				end
 			},
