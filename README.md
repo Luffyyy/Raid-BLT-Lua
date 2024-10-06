@@ -4,5 +4,8 @@ This repository is for the Lua base that controls and loads mods into Raid, and 
 
 This is the developer repository, and should only be used if you know what you're doing. If you don't, visit the website at [ModWorkshop](https://modworkshop.net/mydownloads.php?action=view_down&did=21065) to get an up-to-date drag-drop install.
 
+## Deprecation
+Due to release of [RAID-SuperBLT](https://modworkshop.net/mod/49744) all development of Raid-BLT will be stopped.
+
 ## Download
-Visit [ModWorkshop](https://modworkshop.net/mydownloads.php?action=view_down&did=21065) to get the latest stable download. 
+Visit [ModWorkshop](https://modworkshop.net/mod/21065) to get the latest stable download. 
