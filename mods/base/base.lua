@@ -393,6 +393,28 @@ function BLT:log(...)
 	return BLTMod.log(mod, ...)
 end
 
+function BLT:_Farewell()
+	QuickMenu:new(
+		managers.localization:text("blt_farewell_rblt_title"),
+		managers.localization:text("blt_farewell_rblt_text"),
+		{
+			[1] = {
+				text = managers.localization:text("dialog_yes"),
+				is_cancel_button = true,
+			},
+			[2] = {
+				text = managers.localization:text("blt_farewell_open_sblt_page"),
+				callback = function()
+					local url = "https://modworkshop.net/mod/49744"
+					os.execute("cmd /c start " .. url) -- doesnt use BLT:OpenUrl because we want to open SBLT page in the browser
+				end
+			},
+		},
+		true
+	)
+	return true
+end
+
 -- Helpers
 function BLT:OpenUrl(url)
 	if Steam:overlay_enabled() then
